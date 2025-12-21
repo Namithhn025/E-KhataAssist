@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-[#404040] antialiased bg-white;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
