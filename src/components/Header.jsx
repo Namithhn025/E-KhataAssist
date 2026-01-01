@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Menu, X, Phone } from 'lucide-react';
 
-import logo from '../assets/logo-icon.jpg';
+import logo from '../assets/logo-clean.png';
 
 const Header = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -52,14 +52,15 @@ const Header = () => {
             {isOpen && (
                 <div className="md:hidden bg-white border-t border-gray-100">
                     <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                        <a href="#" className="block px-3 py-2 text-primary font-semibold bg-green-50 rounded-md">Home</a>
-                        <a href="#services" className="block px-3 py-2 text-gray-600 font-medium hover:text-primary hover:bg-green-50 rounded-md">Services</a>
-                        <a href="#about" className="block px-3 py-2 text-gray-600 font-medium hover:text-primary hover:bg-green-50 rounded-md">About Us</a>
-                        <a href="#contact" className="block px-3 py-2 text-gray-600 font-medium hover:text-primary hover:bg-green-50 rounded-md">Contact</a>
+                        <a href="#" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-primary font-semibold bg-green-50 rounded-md">Home</a>
+                        <a href="#services" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-gray-600 font-medium hover:text-primary hover:bg-green-50 rounded-md">Services</a>
+                        <a href="#about" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-gray-600 font-medium hover:text-primary hover:bg-green-50 rounded-md">About Us</a>
+                        <a href="#contact" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-gray-600 font-medium hover:text-primary hover:bg-green-50 rounded-md">Contact</a>
                         <a
                             href="https://wa.me/918088917577"
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={() => setIsOpen(false)}
                             className="block w-full text-center mt-4 bg-primary text-white px-6 py-3 rounded-md font-medium hover:bg-green-800"
                         >
                             Request a Service

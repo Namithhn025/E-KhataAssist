@@ -8,3 +8,14 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
+
+@keyframes highlight-pulse {
+  0% { background-color: white; transform: scale(1); }
+  30% { background-color: #f0fdf4; transform: scale(1.03); border-color: #22c55e; box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+  100% { background-color: white; transform: scale(1); }
+}
+
+.highlight-service {
+  animation: highlight-pulse 1.5s ease-out;
+  z-index: 20;
+}

@@ -11,6 +11,17 @@ const Hero = () => {
         setIsModalOpen(true);
     };
 
+    const scrollToSection = (id) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Trigger highlight animation
+            element.classList.remove('highlight-service');
+            void element.offsetWidth; // Force reflow to restart animation
+            element.classList.add('highlight-service');
+        }
+    };
+
     return (
         <div className="relative bg-gradient-to-br from-green-50 via-white to-green-50 pt-16 pb-24 lg:pt-24 lg:pb-32 overflow-hidden">
             <ServiceRequestModal
@@ -32,16 +43,24 @@ const Hero = () => {
 
                     {/* Quick Actions */}
                     <div className="flex flex-wrap justify-center gap-4 mb-16">
-                        {['E-Khata Service', 'Encumbrance Certificate', 'Khata Transfer'].map((item) => (
-                            <button key={item} className="px-6 py-2 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:border-primary hover:text-primary transition-colors shadow-sm">
-                                {item}
+                        {[
+                            { name: 'E-Khata Service', id: 'e-khata-card' },
+                            { name: 'Encumbrance Certificate', id: 'ec-card' },
+                            { name: 'Khata Transfer', id: 'transfer-card' }
+                        ].map((item) => (
+                            <button
+                                key={item.name}
+                                onClick={() => scrollToSection(item.id)}
+                                className="px-6 py-2 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-medium hover:border-primary hover:text-primary transition-colors shadow-sm focus:ring-2 focus:ring-primary focus:outline-none"
+                            >
+                                {item.name}
                             </button>
                         ))}
                     </div>
 
                     {/* Cards */}
                     <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto text-left">
-                        <div className="bg-white p-8 rounded-xl shadow-xl border border-gray-100 relative group hover:-translate-y-1 transition-transform duration-300">
+                        <div id="e-khata-card" className="bg-white p-8 rounded-xl shadow-xl border border-gray-100 relative group hover:-translate-y-1 transition-transform duration-300">
                             <div className="absolute top-0 right-0 bg-[#FBBF24] text-black text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-xl">
                                 POPULAR
                             </div>
@@ -55,7 +74,7 @@ const Hero = () => {
                             </button>
                         </div>
 
-                        <div className="bg-white p-8 rounded-xl shadow-xl border border-gray-100 relative group hover:-translate-y-1 transition-transform duration-300">
+                        <div id="ec-card" className="bg-white p-8 rounded-xl shadow-xl border border-gray-100 relative group hover:-translate-y-1 transition-transform duration-300">
                             <div className="absolute top-0 right-0 bg-[#FBBF24] text-black text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-xl">
                                 POPULAR
                             </div>
@@ -69,7 +88,7 @@ const Hero = () => {
                             </button>
                         </div>
 
-                        <div className="bg-white p-8 rounded-xl shadow-xl border border-gray-100 relative group hover:-translate-y-1 transition-transform duration-300">
+                        <div id="transfer-card" className="bg-white p-8 rounded-xl shadow-xl border border-gray-100 relative group hover:-translate-y-1 transition-transform duration-300">
                             <div className="absolute top-0 right-0 bg-[#FBBF24] text-black text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-xl">
                                 POPULAR
                             </div>

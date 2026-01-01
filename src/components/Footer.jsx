@@ -87,9 +87,9 @@ const ContactFooter = () => {
                             <li>info@ekhataassist.in</li>
                             <li>+91 80889 17577</li>
                             <li className="flex gap-4 mt-4">
-                                <a href="#" className="opacity-80 hover:opacity-100">LinkedIn</a>
-                                <a href="#" className="opacity-80 hover:opacity-100">Instagram</a>
-                                <a href="#" className="opacity-80 hover:opacity-100">Facebook</a>
+                                <a href="https://www.linkedin.com/company/ekhataassist/" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100">LinkedIn</a>
+                                <a href="https://www.instagram.com/ekhataassist?utm_source=qr&igsh=MWhuZGQ4aGFiZ25wMw==" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100">Instagram</a>
+                                <a href="https://www.facebook.com/share/1G1ftwKsNa/" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100">Facebook</a>
                             </li>
                         </ul>
                     </div>
