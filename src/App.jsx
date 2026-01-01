@@ -18,21 +18,26 @@ function App() {
         <section className="py-20 bg-green-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-bold text-primary mb-12">Why People Trust Us</h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-white p-8 rounded-xl shadow-sm">
-                <div className="text-[#FBBF24] text-4xl mb-4">★ ★ ★ ★ ★</div>
-                <p className="text-gray-600 italic mb-6">"Got my Khata transfer done in record time. Didn't have to visit any office. Amazing service!"</p>
-                <div className="font-bold text-gray-900">- Rajesh Kumar</div>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-green-100 flex flex-col h-full">
+                <div className="text-[#FBBF24] text-3xl mb-4">★ ★ ★ ★ ★</div>
+                <p className="text-gray-600 italic mb-6 flex-grow">"I literally struggled with other agencies like NoBroker and Vault — they didn’t even reply properly. Finally, I got my E-Khata done smoothly thanks to Ajay and his team. Truly relieved and grateful.”</p>
+                <div className="font-bold text-gray-900 border-t pt-4">- Darshan</div>
               </div>
-              <div className="bg-white p-8 rounded-xl shadow-sm">
-                <div className="text-[#FBBF24] text-4xl mb-4">★ ★ ★ ★ ★</div>
-                <p className="text-gray-600 italic mb-6">"Very professional team. They handled my property legal verification thoroughly."</p>
-                <div className="font-bold text-gray-900">- Priya Sharma</div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-green-100 flex flex-col h-full">
+                <div className="text-[#FBBF24] text-3xl mb-4">★ ★ ★ ★ ★</div>
+                <p className="text-gray-600 italic mb-6 flex-grow">"The founder is a young and very intelligent professional with deep knowledge in proptech. My E-Khata was completed within just a few days. Impressive speed and expertise.”</p>
+                <div className="font-bold text-gray-900 border-t pt-4">- Rakshith</div>
               </div>
-              <div className="bg-white p-8 rounded-xl shadow-sm">
-                <div className="text-[#FBBF24] text-4xl mb-4">★ ★ ★ ★ ★</div>
-                <p className="text-gray-600 italic mb-6">"The E-Khata process was explained clearly and executed perfectly. Highly recommend."</p>
-                <div className="font-bold text-gray-900">- Anand Gowda</div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-green-100 flex flex-col h-full">
+                <div className="text-[#FBBF24] text-3xl mb-4">★ ★ ★ ★ ★</div>
+                <p className="text-gray-600 italic mb-6 flex-grow">"They handle everything with complete transparency. No advance payment at all. Trust me, they are the best people to rely on for property-related services.”</p>
+                <div className="font-bold text-gray-900 border-t pt-4">- Manoj</div>
+              </div>
+              <div className="bg-white p-8 rounded-xl shadow-sm border border-green-100 flex flex-col h-full">
+                <div className="text-[#FBBF24] text-3xl mb-4">★ ★ ★ ★ ★</div>
+                <p className="text-gray-600 italic mb-6 flex-grow">"Don’t wait or think twice. You can confidently choose them. They are the best when it comes to delivering services within the promised time period.”</p>
+                <div className="font-bold text-gray-900 border-t pt-4">- Namith</div>
               </div>
             </div>
           </div>
