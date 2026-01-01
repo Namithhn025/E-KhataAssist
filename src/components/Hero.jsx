@@ -36,7 +36,7 @@ const Hero = () => {
                         <span className="text-primary">Property Documentation</span> Done
                     </h1>
                     <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-                        We simplify property paperwork for you. Legal, fast, and completely hassle-free. Exclusively offered in Bengaluru.
+                        Avoid delays, agents, and office visits — choose E Khata Assist.
                     </p>
 
 
