@@ -3,6 +3,7 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import Stats from './components/Stats';
 import Services from './components/Services';
+import About from './components/About';
 import ContactFooter from './components/Footer';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
         <Hero />
         <Stats />
         <Services />
+        <About />
 
         {/* Testimonials or "Why Us" could go here */}
         <section className="py-20 bg-green-50">
