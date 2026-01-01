@@ -18,8 +18,8 @@ const About = () => {
 
                 {/* Core Advantages */}
                 <div className="grid md:grid-cols-3 gap-8 mb-24">
-                    <div className="bg-green-50 p-8 rounded-2xl hover:shadow-lg transition-shadow duration-300">
-                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-6 text-primary shadow-sm">
+                    <div className="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow duration-300 shadow-sm">
+                        <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-6 text-primary">
                             <Zap size={24} />
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-4">Fast & Reliable</h3>
@@ -36,8 +36,8 @@ const About = () => {
                             Every step is guided by experienced property law professionals and a dedicated on-ground execution team.
                         </p>
                     </div>
-                    <div className="bg-green-50 p-8 rounded-2xl hover:shadow-lg transition-shadow duration-300">
-                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-6 text-primary shadow-sm">
+                    <div className="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow duration-300 shadow-sm">
+                        <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-6 text-primary">
                             <MapPin size={24} />
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-4">Local Expertise & Support</h3>
@@ -70,10 +70,10 @@ const About = () => {
 
                         <div className="mt-12 p-8 bg-gray-50 rounded-2xl border-l-4 border-primary">
                             <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Story — From the Ground, Not a Boardroom</h3>
-                            <p className="text-gray-700 mb-6 italic">
+                            <p className="text-gray-900 mb-6 italic font-bold">
                                 "Ajay witnessed homeowners exhausted—financially and emotionally—just to secure documents that legally belonged to them."
                             </p>
-                            <p className="text-gray-600 leading-relaxed">
+                            <p className="text-gray-800 leading-relaxed font-bold">
                                 Ajaykumar H, our Founder, comes from a legal background and recognized that despite technology, people were still paying huge amounts for basic documentation and receiving zero updates. He started by helping cases one-by-one, and that solution-driven ethos is at the core of everything we do today.
                             </p>
                         </div>
