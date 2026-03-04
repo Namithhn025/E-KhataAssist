@@ -140,8 +140,11 @@ const ServiceRequestModal = ({ isOpen, onClose, serviceName }) => {
                                                     placeholder="Enter your email"
                                                 />
                                             </div>
+
+
+
                                             <div>
-                                                <label htmlFor="address" className="block text-sm font-medium text-gray-700">Address <span className="text-gray-400 text-xs font-normal">(Optional)</span></label>
+                                                <label htmlFor="address" className="block text-sm font-medium text-gray-700">Address / Locality <span className="text-gray-400 text-xs font-normal">(Optional)</span></label>
                                                 <textarea
                                                     name="address"
                                                     id="address"
@@ -152,6 +155,7 @@ const ServiceRequestModal = ({ isOpen, onClose, serviceName }) => {
                                                     placeholder="Enter your locality/address"
                                                 ></textarea>
                                             </div>
+
 
                                         </form>
                                     </div>

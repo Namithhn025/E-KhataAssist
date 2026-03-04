@@ -59,46 +59,49 @@ const Hero = () => {
                     </div>
 
                     {/* Cards */}
-                    <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto text-left">
-                        <div id="e-khata-card" className="bg-white p-8 rounded-xl shadow-xl border border-gray-100 relative group hover:-translate-y-1 transition-transform duration-300">
-                            <div className="absolute top-0 right-0 bg-[#FBBF24] text-black text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-xl">
+                    <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto text-left">
+                        <div id="e-khata-card" className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 relative group hover:-translate-y-2 transition-all duration-300">
+                            <div className="absolute top-0 right-0 bg-[#FBBF24] text-black text-[10px] font-black px-4 py-1.5 rounded-bl-xl rounded-tr-2xl tracking-widest uppercase">
                                 POPULAR
                             </div>
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6 text-primary">
-                                <FileText size={24} />
+                            <div className="w-14 h-14 bg-green-50 text-primary rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                                <FileText size={28} />
                             </div>
-                            <h3 className="text-xl font-bold text-primary mb-2">E-Khata Services</h3>
-                            <p className="text-gray-600 mb-6">Get your E-Khata / A-Khata without running around government offices.</p>
-                            <button onClick={() => handleServiceClick('E-Khata Service')} className="inline-flex items-center font-semibold text-primary hover:gap-2 transition-all">
-                                Apply Now <ArrowRight size={16} className="ml-1" />
+                            <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1 block">Core Service</span>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">E-Khata Issuance</h3>
+                            <p className="text-gray-600 mb-8 leading-relaxed">Official property identification (Form 9 & 11A) issued by authorities. Fast and verified.</p>
+                            <button onClick={() => handleServiceClick('E-Khata Issuance')} className="inline-flex items-center gap-2 font-bold text-primary px-6 py-3 bg-green-50 rounded-lg group-hover:bg-primary group-hover:text-white transition-all w-full justify-center">
+                                Apply Now <ArrowRight size={18} />
                             </button>
                         </div>
 
-                        <div id="ec-card" className="bg-white p-8 rounded-xl shadow-xl border border-gray-100 relative group hover:-translate-y-1 transition-transform duration-300">
-                            <div className="absolute top-0 right-0 bg-[#FBBF24] text-black text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-xl">
-                                POPULAR
+                        <div id="ec-card" className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 relative group hover:-translate-y-2 transition-all duration-300">
+                            <div className="absolute top-0 right-0 bg-[#FBBF24] text-black text-[10px] font-black px-4 py-1.5 rounded-bl-xl rounded-tr-2xl tracking-widest uppercase">
+                                MUST HAVE
                             </div>
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6 text-green-700">
-                                <ShieldCheck size={24} />
+                            <div className="w-14 h-14 bg-green-50 text-green-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                                <ShieldCheck size={28} />
                             </div>
-                            <h3 className="text-xl font-bold text-primary mb-2">Encumbrance Certificate</h3>
-                            <p className="text-gray-600 mb-6">Get EC for your property easily without hassle.</p>
-                            <button onClick={() => handleServiceClick('Encumbrance Certificate')} className="inline-flex items-center font-semibold text-green-700 hover:gap-2 transition-all">
-                                Apply Now <ArrowRight size={16} className="ml-1" />
+                            <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1 block">Security</span>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">Encumbrance Cert</h3>
+                            <p className="text-gray-600 mb-8 leading-relaxed">Proof that your property is free from legal or monetary liabilities. Essential for safety.</p>
+                            <button onClick={() => handleServiceClick('Encumbrance Cert')} className="inline-flex items-center gap-2 font-bold text-green-700 px-6 py-3 bg-green-50 rounded-lg group-hover:bg-primary group-hover:text-white transition-all w-full justify-center">
+                                Apply Now <ArrowRight size={18} />
                             </button>
                         </div>
 
-                        <div id="transfer-card" className="bg-white p-8 rounded-xl shadow-xl border border-gray-100 relative group hover:-translate-y-1 transition-transform duration-300">
-                            <div className="absolute top-0 right-0 bg-[#FBBF24] text-black text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-xl">
-                                POPULAR
+                        <div id="transfer-card" className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 relative group hover:-translate-y-2 transition-all duration-300">
+                            <div className="absolute top-0 right-0 bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-bl-xl rounded-tr-2xl tracking-widest uppercase">
+                                TRUSTED
                             </div>
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6 text-green-700">
-                                <Users size={24} />
+                            <div className="w-14 h-14 bg-green-50 text-primary rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                                <Users size={28} />
                             </div>
-                            <h3 className="text-xl font-bold text-primary mb-2">Khata Transfer</h3>
-                            <p className="text-gray-600 mb-6">Seamless ownership transfer process made simple.</p>
-                            <button onClick={() => handleServiceClick('Khata Transfer')} className="inline-flex items-center font-semibold text-primary hover:gap-2 transition-all">
-                                Apply Now <ArrowRight size={16} className="ml-1" />
+                            <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1 block">Ownership</span>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">Khata Transfer</h3>
+                            <p className="text-gray-600 mb-8 leading-relaxed">Seamless transfer of property ownership in municipal books. Complete documentation handled.</p>
+                            <button onClick={() => handleServiceClick('Khata Transfer')} className="inline-flex items-center gap-2 font-bold text-primary px-6 py-3 bg-green-50 rounded-lg group-hover:bg-primary group-hover:text-white transition-all w-full justify-center">
+                                Apply Now <ArrowRight size={18} />
                             </button>
                         </div>
                     </div>

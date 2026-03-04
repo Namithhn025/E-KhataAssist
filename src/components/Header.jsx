@@ -23,6 +23,7 @@ const Header = () => {
                         <a href="#" className="text-primary font-semibold hover:text-green-700">Home</a>
                         <a href="#services" className="text-gray-600 font-medium hover:text-primary">Services</a>
                         <a href="#about" className="text-gray-600 font-medium hover:text-primary">About Us</a>
+                        <a href="#faq" className="text-gray-600 font-medium hover:text-primary">FAQ</a>
                         <a href="#contact" className="text-gray-600 font-medium hover:text-primary">Contact</a>
 
                         <a
@@ -55,6 +56,7 @@ const Header = () => {
                         <a href="#" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-primary font-semibold bg-green-50 rounded-md">Home</a>
                         <a href="#services" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-gray-600 font-medium hover:text-primary hover:bg-green-50 rounded-md">Services</a>
                         <a href="#about" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-gray-600 font-medium hover:text-primary hover:bg-green-50 rounded-md">About Us</a>
+                        <a href="#faq" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-gray-600 font-medium hover:text-primary hover:bg-green-50 rounded-md">FAQ</a>
                         <a href="#contact" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-gray-600 font-medium hover:text-primary hover:bg-green-50 rounded-md">Contact</a>
                         <a
                             href="https://wa.me/918088917577"
