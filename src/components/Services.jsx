@@ -62,12 +62,6 @@ const services = [
         category: 'Legal'
     },
     {
-        icon: X,
-        title: 'MODT Cancellation',
-        desc: 'Assistance in removing the Memorandum of Deposit of Title deeds after loan closure to clear your property title. Fast and on-ground execution.',
-        category: 'Legal'
-    },
-    {
         icon: Gavel,
         title: 'Legal Consultation',
         desc: 'Professional legal advice on property disputes, verification of documents, and compliance check for new purchases.',
@@ -116,7 +110,7 @@ const Services = () => {
                         return (
                             <div
                                 key={index}
-                                className="group relative p-10 bg-white border border-gray-100 rounded-[2.5rem] shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden vault-card-hover"
+                                className="group relative p-10 bg-white border border-gray-100 rounded-[2.5rem] shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden vault-card-hover flex flex-col h-full"
                             >
                                 {/* Vault Accents */}
                                 <div className="absolute -top-10 -right-10 p-10 opacity-[0.03] group-hover:opacity-[0.07] transition-all duration-700 group-hover:rotate-12 group-hover:scale-150">
@@ -128,7 +122,7 @@ const Services = () => {
                                         <Icon size={32} />
                                     </div>
 
-                                    <div className="mb-4">
+                                    <div className="flex-grow">
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="h-[2px] w-4 bg-primary/30"></div>
                                             <span className="text-[10px] uppercase tracking-[0.25em] font-black text-primary/60">
@@ -138,15 +132,14 @@ const Services = () => {
                                         <h3 className="text-2xl font-black text-gray-900 mb-4 tracking-tight group-hover:text-primary transition-colors">
                                             {service.title}
                                         </h3>
+                                        <p className="text-gray-500 mb-10 leading-relaxed font-medium">
+                                            {service.desc}
+                                        </p>
                                     </div>
-
-                                    <p className="text-gray-500 mb-10 leading-relaxed font-medium">
-                                        {service.desc}
-                                    </p>
 
                                     <button
                                         onClick={() => handleServiceClick(service.title)}
-                                        className="inline-flex items-center gap-3 px-8 py-4 bg-gray-950 text-white font-black rounded-2xl hover:bg-primary transition-all duration-300 w-full justify-center group/btn"
+                                        className="inline-flex items-center gap-3 px-8 py-4 bg-green-50 text-primary font-black rounded-2xl hover:bg-primary hover:text-white transition-all duration-300 w-full justify-center group/btn mt-auto shadow-sm"
                                     >
                                         <span>Apply Now</span>
                                         <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
