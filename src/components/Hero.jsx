@@ -53,10 +53,18 @@ const Hero = () => {
                 serviceName={selectedService}
             />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                {/* Background Glows */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-primary/5 rounded-full blur-[120px] -z-10 animate-pulse"></div>
+                <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-green-200/20 rounded-full blur-[100px] -z-10 animate-float"></div>
+
                 <div className="text-center max-w-4xl mx-auto">
-                    <h1 className={`text-4xl md:text-5xl lg:text-7xl font-bold text-primary leading-tight mb-6 transition-all duration-700 min-h-[180px] flex items-center justify-center max-w-5xl mx-auto px-4 ${fade ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
-                        {titles[titleIndex]}
-                    </h1>
+                    <div className="min-h-[220px] flex items-center justify-center mb-6">
+                        <h1 className={`text-4xl md:text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight transition-all duration-1000 max-w-5xl mx-auto px-4 ${fade ? 'opacity-100 translate-y-0 scale-100 blur-0' : 'opacity-0 -translate-y-8 scale-95 blur-sm'}`}>
+                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-green-600 to-primary/80 drop-shadow-sm">
+                                {titles[titleIndex]}
+                            </span>
+                        </h1>
+                    </div>
                     <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
                         Avoid delays, agents, and office visits — choose E Khata Assist.
                     </p>
