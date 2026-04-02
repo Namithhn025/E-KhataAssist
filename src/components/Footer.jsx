@@ -36,8 +36,8 @@ const ContactFooter = () => {
                                     required
                                 >
                                     <option value="">-- Choose a service --</option>
-                                    <option value="E-Khata Issuance">E-Khata Issuance</option>
-                                    <option value="Encumbrance Certificate">Encumbrance Cert (EC)</option>
+                                    <option value="E-Khata">E-Khata</option>
+                                    <option value="MODT Closure / Loan Closure">MODT Closure / Loan Closure</option>
                                     <option value="Khata Transfer">Khata Transfer</option>
                                     <option value="Rental and Lease Agreement">Rental & Lease Agreement</option>
                                     <option value="Registry of Property">Registry of Property</option>
@@ -45,7 +45,6 @@ const ContactFooter = () => {
                                     <option value="Family Tree">Family Tree</option>
                                     <option value="BESCOM Services">BESCOM Services</option>
                                     <option value="Property Tax">Property Tax</option>
-                                    <option value="MODT Cancellation">MODT Cancellation</option>
                                     <option value="Legal Consultation">Legal Consultation</option>
                                 </select>
                             </div>
@@ -81,11 +80,11 @@ const ContactFooter = () => {
                     <div>
                         <h5 className="font-bold text-lg mb-4">Services</h5>
                         <ul className="space-y-2 text-green-100">
-                            <li><a href="#services" className="hover:text-white">E-Khata Issuance</a></li>
+                            <li><a href="#services" className="hover:text-white">E-Khata</a></li>
+                            <li><a href="#services" className="hover:text-white">MODT Closure / Loan Closure</a></li>
                             <li><a href="#services" className="hover:text-white">Khata Transfer</a></li>
                             <li><a href="#services" className="hover:text-white">Legal Documentation</a></li>
                             <li><a href="#services" className="hover:text-white">Property Registry</a></li>
-                            <li><a href="#services" className="hover:text-white">MODT Cancellation</a></li>
                             <li><a href="#services" className="hover:text-white">Legal Consultation</a></li>
                         </ul>
                     </div>
@@ -94,7 +93,6 @@ const ContactFooter = () => {
                         <ul className="space-y-2 text-green-100">
                             <li>info@ekhataassist.in</li>
                             <li>+91 80889 17577</li>
-                            <li>+91 63637 86255</li>
                             <li className="flex gap-4 mt-4">
                                 <a href="https://www.linkedin.com/company/ekhataassist/" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100">LinkedIn</a>
                                 <a href="https://www.instagram.com/ekhataassist?utm_source=qr&igsh=MWhuZGQ4aGFiZ25wMw==" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100">Instagram</a>

@@ -27,7 +27,7 @@ const Header = () => {
                         <a href="#contact" className="text-gray-600 font-medium hover:text-primary">Contact</a>
 
                         <a
-                            href="https://wa.me/918088917577"
+                            href="tel:8088917577"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="bg-primary text-white px-6 py-2.5 rounded-md font-medium hover:bg-green-800 transition-colors flex items-center gap-2"
@@ -59,7 +59,7 @@ const Header = () => {
                         <a href="#faq" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-gray-600 font-medium hover:text-primary hover:bg-green-50 rounded-md">FAQ</a>
                         <a href="#contact" onClick={() => setIsOpen(false)} className="block px-3 py-2 text-gray-600 font-medium hover:text-primary hover:bg-green-50 rounded-md">Contact</a>
                         <a
-                            href="https://wa.me/918088917577"
+                            href="tel:8088917577"
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={() => setIsOpen(false)}
