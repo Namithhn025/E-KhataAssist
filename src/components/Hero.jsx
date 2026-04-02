@@ -1,10 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ArrowRight, FileText, Home, ShieldCheck, Users } from 'lucide-react';
 import ServiceRequestModal from './ServiceRequestModal';
 
 const Hero = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedService, setSelectedService] = useState('');
+    const [titleIndex, setTitleIndex] = useState(0);
+    const [fade, setFade] = useState(true);
+
+    const titles = [
+        "The Easiest Way to Get Property Documentation Done",
+        "Bengaluru's Most Trusted Property Documentation Service",
+        "Get Your E-Khata Done — Fast, Legal & Hassle-Free",
+        "No Agents. No Delays. Just Your Property Documents — Done Right.",
+        "From E-Khata to Khata Transfer — We Handle It All",
+        "Property Documentation Simplified for Bengaluru Homeowners"
+    ];
+
+    useEffect(() => {
+        const titleInterval = setInterval(() => {
+            setFade(false);
+            setTimeout(() => {
+                setTitleIndex((prev) => (prev + 1) % titles.length);
+                setFade(true);
+            }, 500); // Wait for fade out
+        }, 4000); // Change every 4 seconds
+
+        return () => clearInterval(titleInterval);
+    }, []);
 
     const handleServiceClick = (title) => {
         setSelectedService(title);
@@ -31,9 +54,8 @@ const Hero = () => {
             />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="text-center max-w-4xl mx-auto">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary leading-tight mb-6">
-                        The Easiest Way to Get <br />
-                        <span className="text-primary">Property Documentation</span> Done
+                    <h1 className={`text-4xl md:text-5xl lg:text-7xl font-bold text-primary leading-tight mb-6 transition-all duration-700 min-h-[180px] flex items-center justify-center max-w-5xl mx-auto px-4 ${fade ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+                        {titles[titleIndex]}
                     </h1>
                     <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
                         Avoid delays, agents, and office visits — choose E Khata Assist.

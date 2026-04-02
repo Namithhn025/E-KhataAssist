@@ -104,7 +104,7 @@ const ContactFooter = () => {
                 </div>
 
                 <div className="pt-8 text-center text-green-200 text-sm">
-                    &copy; {new Date().getFullYear()} E-KhataAssist. All rights reserved.
+                    &copy; {new Date().getFullYear()} E-KhataAssist. All rights reserved. | Done by Namith HN
                 </div>
             </div>
         </footer>
