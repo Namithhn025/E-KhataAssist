@@ -93,7 +93,6 @@ const ContactFooter = () => {
                         <ul className="space-y-2 text-green-100">
                             <li>info@ekhataassist.in</li>
                             <li className="font-bold">+91 90197 86255</li>
-                            <li>+91 63637 86255</li>
                             <li>+91 80889 17577</li>
                             <li className="flex gap-4 mt-4">
                                 <a href="https://www.linkedin.com/company/ekhataassist/" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100">LinkedIn</a>

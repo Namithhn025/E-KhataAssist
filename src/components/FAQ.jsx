@@ -12,7 +12,7 @@ const faqs = [
     },
     {
         question: "How do I get started with a service?",
-        answer: "Getting started is simple. You can click 'Apply Now' on any service, or contact us via WhatsApp/Call at +91 90197 86255, +91 63637 86255 or +91 80889 17577. Share your property details, and we'll guide you on the specific documents required."
+        answer: "Getting started is simple. You can click 'Apply Now' on any service, or contact us via WhatsApp/Call at +91 90197 86255 or +91 80889 17577. Share your property details, and we'll guide you on the specific documents required."
     },
     {
         question: "Will I receive regular updates on my request?",
