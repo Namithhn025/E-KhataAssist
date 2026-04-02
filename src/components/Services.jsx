@@ -1,79 +1,15 @@
 import React, { useState } from 'react';
-import {
-    FileText, Home, Users, Zap, PenTool, CheckCircle,
-    Gavel, BookOpen, FileSignature, GitMerge, X,
-    ShieldCheck, Lock, ArrowRight
+import { 
+    ShieldCheck, Lock, ArrowRight, Info
 } from 'lucide-react';
 import ServiceRequestModal from './ServiceRequestModal';
+import { servicesData } from '../data/servicesData';
 
-const services = [
-    {
-        icon: FileText,
-        title: 'E-Khata',
-        desc: 'Official property identification (Form 9 & 11A) issued by authorities. Fast and verified documentation for your property.',
-        category: 'Core'
-    },
-    {
-        icon: CheckCircle,
-        title: 'MODT Closure / Loan Closure',
-        desc: 'Official closure of mortgage and bank loan records at sub-registrar office after loan tenure. Hassle-free title clearance.',
-        category: 'Core'
-    },
-    {
-        icon: Users,
-        title: 'Khata Transfer',
-        desc: 'Seamless transfer of property ownership records in municipal books. We handle the entire documentation and follow-up.',
-        category: 'Core'
-    },
-    {
-        icon: Zap,
-        title: 'BESCOM Services',
-        desc: 'Name change, load enhancement, and new meter installations. Hassle-free electrical utility management for your property.',
-        category: 'Utility'
-    },
-    {
-        icon: PenTool,
-        title: 'Rental and Lease Agreement',
-        desc: 'Legally binding drafting and registration of residential and commercial lease deeds to protect your interests.',
-        category: 'Legal'
-    },
-    {
-        icon: Home,
-        title: 'Property Tax',
-        desc: 'Assistance in SAS (Self Assessment Scheme) tax calculation and payment. Clear your property dues with official receipts.',
-        category: 'Utility'
-    },
-    {
-        icon: Gavel,
-        title: 'Registry of Property',
-        desc: 'Full assistance in property registration, gift deeds, and sale deeds at the sub-registrar office.',
-        category: 'Legal'
-    },
-    {
-        icon: FileSignature,
-        title: 'MOU Services',
-        desc: 'Drafting of Memorandum of Understanding and Agreements to Sell with strict legal compliance.',
-        category: 'Legal'
-    },
-    {
-        icon: GitMerge,
-        title: 'Family Tree',
-        desc: 'Verification and procurement of Geneological Tree certificates for inheritance and legacy property matters.',
-        category: 'Legal'
-    },
-    {
-        icon: Gavel,
-        title: 'Legal Consultation',
-        desc: 'Professional legal advice on property disputes, verification of documents, and compliance check for new purchases.',
-        category: 'Legal'
-    }
-];
-
-const Services = () => {
+const Services = ({ onKnowMore }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedService, setSelectedService] = useState('');
 
-    const handleServiceClick = (title) => {
+    const handleApplyClick = (title) => {
         setSelectedService(title);
         setIsModalOpen(true);
     };
@@ -105,7 +41,7 @@ const Services = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {services.map((service, index) => {
+                    {servicesData.map((service, index) => {
                         const Icon = service.icon;
                         return (
                             <div
@@ -137,13 +73,22 @@ const Services = () => {
                                         </p>
                                     </div>
 
-                                    <button
-                                        onClick={() => handleServiceClick(service.title)}
-                                        className="inline-flex items-center gap-3 px-8 py-4 bg-green-50 text-primary font-black rounded-2xl hover:bg-primary hover:text-white transition-all duration-300 w-full justify-center group/btn mt-auto shadow-sm"
-                                    >
-                                        <span>Apply Now</span>
-                                        <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
-                                    </button>
+                                    <div className="flex flex-col gap-3 mt-auto">
+                                        <button
+                                            onClick={() => onKnowMore(service)}
+                                            className="inline-flex items-center gap-3 px-8 py-4 bg-white text-gray-700 border border-gray-200 font-bold rounded-2xl hover:border-primary hover:text-primary transition-all duration-300 w-full justify-center group/btn shadow-sm"
+                                        >
+                                            <Info size={18} />
+                                            <span>Know More</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleApplyClick(service.title)}
+                                            className="inline-flex items-center gap-3 px-8 py-4 bg-green-50 text-primary font-black rounded-2xl hover:bg-primary hover:text-white transition-all duration-300 w-full justify-center group/btn shadow-sm"
+                                        >
+                                            <span>Apply Now</span>
+                                            <ArrowRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         );

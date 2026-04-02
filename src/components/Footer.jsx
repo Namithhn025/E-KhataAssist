@@ -9,7 +9,7 @@ const ContactFooter = () => {
 
         // Construct WhatsApp URL
         const message = `Hi, I am interested in ${selectedService}. Please assist me.`;
-        const url = `https://wa.me/918088917577?text=${encodeURIComponent(message)}`;
+        const url = `https://wa.me/919019786255?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');
     };
 
@@ -92,8 +92,7 @@ const ContactFooter = () => {
                         <h5 className="font-bold text-lg mb-4">Contact</h5>
                         <ul className="space-y-2 text-green-100">
                             <li>info@ekhataassist.in</li>
-                            <li>+91 80889 17577</li>
-                            <li>+91 63637 86255</li>
+                            <li className="font-bold">+91 90197 86255</li>
                             <li className="flex gap-4 mt-4">
                                 <a href="https://www.linkedin.com/company/ekhataassist/" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100">LinkedIn</a>
                                 <a href="https://www.instagram.com/ekhataassist?utm_source=qr&igsh=MWhuZGQ4aGFiZ25wMw==" target="_blank" rel="noopener noreferrer" className="opacity-80 hover:opacity-100">Instagram</a>
