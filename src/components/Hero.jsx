@@ -45,7 +45,7 @@ const Hero = () => {
                     <div className="flex flex-wrap justify-center gap-4 mb-16">
                         {[
                             { name: 'E-Khata Service', id: 'e-khata-card' },
-                            { name: 'Encumbrance Certificate', id: 'ec-card' },
+                            { name: 'MODT Closure / Loan Closure', id: 'modt-card' },
                             { name: 'Khata Transfer', id: 'transfer-card' }
                         ].map((item) => (
                             <button
@@ -61,31 +61,31 @@ const Hero = () => {
                     {/* Cards */}
                     <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto text-left">
                         <div id="e-khata-card" className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 relative group hover:-translate-y-2 transition-all duration-300">
-                            <div className="absolute top-0 right-0 bg-[#FBBF24] text-black text-[10px] font-black px-4 py-1.5 rounded-bl-xl rounded-tr-2xl tracking-widest uppercase">
+                            <div className="absolute top-0 right-0 bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-bl-xl rounded-tr-2xl tracking-widest uppercase">
                                 POPULAR
                             </div>
                             <div className="w-14 h-14 bg-green-50 text-primary rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                                 <FileText size={28} />
                             </div>
                             <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1 block">Core Service</span>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">E-Khata Issuance</h3>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">E-Khata</h3>
                             <p className="text-gray-600 mb-8 leading-relaxed">Official property identification (Form 9 & 11A) issued by authorities. Fast and verified.</p>
-                            <button onClick={() => handleServiceClick('E-Khata Issuance')} className="inline-flex items-center gap-2 font-bold text-primary px-6 py-3 bg-green-50 rounded-lg group-hover:bg-primary group-hover:text-white transition-all w-full justify-center">
+                            <button onClick={() => handleServiceClick('E-Khata')} className="inline-flex items-center gap-2 font-bold text-primary px-6 py-3 bg-green-50 rounded-lg group-hover:bg-primary group-hover:text-white transition-all w-full justify-center">
                                 Apply Now <ArrowRight size={18} />
                             </button>
                         </div>
 
-                        <div id="ec-card" className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 relative group hover:-translate-y-2 transition-all duration-300">
-                            <div className="absolute top-0 right-0 bg-[#FBBF24] text-black text-[10px] font-black px-4 py-1.5 rounded-bl-xl rounded-tr-2xl tracking-widest uppercase">
+                        <div id="modt-card" className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 relative group hover:-translate-y-2 transition-all duration-300">
+                            <div className="absolute top-0 right-0 bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-bl-xl rounded-tr-2xl tracking-widest uppercase">
                                 MUST HAVE
                             </div>
                             <div className="w-14 h-14 bg-green-50 text-green-700 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                                 <ShieldCheck size={28} />
                             </div>
                             <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-1 block">Security</span>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">Encumbrance Cert</h3>
-                            <p className="text-gray-600 mb-8 leading-relaxed">Proof that your property is free from legal or monetary liabilities. Essential for safety.</p>
-                            <button onClick={() => handleServiceClick('Encumbrance Cert')} className="inline-flex items-center gap-2 font-bold text-green-700 px-6 py-3 bg-green-50 rounded-lg group-hover:bg-primary group-hover:text-white transition-all w-full justify-center">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">MODT Closure / Loan Closure</h3>
+                            <p className="text-gray-600 mb-8 leading-relaxed">Official closure of mortgage and bank loan records at sub-registrar office after loan tenure. Hassle-free title clearance.</p>
+                            <button onClick={() => handleServiceClick('MODT Closure / Loan Closure')} className="inline-flex items-center gap-2 font-bold text-green-700 px-6 py-3 bg-green-50 rounded-lg group-hover:bg-primary group-hover:text-white transition-all w-full justify-center">
                                 Apply Now <ArrowRight size={18} />
                             </button>
                         </div>

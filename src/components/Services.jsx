@@ -9,14 +9,14 @@ import ServiceRequestModal from './ServiceRequestModal';
 const services = [
     {
         icon: FileText,
-        title: 'E-Khata Issuance',
-        desc: 'Official property identification (Form 9 & 11A) issued by authorities. Essential for ownership verification and property transactions.',
+        title: 'E-Khata',
+        desc: 'Official property identification (Form 9 & 11A) issued by authorities. Fast and verified documentation for your property.',
         category: 'Core'
     },
     {
         icon: CheckCircle,
-        title: 'Encumbrance Cert',
-        desc: 'Get your EC for the last 15-30 years effortlessly. Proof that your property is free from any legal or monetary liabilities.',
+        title: 'MODT Closure / Loan Closure',
+        desc: 'Official closure of mortgage and bank loan records at sub-registrar office after loan tenure. Hassle-free title clearance.',
         category: 'Core'
     },
     {
@@ -64,7 +64,7 @@ const services = [
     {
         icon: X,
         title: 'MODT Cancellation',
-        desc: 'Assistance in removing the Memorandum of Deposit of Title deeds after loan closure to clear your property title.',
+        desc: 'Assistance in removing the Memorandum of Deposit of Title deeds after loan closure to clear your property title. Fast and on-ground execution.',
         category: 'Legal'
     },
     {
