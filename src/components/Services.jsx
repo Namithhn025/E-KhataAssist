@@ -117,7 +117,7 @@ const Services = () => {
                                     <ShieldCheck size={180} className="text-primary" />
                                 </div>
 
-                                <div className="relative z-10">
+                                <div className="relative z-10 flex flex-col h-full">
                                     <div className="w-16 h-16 bg-green-50 text-primary rounded-2xl flex items-center justify-center mb-8 border border-green-100 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm">
                                         <Icon size={32} />
                                     </div>

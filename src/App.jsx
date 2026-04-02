@@ -27,22 +27,22 @@ function App() {
               <div className="bg-white p-8 rounded-xl shadow-sm border border-green-100 flex flex-col h-full">
                 <div className="text-primary text-3xl mb-4">★ ★ ★ ★ ★</div>
                 <p className="text-gray-600 italic mb-6 flex-grow">"I literally struggled with other agencies like NoBroker and Vault — they didn’t even reply properly. Finally, I got my E-Khata done smoothly thanks to Ajay and his team. Truly relieved and grateful.”</p>
-                <div className="font-bold text-gray-900 border-t pt-4">- Darshan</div>
+                <div className="font-bold text-gray-900 border-t pt-4">- Robert</div>
               </div>
               <div className="bg-white p-8 rounded-xl shadow-sm border border-green-100 flex flex-col h-full">
                 <div className="text-primary text-3xl mb-4">★ ★ ★ ★ ★</div>
                 <p className="text-gray-600 italic mb-6 flex-grow">"The founder is a young and very intelligent professional with deep knowledge in proptech. My E-Khata was completed within just a few days. Impressive speed and expertise.”</p>
-                <div className="font-bold text-gray-900 border-t pt-4">- Rakshith</div>
+                <div className="font-bold text-gray-900 border-t pt-4">- Munikenchapa</div>
               </div>
               <div className="bg-white p-8 rounded-xl shadow-sm border border-green-100 flex flex-col h-full">
                 <div className="text-primary text-3xl mb-4">★ ★ ★ ★ ★</div>
                 <p className="text-gray-600 italic mb-6 flex-grow">"They handle everything with complete transparency. No advance payment at all. Trust me, they are the best people to rely on for property-related services.”</p>
-                <div className="font-bold text-gray-900 border-t pt-4">- Manoj</div>
+                <div className="font-bold text-gray-900 border-t pt-4">- Fazal</div>
               </div>
               <div className="bg-white p-8 rounded-xl shadow-sm border border-green-100 flex flex-col h-full">
                 <div className="text-primary text-3xl mb-4">★ ★ ★ ★ ★</div>
                 <p className="text-gray-600 italic mb-6 flex-grow">"Don’t wait or think twice. You can confidently choose them. They are the best when it comes to delivering services within the promised time period.”</p>
-                <div className="font-bold text-gray-900 border-t pt-4">- Namith</div>
+                <div className="font-bold text-gray-900 border-t pt-4">- Jayalaxmi</div>
               </div>
             </div>
           </div>
