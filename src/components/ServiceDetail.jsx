@@ -1,12 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { 
     ArrowLeft, CheckCircle2, ShieldCheck, 
     FileSearch, Send, Settings, Sparkles, Lock
 } from 'lucide-react';
 import ServiceRequestForm from './ServiceRequestForm';
+import { servicesData } from '../data/servicesData';
 
-const ServiceDetail = ({ service, onBack }) => {
-    if (!service) return null;
+const ServiceDetail = () => {
+    const { serviceId } = useParams();
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    
+    // Find the service from data
+    const service = servicesData.find(s => s.id === serviceId);
+
+    // SEO: Updated title and description for service detail page
+    useEffect(() => {
+        if (service) {
+            document.title = `${service.title} Services in Bengaluru | E-KhataAssist`;
+            let metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) {
+                metaDesc.setAttribute("content", service.description || `Professional ${service.title} services for property owners in Bengaluru. Fast processing and expert assistance.`);
+            }
+        }
+    }, [service]);
+
+    if (!service) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-4xl font-bold mb-4">Service Not Found</h1>
+                    <Link to="/" className="text-primary hover:underline">Return Home</Link>
+                </div>
+            </div>
+        );
+    }
 
     const Icon = service.icon;
 
@@ -14,15 +42,15 @@ const ServiceDetail = ({ service, onBack }) => {
         <div className="min-h-screen bg-[#fcfdfd] pt-16 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Navigation */}
-                <button 
-                    onClick={onBack}
-                    className="group flex items-center gap-2 text-gray-500 hover:text-primary mb-12 transition-all font-bold"
+                <Link 
+                    to="/#services"
+                    className="group inline-flex items-center gap-2 text-gray-500 hover:text-primary mb-12 transition-all font-bold"
                 >
                     <div className="p-2 rounded-full bg-white shadow-sm border border-gray-100 group-hover:bg-primary group-hover:text-white transition-all">
                         <ArrowLeft size={18} />
                     </div>
                     <span>Back to Services</span>
-                </button>
+                </Link>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
                     {/* Left Column: Content */}

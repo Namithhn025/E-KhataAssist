@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
     ShieldCheck, Lock, ArrowRight, Info
 } from 'lucide-react';
 import ServiceRequestModal from './ServiceRequestModal';
 import { servicesData } from '../data/servicesData';
 
-const Services = ({ onKnowMore }) => {
+const Services = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedService, setSelectedService] = useState('');
 
@@ -74,13 +75,13 @@ const Services = ({ onKnowMore }) => {
                                     </div>
 
                                     <div className="flex flex-col gap-3 mt-auto">
-                                        <button
-                                            onClick={() => onKnowMore(service)}
+                                        <Link
+                                            to={`/services/${service.id}`}
                                             className="inline-flex items-center gap-3 px-8 py-4 bg-white text-gray-700 border border-gray-200 font-bold rounded-2xl hover:border-primary hover:text-primary transition-all duration-300 w-full justify-center group/btn shadow-sm"
                                         >
                                             <Info size={18} />
                                             <span>Know More</span>
-                                        </button>
+                                        </Link>
                                         <button
                                             onClick={() => handleApplyClick(service.title)}
                                             className="inline-flex items-center gap-3 px-8 py-4 bg-green-50 text-primary font-black rounded-2xl hover:bg-primary hover:text-white transition-all duration-300 w-full justify-center group/btn shadow-sm"
