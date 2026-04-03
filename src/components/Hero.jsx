@@ -46,7 +46,7 @@ const Hero = () => {
     };
 
     return (
-        <div className="relative bg-gradient-to-br from-green-50 via-white to-green-50 pt-16 pb-24 lg:pt-24 lg:pb-32 overflow-hidden">
+        <div className="relative bg-gradient-to-br from-green-50 via-white to-green-50 pt-8 pb-24 lg:pt-16 lg:pb-32 overflow-hidden">
             <ServiceRequestModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

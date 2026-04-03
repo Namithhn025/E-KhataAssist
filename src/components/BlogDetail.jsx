@@ -47,7 +47,7 @@ const BlogDetail = () => {
     const relatedBlogs = blogData.filter(b => b.id !== blog.id).slice(0, 3);
 
     return (
-        <div className="bg-white min-h-screen pt-24 pb-20">
+        <div className="bg-white min-h-screen pt-8 pb-20">
             {/* Top Bar / Breadcrumb */}
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
                 <Link 

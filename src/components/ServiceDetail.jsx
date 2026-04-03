@@ -39,7 +39,7 @@ const ServiceDetail = () => {
     const Icon = service.icon;
 
     return (
-        <div className="min-h-screen bg-[#fcfdfd] pt-16 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="min-h-screen bg-[#fcfdfd] pt-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Navigation */}
                 <Link 
