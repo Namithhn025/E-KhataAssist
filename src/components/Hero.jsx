@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, FileText, ShieldCheck, Users } from 'lucide-react';
 import ServiceRequestModal from './ServiceRequestModal';
 
-// SVG Building Skyline Background
 const CitySkyline = () => (
     <div className="absolute bottom-0 left-0 right-0 pointer-events-none z-0 opacity-[0.07]">
-        <svg viewBox="0 0 1440 320" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+        <svg viewBox="0 0 1444 320" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
             <rect x="50" y="120" width="60" height="200" rx="2" fill="#15803d"/>
             <rect x="140" y="60" width="45" height="260" rx="2" fill="#15803d"/>
             <rect x="220" y="150" width="80" height="170" rx="2" fill="#15803d"/>
@@ -19,18 +18,11 @@ const CitySkyline = () => (
     </div>
 );
 
-// Floating decorative elements
 const FloatingElements = () => (
     <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[15%] left-[8%] animate-float-slow opacity-[0.06]">
-            <div className="document-symbol text-primary"></div>
-        </div>
-        <div className="absolute top-[55%] left-[5%] animate-float opacity-[0.25]" style={{animationDelay: '1s'}}>
-            <div className="stamp-float"></div>
-        </div>
-        <div className="absolute top-[50%] right-[6%] animate-float-slow opacity-[0.15]" style={{animationDelay: '2s'}}>
-            <div className="building-symbol text-primary"></div>
-        </div>
+        <div className="absolute top-[15%] left-[8%] animate-float-slow opacity-[0.06]"><div className="document-symbol text-primary"></div></div>
+        <div className="absolute top-[55%] left-[5%] animate-float opacity-[0.25]" style={{animationDelay: '1s'}}><div className="stamp-float"></div></div>
+        <div className="absolute top-[50%] right-[6%] animate-float-slow opacity-[0.15]" style={{animationDelay: '2s'}}><div className="building-symbol text-primary"></div></div>
     </div>
 );
 
@@ -57,7 +49,6 @@ const Hero = () => {
                 setFade(true);
             }, 500);
         }, 4000);
-
         return () => clearInterval(titleInterval);
     }, []);
 
@@ -69,29 +60,15 @@ const Hero = () => {
     };
 
     return (
-        <div className="relative pt-12 pb-20 lg:pt-20 lg:pb-32 overflow-hidden">
-            {/* Background Image Overlay */}
+        <div className="relative pt-12 pb-20 lg:pt-24 lg:pb-32 overflow-hidden">
             <div className="absolute inset-0 z-0">
-                <img 
-                    src="/hero-bg.png" 
-                    alt="Bengaluru Modern Architecture" 
-                    className="w-full h-full object-cover opacity-[0.2]"
-                />
+                <img src="/hero-bg.png" alt="Architecture" className="w-full h-full object-cover opacity-[0.2]" />
                 <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/40 to-white"></div>
             </div>
-
-            <ServiceRequestModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                serviceName={selectedService}
-            />
-
+            <ServiceRequestModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} serviceName={selectedService} />
             <FloatingElements />
             <CitySkyline />
-
-            {/* Blueprint grid pattern overlay */}
             <div className="absolute inset-0 blueprint-grid pointer-events-none z-0 opacity-[0.4]"></div>
-
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="text-center max-w-4xl mx-auto">
                     <div className="min-h-[180px] md:min-h-[220px] flex items-center justify-center mb-8">
@@ -101,42 +78,20 @@ const Hero = () => {
                             </span>
                         </h1>
                     </div>
-                    
                     <p className="text-lg md:text-2xl text-gray-600 mb-12 max-w-2xl mx-auto font-medium">
                         Avoid delays, agents, and office visits. Bengaluru's premier property legal execution team.
                     </p>
-
                     <div className="flex flex-wrap justify-center gap-4">
-                        <button
-                            onClick={() => scrollToSection('services')}
-                            className="px-10 py-5 bg-primary text-white rounded-2xl font-black text-lg hover:bg-green-700 transition-all shadow-xl hover:shadow-primary/20 flex items-center gap-3 group"
-                        >
+                        <button onClick={() => scrollToSection('services')} className="px-10 py-5 bg-primary text-white rounded-2xl font-black text-lg hover:bg-green-700 transition-all shadow-xl hover:shadow-primary/20 flex items-center gap-3 group">
                             <span>Explore Our Services</span>
                             <ArrowRight className="group-hover:translate-x-2 transition-transform" />
                         </button>
-                        
-                        <a
-                            href="tel:9019786255"
-                            className="px-10 py-5 bg-white text-gray-900 border-2 border-gray-100 rounded-2xl font-black text-lg hover:border-primary transition-all shadow-sm"
-                        >
-                            Call Expert Now
-                        </a>
+                        <a href="tel:9019786255" className="px-10 py-5 bg-white text-gray-900 border-2 border-gray-100 rounded-2xl font-black text-lg hover:border-primary transition-all shadow-sm">Call Expert Now</a>
                     </div>
-                    
-                    {/* Trust indicators */}
                     <div className="mt-16 flex flex-wrap justify-center gap-8 opacity-60">
-                        <div className="flex items-center gap-2">
-                            <ShieldCheck size={20} className="text-primary" />
-                            <span className="text-sm font-bold text-gray-500 uppercase tracking-widest">Legal Verified</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <FileText size={20} className="text-primary" />
-                            <span className="text-sm font-bold text-gray-500 uppercase tracking-widest">2k+ Delivered</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Users size={20} className="text-primary" />
-                            <span className="text-sm font-bold text-gray-500 uppercase tracking-widest">100% Transparent</span>
-                        </div>
+                        <div className="flex items-center gap-2"><ShieldCheck size={20} className="text-primary" /><span className="text-sm font-bold text-gray-500 uppercase tracking-widest">Legal Verified</span></div>
+                        <div className="flex items-center gap-2"><FileText size={20} className="text-primary" /><span className="text-sm font-bold text-gray-500 uppercase tracking-widest">2k+ Delivered</span></div>
+                        <div className="flex items-center gap-2"><Users size={20} className="text-primary" /><span className="text-sm font-bold text-gray-500 uppercase tracking-widest">100% Transparent</span></div>
                     </div>
                 </div>
             </div>
