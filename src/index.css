@@ -9,19 +9,132 @@
   }
 }
 
+/* ===== Animated Background Patterns ===== */
+
+/* City skyline silhouette pattern for hero */
+.city-skyline-bg {
+  position: relative;
+}
+
+.city-skyline-bg::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 240px;
+  background:
+    /* Building 1 with windows */
+    linear-gradient(90deg, rgba(21, 128, 61, 0.05) 50%, transparent 50%) repeat-x,
+    linear-gradient(to bottom, transparent 40%, rgba(21, 128, 61, 0.04) 40%) no-repeat 5% bottom / 60px 220px,
+    /* Tall Tower */
+    linear-gradient(to bottom, transparent 15%, rgba(21, 128, 61, 0.06) 15%) no-repeat 12% bottom / 45px 280px,
+    /* Apartment Block */
+    linear-gradient(to bottom, transparent 50%, rgba(21, 128, 61, 0.03) 50%) no-repeat 20% bottom / 100px 180px,
+    /* Modern Tower */
+    linear-gradient(to bottom, transparent 10%, rgba(21, 128, 61, 0.05) 10%) no-repeat 30% bottom / 50px 320px,
+    /* Medium Bloc */
+    linear-gradient(to bottom, transparent 35%, rgba(21, 128, 61, 0.04) 35%) no-repeat 42% bottom / 70px 200px,
+    /* Wide Office */
+    linear-gradient(to bottom, transparent 55%, rgba(21, 128, 61, 0.03) 55%) no-repeat 55% bottom / 120px 140px,
+    /* Residential */
+    linear-gradient(to bottom, transparent 20%, rgba(21, 128, 61, 0.05) 20%) no-repeat 65% bottom / 60px 240px,
+    /* Small building */
+    linear-gradient(to bottom, transparent 45%, rgba(21, 128, 61, 0.04) 45%) no-repeat 75% bottom / 50px 160px,
+    /* Tall Slab */
+    linear-gradient(to bottom, transparent 25%, rgba(21, 128, 61, 0.03) 25%) no-repeat 85% bottom / 60px 260px,
+    /* Corner Building */
+    linear-gradient(to bottom, transparent 40%, rgba(21, 128, 61, 0.05) 40%) no-repeat 95% bottom / 70px 190px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.8;
+}
+
+/* Blueprint Grid Pattern */
+.blueprint-grid {
+  background-image: 
+    linear-gradient(rgba(21, 128, 61, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(21, 128, 61, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(21, 128, 61, 0.02) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(21, 128, 61, 0.02) 2px, transparent 2px);
+  background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+}
+
+/* Floating document icons pattern */
+.floating-docs-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.floating-docs-bg::before,
+.floating-docs-bg::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.floating-docs-bg::before {
+  top: 10%;
+  left: 5%;
+  width: 80px;
+  height: 100px;
+  border: 2px solid rgba(21, 128, 61, 0.06);
+  border-radius: 8px;
+  transform: rotate(-12deg);
+  animation: float-doc-1 6s ease-in-out infinite;
+}
+
+.floating-docs-bg::after {
+  top: 15%;
+  right: 8%;
+  width: 60px;
+  height: 80px;
+  border: 2px solid rgba(21, 128, 61, 0.05);
+  border-radius: 8px;
+  transform: rotate(8deg);
+  animation: float-doc-2 8s ease-in-out infinite;
+}
+
+@keyframes float-doc-1 {
+  0%, 100% { transform: rotate(-12deg) translateY(0px); }
+  50% { transform: rotate(-8deg) translateY(-15px); }
+}
+
+@keyframes float-doc-2 {
+  0%, 100% { transform: rotate(8deg) translateY(0px); }
+  50% { transform: rotate(12deg) translateY(-20px); }
+}
+
+/* ===== Green Ambient Glow Background ===== */
+.green-ambient {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(21, 128, 61, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(34, 197, 94, 0.05) 0%, transparent 40%),
+    radial-gradient(ellipse at 60% 80%, rgba(21, 128, 61, 0.04) 0%, transparent 45%),
+    linear-gradient(180deg, #f0fdf4 0%, #ffffff 30%, #f0fdf4 70%, #ffffff 100%);
+}
+
+/* ===== Decorative Grid Pattern ===== */
+.grid-pattern {
+  background-image:
+    linear-gradient(rgba(21, 128, 61, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(21, 128, 61, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ===== Highlight Animation ===== */
 @keyframes highlight-pulse {
   0% {
     background-color: white;
     transform: scale(1);
   }
-
   30% {
     background-color: #f0fdf4;
     transform: scale(1.03);
     border-color: #22c55e;
     box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
   }
-
   100% {
     background-color: white;
     transform: scale(1);
@@ -33,7 +146,7 @@
   z-index: 20;
 }
 
-/* Premium Vault Styles */
+/* ===== Premium Vault Styles ===== */
 .vault-gradient {
   background: linear-gradient(135deg, #052c16 0%, #064e3b 100%);
 }
@@ -48,29 +161,183 @@
 
 .vault-card-hover:hover {
   transform: translateY(-8px);
-  box-shadow: 0 25px 50px -12px rgba(22, 101, 52, 0.12);
+  box-shadow: 0 25px 50px -12px rgba(22, 101, 52, 0.15);
 }
 
+/* ===== Glass Effects ===== */
 .glass-pill {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ===== Floating Animations ===== */
 @keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-
-  100% {
-    transform: translateY(0px);
-  }
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
 }
 
 .animate-float {
   animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float-slow {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.animate-float-slow {
+  animation: float-slow 5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(21, 128, 61, 0.08) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* ===== Section Dividers ===== */
+.section-divider-wave {
+  position: relative;
+}
+
+.section-divider-wave::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40'%3E%3Cpath fill='%23f0fdf4' d='M0,20 C240,40 480,0 720,20 C960,40 1200,0 1440,20 L1440,40 L0,40 Z'/%3E%3C/svg%3E") repeat-x;
+  background-size: 1440px 40px;
+}
+
+/* ===== Decorative Leaf SVG Pattern ===== */
+.leaf-pattern {
+  position: relative;
+}
+
+.leaf-pattern::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  right: 40px;
+  width: 120px;
+  height: 120px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'%3E%3Cpath d='M50 10 C70 30 80 60 50 90 C20 60 30 30 50 10Z' fill='rgba(21,128,61,0.04)' stroke='rgba(21,128,61,0.08)' stroke-width='1'/%3E%3C/svg%3E") no-repeat center;
+  pointer-events: none;
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+/* ===== Enhanced Service Cards ===== */
+.service-card-premium {
+  position: relative;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.service-card-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #15803d, #22c55e, #15803d);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.service-card-premium:hover::before {
+  opacity: 1;
+}
+
+.service-card-premium:hover {
+  transform: translateY(-10px);
+  box-shadow:
+    0 20px 40px -10px rgba(21, 128, 61, 0.12),
+    0 0 0 1px rgba(21, 128, 61, 0.08);
+}
+
+/* ===== Stamp & Document Icons ===== */
+.stamp-float {
+  width: 100px;
+  height: 100px;
+  border: 4px double rgba(21, 128, 61, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: rgba(21, 128, 61, 0.1);
+  transform: rotate(-15deg);
+  animation: float 6s ease-in-out infinite;
+}
+
+.stamp-float::after {
+  content: 'E-KHATA';
+  font-size: 14px;
+}
+
+.building-symbol {
+  width: 60px;
+  height: 60px;
+  background: currentColor;
+  clip-path: polygon(50% 0%, 100% 40%, 100% 100%, 0% 100%, 0% 40%);
+  opacity: 0.1;
+}
+
+.document-symbol {
+  width: 50px;
+  height: 70px;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  position: relative;
+  opacity: 0.1;
+}
+
+.document-symbol::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+}
+
+.document-symbol::before {
+  content: '';
+  position: absolute;
+  top: 25px;
+  left: 10px;
+  width: 30px;
+  height: 2px;
+  background: currentColor;
+  box-shadow: 0 8px currentColor, 0 16px currentColor;
+}
+
+/* ===== Interactive Hover Glow ===== */
+.hover-glow:hover {
+  box-shadow: 0 0 40px rgba(21, 128, 61, 0.15);
+}
+
+/* ===== Card Inner Building Icon ===== */
+.card-building-icon {
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 21h18'/%3E%3Cpath d='M9 8h1'/%3E%3Cpath d='M9 12h1'/%3E%3Cpath d='M9 16h1'/%3E%3Cpath d='M14 8h1'/%3E%3Cpath d='M14 12h1'/%3E%3Cpath d='M14 16h1'/%3E%3Cpath d='M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16'/%3E%3C/svg%3E") no-repeat center;
+  background-size: contain;
 }

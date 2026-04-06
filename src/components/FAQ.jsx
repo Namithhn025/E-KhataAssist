@@ -36,8 +36,13 @@ const FAQ = () => {
     const [openIndex, setOpenIndex] = useState(0);
 
     return (
-        <section id="faq" className="py-24 bg-white">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="faq" className="py-24 bg-white relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute inset-0 blueprint-grid opacity-[0.2] pointer-events-none"></div>
+            <div className="absolute top-20 right-10 stamp-float opacity-[0.05] -z-0"></div>
+            <div className="absolute bottom-20 left-10 building-symbol text-primary opacity-[0.03] -z-0"></div>
+            
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="text-center mb-16">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-semibold mb-4">
                         <HelpCircle size={14} />

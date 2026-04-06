@@ -18,6 +18,8 @@ const Services = () => {
     return (
         <div id="services" className="py-24 bg-[#f8fafc] relative overflow-hidden">
             {/* Background Accents */}
+            <div className="absolute inset-0 blueprint-grid opacity-[0.2] pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-full h-[300px] city-skyline-bg opacity-[0.4] pointer-events-none"></div>
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
 
             <ServiceRequestModal
@@ -53,10 +55,13 @@ const Services = () => {
                                 <div className="absolute -top-10 -right-10 p-10 opacity-[0.03] group-hover:opacity-[0.07] transition-all duration-700 group-hover:rotate-12 group-hover:scale-150">
                                     <ShieldCheck size={180} className="text-primary" />
                                 </div>
+                                
+                                {/* Building Background Accent */}
+                                <div className="absolute -bottom-6 -left-6 w-32 h-32 card-building-icon opacity-[0.03] group-hover:opacity-[0.08] transition-all duration-700 group-hover:-rotate-6 group-hover:scale-125 pointer-events-none"></div>
 
                                 <div className="relative z-10 flex flex-col h-full">
                                     <div className="w-16 h-16 bg-green-50 text-primary rounded-2xl flex items-center justify-center mb-8 border border-green-100 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm">
-                                        <Icon size={32} />
+                                        {Icon ? <Icon size={32} /> : <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse" />}
                                     </div>
 
                                     <div className="flex-grow">

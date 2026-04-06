@@ -43,8 +43,8 @@ const ContactFooter = () => {
                                     <option value="Registry of Property">Registry of Property</option>
                                     <option value="MOU Services">MOU Services</option>
                                     <option value="Family Tree">Family Tree</option>
-                                    <option value="BESCOM Services">BESCOM Services</option>
-                                    <option value="Property Tax">Property Tax</option>
+                                    <option value="BESCOM Name Change">BESCOM Name Change</option>
+                                    <option value="Property Tax Payment">Property Tax Payment</option>
                                     <option value="Legal Consultation">Legal Consultation</option>
                                 </select>
                             </div>
@@ -104,7 +104,7 @@ const ContactFooter = () => {
                 </div>
 
                 <div className="pt-8 text-center text-green-200 text-sm">
-                    &copy; {new Date().getFullYear()} E-KhataAssist. All rights reserved. | Done by Namith HN
+                    &copy; 2025 E-KhataAssist. All rights reserved. | Done by Namith HN
                 </div>
             </div>
         </footer>

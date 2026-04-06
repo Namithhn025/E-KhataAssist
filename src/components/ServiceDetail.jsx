@@ -2,14 +2,70 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
     ArrowLeft, CheckCircle2, ShieldCheck, 
-    FileSearch, Send, Settings, Sparkles, Lock
+    FileSearch, Send, Settings, Sparkles, Lock,
+    Mail, MessageCircle, X, Eye, Package
 } from 'lucide-react';
 import ServiceRequestForm from './ServiceRequestForm';
 import { servicesData } from '../data/servicesData';
 
+// Sample documents popup component
+const SampleDocsModal = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+
+    const sampleDocsList = [
+        { name: 'Aadhaar Card', desc: 'Clear photocopy of the front and back of all owners\' Aadhaar cards.' },
+        { name: 'Sale Deed', desc: 'Registered sale deed document of the property.' },
+        { name: 'BESCOM Bill', desc: 'Latest electricity bill from BESCOM in the current owner\'s name.' },
+        { name: 'Property Tax Receipt', desc: 'Latest property tax paid receipt from BBMP/local authority.' },
+        { name: 'Khata Certificate', desc: 'Existing Khata certificate (A-Khata or B-Khata) of the property.' },
+        { name: 'Mutation Fee Receipt (Optional)', desc: 'Receipt of mutation fee payment, if applicable.' }
+    ];
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
+            <div className="relative bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-500">
+                <button 
+                    onClick={onClose}
+                    className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                    <X size={20} className="text-gray-600" />
+                </button>
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                        <Eye size={20} className="text-primary" />
+                    </div>
+                    <h3 className="text-xl font-black text-gray-900">Sample Documents Required</h3>
+                </div>
+                <p className="text-sm text-gray-500 mb-6 font-medium">
+                    Below are samples of the documents you'll need. Ensure all documents are clear and legible.
+                </p>
+                <div className="space-y-4">
+                    {sampleDocsList.map((doc, idx) => (
+                        <div key={idx} className="flex items-start gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <CheckCircle2 size={18} className="text-primary mt-0.5 shrink-0" />
+                            <div>
+                                <p className="font-bold text-gray-800 text-sm">{doc.name}</p>
+                                <p className="text-xs text-gray-500 mt-1">{doc.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <button 
+                    onClick={onClose}
+                    className="mt-6 w-full py-3 bg-primary text-white font-bold rounded-2xl hover:bg-green-800 transition-colors"
+                >
+                    Got it!
+                </button>
+            </div>
+        </div>
+    );
+};
+
 const ServiceDetail = () => {
     const { serviceId } = useParams();
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isSampleDocsOpen, setIsSampleDocsOpen] = useState(false);
     
     // Find the service from data
     const service = servicesData.find(s => s.id === serviceId);
@@ -38,8 +94,18 @@ const ServiceDetail = () => {
 
     const Icon = service.icon;
 
+    // Build document share message
+    const docsList = service.documents.join('\n• ');
+    const shareMessage = `Hi, I would like to avail the *${service.title}* service from E-KhataAssist.\n\nHere are my documents:\n• ${docsList}\n\nPlease guide me further.`;
+    const whatsappUrl = `https://wa.me/918088917577?text=${encodeURIComponent(shareMessage)}`;
+    const emailSubject = `${service.title} - Document Submission | E-KhataAssist`;
+    const emailBody = `Hi E-KhataAssist Team,\n\nI would like to avail the ${service.title} service.\n\nDocuments Required:\n• ${docsList}\n\nPlease guide me further.\n\nThank you.`;
+    const mailtoUrl = `mailto:info@ekhataassist.in?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+
     return (
         <div className="min-h-screen bg-[#fcfdfd] pt-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <SampleDocsModal isOpen={isSampleDocsOpen} onClose={() => setIsSampleDocsOpen(false)} />
+
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Navigation */}
                 <Link 
@@ -69,10 +135,14 @@ const ServiceDetail = () => {
                             
                             <div className="flex flex-wrap items-center gap-6 mb-10">
                                 <div className="flex flex-col">
-                                    <span className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Starting from</span>
+                                    <span className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
+                                        {service.startsFrom ? 'Starting from' : 'Our Price'}
+                                    </span>
                                     <div className="flex items-center gap-3">
                                         <span className="text-3xl font-black text-primary italic">₹{service.price}*</span>
-                                        <span className="text-xl text-gray-300 line-through font-bold">₹{service.originalPrice}</span>
+                                        {service.originalPrice && (
+                                            <span className="text-xl text-gray-300 line-through font-bold">₹{service.originalPrice}</span>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="w-px h-12 bg-gray-100 hidden md:block"></div>
@@ -97,6 +167,27 @@ const ServiceDetail = () => {
                             </p>
                         </section>
 
+                        {/* What All Included Section (for Khata Transfer) */}
+                        {service.whatAllIncluded && (
+                            <section className="space-y-8">
+                                <h2 className="text-2xl font-black text-gray-900 ml-4 flex items-center gap-3">
+                                    <Package size={24} className="text-primary" />
+                                    What All Included?
+                                </h2>
+                                <div className="flex flex-wrap gap-4 px-2">
+                                    {service.whatAllIncluded.map((item, idx) => (
+                                        <div 
+                                            key={idx}
+                                            className="px-6 py-4 bg-gradient-to-br from-green-50 to-white border border-green-100 rounded-2xl shadow-sm hover:shadow-md hover:border-primary/30 transition-all font-bold text-gray-700 flex items-center gap-3 group/tag"
+                                        >
+                                            <CheckCircle2 size={18} className="text-primary shrink-0" />
+                                            {item}
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
                         {/* Use Cases Section */}
                         <section className="space-y-8">
                             <h2 className="text-2xl font-black text-gray-900 ml-4">When you'll need this</h2>
@@ -115,7 +206,18 @@ const ServiceDetail = () => {
 
                         {/* Documents Required & Process Section */}
                         <section className="space-y-12">
-                            <h2 className="text-2xl font-black text-gray-900 ml-4">Documents Required & Process</h2>
+                            <div className="flex items-center justify-between ml-4 mr-4">
+                                <h2 className="text-2xl font-black text-gray-900">Documents Required & Process</h2>
+                                {service.sampleDocs && (
+                                    <button
+                                        onClick={() => setIsSampleDocsOpen(true)}
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary font-bold text-sm rounded-full hover:bg-primary/20 transition-colors"
+                                    >
+                                        <Eye size={16} />
+                                        <span>View Samples</span>
+                                    </button>
+                                )}
+                            </div>
                             
                             <div className="relative space-y-12 pl-4">
                                 {/* Vertical Line Connection */}
@@ -146,9 +248,28 @@ const ServiceDetail = () => {
                                     </div>
                                     <div className="flex-grow pt-1">
                                         <h3 className="text-xl font-black text-gray-900 mb-3">2. Send Your Documents</h3>
-                                        <p className="text-sm text-gray-500 font-bold leading-relaxed max-w-lg">
+                                        <p className="text-sm text-gray-500 font-bold leading-relaxed max-w-lg mb-6">
                                             Share digital copies (Photos/PDFs) with our assigned legal expert via WhatsApp or Email. We'll verify them and prepare the documentation.
                                         </p>
+                                        {/* Mail & WhatsApp Share Buttons */}
+                                        <div className="flex flex-wrap gap-3">
+                                            <a
+                                                href={whatsappUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-3 px-6 py-3 bg-[#25D366] text-white font-bold rounded-2xl hover:bg-[#1fb855] transition-all shadow-sm hover:shadow-md group/wa"
+                                            >
+                                                <MessageCircle size={20} className="group-hover/wa:scale-110 transition-transform" />
+                                                <span>Share via WhatsApp</span>
+                                            </a>
+                                            <a
+                                                href={mailtoUrl}
+                                                className="inline-flex items-center gap-3 px-6 py-3 bg-gray-800 text-white font-bold rounded-2xl hover:bg-gray-700 transition-all shadow-sm hover:shadow-md group/mail"
+                                            >
+                                                <Mail size={20} className="group-hover/mail:scale-110 transition-transform" />
+                                                <span>Share via Email</span>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
 

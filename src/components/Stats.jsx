@@ -2,23 +2,25 @@ import React from 'react';
 
 const Stats = () => {
     return (
-        <div className="vault-gradient py-24 text-white relative overflow-hidden">
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
+        <div className="vault-gradient py-32 text-white relative overflow-hidden">
+            {/* Background patterns */}
+            <div className="absolute inset-0 blueprint-grid opacity-[0.08] pointer-events-none"></div>
+            <div className="absolute top-1/4 right-[10%] building-symbol text-white opacity-[0.03] rotate-12 scale-150 animate-float-slow"></div>
+            <div className="absolute bottom-1/4 left-[10%] document-symbol text-white opacity-[0.03] -rotate-12 scale-125 animate-float"></div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
                     <div className="p-8 group">
-                        <div className="text-5xl lg:text-7xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500">2,000+</div>
-                        <div className="inline-block px-4 py-1 rounded-full glass-pill text-green-300 text-sm font-bold uppercase tracking-widest">Documents Delivered</div>
+                        <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">2,000+</div>
+                        <div className="inline-block px-4 py-1.5 rounded-full glass-pill text-green-300 text-xs font-black uppercase tracking-widest border border-white/10">Documents Delivered</div>
                     </div>
                     <div className="p-8 md:border-l border-white/10 group">
-                        <div className="text-5xl lg:text-7xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500">1,500+</div>
-                        <div className="inline-block px-4 py-1 rounded-full glass-pill text-green-300 text-sm font-bold uppercase tracking-widest">Properties Served</div>
+                        <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">1,500+</div>
+                        <div className="inline-block px-4 py-1.5 rounded-full glass-pill text-green-300 text-xs font-black uppercase tracking-widest border border-white/10">Properties Served</div>
                     </div>
                     <div className="p-8 md:border-l border-white/10 group">
-                        <div className="text-5xl lg:text-7xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500">1,500+</div>
-                        <div className="inline-block px-4 py-1 rounded-full glass-pill text-green-300 text-sm font-bold uppercase tracking-widest">Trusted Customers</div>
+                        <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">1,500+</div>
+                        <div className="inline-block px-4 py-1.5 rounded-full glass-pill text-green-300 text-xs font-black uppercase tracking-widest border border-white/10">Trusted Customers</div>
                     </div>
                 </div>
 

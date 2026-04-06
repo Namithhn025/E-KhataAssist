@@ -5,7 +5,10 @@ const About = () => {
     return (
         <section id="about" className="py-32 bg-white overflow-hidden relative">
             {/* Background elements */}
+            <div className="absolute inset-0 blueprint-grid opacity-[0.2] pointer-events-none"></div>
             <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-green-50 rounded-full blur-[120px] -z-10 translate-x-1/2 -translate-y-1/2"></div>
+            <div className="absolute top-[20%] left-[10%] building-symbol text-primary opacity-[0.04] -z-0"></div>
+            <div className="absolute bottom-[20%] right-[10%] document-symbol text-primary opacity-[0.04] -z-0"></div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Hero Section */}
