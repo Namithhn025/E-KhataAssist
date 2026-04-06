@@ -3,7 +3,12 @@ import { Zap, Scale, MapPin, CheckCircle, Target, Eye, Shield, ShieldCheck } fro
 
 const About = () => {
     return (
-        <section id="about" className="py-20 bg-white overflow-hidden relative reveal">
+        <section id="about" className="py-20 overflow-hidden relative scroll-mt-20"
+            style={{
+                background: 'linear-gradient(180deg, #f8fafc 0%, #f0fdf4 30%, #ffffff 60%, #f0fdf4 100%)',
+                backgroundImage: 'radial-gradient(ellipse at 20% 20%, rgba(21,128,61,0.07) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(34,197,94,0.05) 0%, transparent 50%)'
+            }}
+        >
             {/* Background elements */}
             <div className="absolute inset-0 blueprint-grid opacity-[0.2] pointer-events-none"></div>
             <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-green-50 rounded-full blur-[120px] -z-10 translate-x-1/2 -translate-y-1/2"></div>
@@ -26,22 +31,40 @@ const About = () => {
                 </div>
 
                 {/* Core Advantages */}
-                <div className="grid md:grid-cols-3 gap-10 mb-32">
+                <div className="grid md:grid-cols-3 gap-8 mb-24">
                     {[
-                        { icon: Zap, title: "Unmatched Speed", desc: "No more waiting for weeks. Our streamlined process ensures your documents are moving from Day 1." },
-                        { icon: Scale, title: "Legal Integrity", desc: "Backed by legal professionals who understand the fine print of Karnataka property laws." },
-                        { icon: MapPin, title: "Local Presence", desc: "We are physically present at sub-registrar offices and BBMP centers to ensure work gets done." }
+                        { icon: Zap, title: "Unmatched Speed", desc: "No more waiting for weeks. Our streamlined process ensures your documents are moving from Day 1.", color: '#15803d', light: '#f0fdf4' },
+                        { icon: Scale, title: "Legal Integrity", desc: "Backed by legal professionals who understand the fine print of Karnataka property laws.", color: '#0369a1', light: '#eff6ff' },
+                        { icon: MapPin, title: "Local Presence", desc: "We are physically present at sub-registrar offices and BBMP centers to ensure work gets done.", color: '#7c3aed', light: '#f5f3ff' }
                     ].map((item, idx) => {
                         const Icon = item.icon;
                         return (
-                            <div key={idx} className="bg-gray-50 p-10 rounded-[2.5rem] border border-gray-100 vault-card-hover group">
-                                <div className="w-14 h-14 bg-white text-primary rounded-2xl flex items-center justify-center mb-8 shadow-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
-                                    <Icon size={28} />
+                            <div key={idx} className="relative p-8 rounded-3xl border vault-card-hover group overflow-hidden"
+                                style={{
+                                    background: 'rgba(255,255,255,0.9)',
+                                    borderColor: 'rgba(0,0,0,0.07)',
+                                    boxShadow: '0 4px 24px rgba(0,0,0,0.05)'
+                                }}
+                            >
+                                {/* Top gradient accent bar */}
+                                <div className="absolute top-0 left-0 right-0 h-1 rounded-t-3xl"
+                                    style={{ background: `linear-gradient(90deg, transparent, ${item.color}, transparent)`, opacity: 0.6 }}
+                                />
+                                {/* Background glow on hover */}
+                                <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                                    style={{ background: `radial-gradient(circle at 30% 30%, ${item.light}, transparent 70%)` }}
+                                />
+                                <div className="relative z-10">
+                                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110 shadow-sm"
+                                        style={{ background: item.light, color: item.color }}
+                                    >
+                                        <Icon size={26} />
+                                    </div>
+                                    <h3 className="text-xl font-black text-gray-900 mb-3 tracking-tight">{item.title}</h3>
+                                    <p className="text-gray-500 leading-relaxed text-sm font-medium">
+                                        {item.desc}
+                                    </p>
                                 </div>
-                                <h3 className="text-2xl font-black text-gray-900 mb-4 tracking-tight">{item.title}</h3>
-                                <p className="text-gray-600 leading-relaxed font-medium">
-                                    {item.desc}
-                                </p>
                             </div>
                         );
                     })}

@@ -55,12 +55,14 @@ const Hero = () => {
     const scrollToSection = (id) => {
         const element = document.getElementById(id);
         if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const navbarHeight = 80;
+            const top = element.getBoundingClientRect().top + window.scrollY - navbarHeight;
+            window.scrollTo({ top, behavior: 'smooth' });
         }
     };
 
     return (
-        <div className="relative pt-12 pb-20 lg:pt-24 lg:pb-32 overflow-hidden">
+        <div className="relative pt-0 pb-4 lg:pt-0 lg:pb-6 overflow-hidden">
             <div className="absolute inset-0 z-0">
                 <img src="/hero-bg.png" alt="Architecture" className="w-full h-full object-cover opacity-[0.2]" />
                 <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/40 to-white"></div>
@@ -70,8 +72,8 @@ const Hero = () => {
             <CitySkyline />
             <div className="absolute inset-0 blueprint-grid pointer-events-none z-0 opacity-[0.4]"></div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                <div className="text-center max-w-4xl mx-auto">
-                    <div className="min-h-[180px] md:min-h-[220px] flex items-center justify-center mb-8">
+                <div className="text-center max-w-4xl mx-auto pt-20 md:pt-28">
+                    <div className="min-h-[160px] md:min-h-[200px] flex items-center justify-center mb-6">
                         <h1 className={`text-4xl md:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight transition-all duration-1000 ${fade ? 'opacity-100 translate-y-0 scale-100 blur-0' : 'opacity-0 -translate-y-8 scale-95 blur-sm'}`}>
                             <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-green-600 to-primary/80">
                                 {titles[titleIndex]}

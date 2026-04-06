@@ -2,7 +2,7 @@ import React from 'react';
 
 const Stats = () => {
     return (
-        <div className="vault-gradient py-12 text-white relative overflow-hidden reveal">
+        <div className="vault-gradient pt-14 pb-10 text-white relative overflow-hidden">
             {/* Background patterns */}
             <div className="absolute inset-0 blueprint-grid opacity-[0.08] pointer-events-none"></div>
             <div className="absolute top-1/4 right-[10%] building-symbol text-white opacity-[0.03] rotate-12 scale-150 animate-float-slow"></div>
@@ -24,8 +24,8 @@ const Stats = () => {
                     </div>
                 </div>
 
-                <div className="mt-24 text-center">
-                    <p className="text-white/40 mb-10 uppercase tracking-[0.3em] text-xs font-black">Trusted by residents & partners of</p>
+                <div className="mt-12 text-center pb-6">
+                    <p className="text-white/40 mb-6 uppercase tracking-[0.3em] text-xs font-black">Trusted by residents & partners of</p>
                     <div className="flex flex-wrap justify-center gap-10 md:gap-20 opacity-50 grayscale hover:grayscale-0 transition-all duration-700">
                         {['Sri Mitra', 'Kolte Patil', 'Sobha', 'Brigade', 'Prestige'].map(name => (
                             <span key={name} className="text-2xl md:text-3xl font-black uppercase tracking-tighter hover:text-white hover:scale-110 transition-all cursor-default">

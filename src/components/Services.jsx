@@ -16,10 +16,10 @@ const Services = () => {
     };
 
     return (
-        <div id="services" className="py-16 bg-[#f8fafc] relative overflow-hidden reveal">
+        <div id="services" className="pt-12 pb-20 relative overflow-hidden reveal scroll-mt-20" style={{background: 'linear-gradient(to bottom, #064e3b 0%, #0a6644 8%, #f0fdf4 30%, #f8fafc 100%)'}}>
             {/* Background Accents */}
             <div className="absolute inset-0 blueprint-grid opacity-[0.2] pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-full h-[300px] city-skyline-bg opacity-[0.4] pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-full h-[300px] opacity-[0.4] pointer-events-none" style={{position:'absolute'}}></div>
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent"></div>
 
             <ServiceRequestModal
@@ -29,16 +29,16 @@ const Services = () => {
             />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-                <div className="text-center max-w-4xl mx-auto mb-20">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-950 text-green-400 text-xs font-black mb-6 uppercase tracking-[0.2em] shadow-xl border border-white/10 vault-gradient">
+                <div className="text-center max-w-4xl mx-auto mb-12">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-black mb-4 uppercase tracking-[0.2em] border border-white/30">
                         <Lock size={14} className="animate-pulse" />
                         <span>The E-Khata Digital Vault</span>
                     </div>
-                    <h2 className="text-4xl md:text-6xl font-black text-gray-900 mb-8 leading-[1.1] tracking-tight">
+                    <h2 className="text-4xl md:text-5xl font-black text-white mb-6 leading-[1.1] tracking-tight">
                         Complete Property Legality <br />
-                        <span className="text-primary italic">In One Secure Place</span>
+                        <span className="text-green-300 italic">In One Secure Place</span>
                     </h2>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto font-medium">
+                    <p className="text-lg text-white/80 max-w-2xl mx-auto font-medium">
                         The gold standard in Bengaluru property documentation. Verified experts, on-ground execution, and 100% transparency.
                     </p>
                 </div>
@@ -82,10 +82,18 @@ const Services = () => {
                                     <div className="flex flex-col gap-3 mt-auto">
                                         <Link
                                             to={`/services/${service.id}`}
-                                            className="inline-flex items-center gap-3 px-8 py-4 bg-white text-gray-700 border border-gray-200 font-bold rounded-2xl hover:border-primary hover:text-primary transition-all duration-300 w-full justify-center group/btn shadow-sm"
+                                            className="inline-flex items-center gap-3 px-8 py-4 font-bold rounded-2xl w-full justify-center group/btn transition-all duration-300 relative overflow-hidden"
+                                            style={{
+                                                background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
+                                                color: '#15803d',
+                                                border: '1.5px solid rgba(21,128,61,0.2)'
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.background = 'linear-gradient(135deg, #dcfce7, #bbf7d0)'}
+                                            onMouseLeave={e => e.currentTarget.style.background = 'linear-gradient(135deg, #f0fdf4, #dcfce7)'}
                                         >
                                             <Info size={18} />
                                             <span>Know More</span>
+                                            <ArrowRight size={16} className="ml-auto group-hover/btn:translate-x-1 transition-transform" />
                                         </Link>
                                         <button
                                             onClick={() => handleApplyClick(service.title)}

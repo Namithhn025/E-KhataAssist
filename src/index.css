@@ -16,9 +16,8 @@
 
 /* ===== Animated Background Patterns ===== */
 
-/* City skyline silhouette pattern for hero */
+/* city-skyline-bg intentionally has no positioning — let Tailwind handle it */
 .city-skyline-bg {
-  position: relative;
 }
 
 .city-skyline-bg::before {
@@ -214,20 +213,9 @@
   animation: shimmer 3s ease-in-out infinite;
 }
 
-/* ===== Section Dividers ===== */
+/* Section dividers removed to eliminate white space gaps */
 .section-divider-wave {
   position: relative;
-}
-
-.section-divider-wave::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 40px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 40'%3E%3Cpath fill='%23f0fdf4' d='M0,20 C240,40 480,0 720,20 C960,40 1200,0 1440,20 L1440,40 L0,40 Z'/%3E%3C/svg%3E") repeat-x;
-  background-size: 1440px 40px;
 }
 
 /* ===== Decorative Leaf SVG Pattern ===== */
