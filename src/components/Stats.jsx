@@ -2,7 +2,7 @@ import React from 'react';
 
 const Stats = () => {
     return (
-        <div className="vault-gradient py-32 text-white relative overflow-hidden">
+        <div className="vault-gradient py-12 text-white relative overflow-hidden reveal">
             {/* Background patterns */}
             <div className="absolute inset-0 blueprint-grid opacity-[0.08] pointer-events-none"></div>
             <div className="absolute top-1/4 right-[10%] building-symbol text-white opacity-[0.03] rotate-12 scale-150 animate-float-slow"></div>

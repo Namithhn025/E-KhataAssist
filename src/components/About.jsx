@@ -3,7 +3,7 @@ import { Zap, Scale, MapPin, CheckCircle, Target, Eye, Shield, ShieldCheck } fro
 
 const About = () => {
     return (
-        <section id="about" className="py-32 bg-white overflow-hidden relative">
+        <section id="about" className="py-20 bg-white overflow-hidden relative reveal">
             {/* Background elements */}
             <div className="absolute inset-0 blueprint-grid opacity-[0.2] pointer-events-none"></div>
             <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-green-50 rounded-full blur-[120px] -z-10 translate-x-1/2 -translate-y-1/2"></div>

@@ -16,7 +16,7 @@ const Services = () => {
     };
 
     return (
-        <div id="services" className="py-24 bg-[#f8fafc] relative overflow-hidden">
+        <div id="services" className="py-16 bg-[#f8fafc] relative overflow-hidden reveal">
             {/* Background Accents */}
             <div className="absolute inset-0 blueprint-grid opacity-[0.2] pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 w-full h-[300px] city-skyline-bg opacity-[0.4] pointer-events-none"></div>

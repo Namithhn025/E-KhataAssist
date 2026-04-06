@@ -105,12 +105,12 @@ const FloatingElements = () => (
         </div>
 
         {/* Floating stamp mid-left */}
-        <div className="absolute top-[55%] left-[5%] animate-float opacity-[0.08]" style={{animationDelay: '1s'}}>
+        <div className="absolute top-[55%] left-[5%] animate-float opacity-[0.25]" style={{animationDelay: '1s'}}>
             <div className="stamp-float"></div>
         </div>
 
         {/* Floating house mid-right */}
-        <div className="absolute top-[50%] right-[6%] animate-float-slow opacity-[0.05]" style={{animationDelay: '2s'}}>
+        <div className="absolute top-[50%] right-[6%] animate-float-slow opacity-[0.15]" style={{animationDelay: '2s'}}>
             <div className="building-symbol text-primary"></div>
         </div>
         
@@ -164,7 +164,16 @@ const Hero = () => {
     };
 
     return (
-        <div className="relative bg-gradient-to-br from-green-50 via-white to-green-50/80 pt-8 pb-24 lg:pt-16 lg:pb-32 overflow-hidden section-divider-wave">
+        <div className="relative pt-8 pb-12 lg:pt-12 lg:pb-16 overflow-hidden section-divider-wave">
+            {/* Background Image Overlay */}
+            <div className="absolute inset-0 z-0">
+                <img 
+                    src="/hero-bg.png" 
+                    alt="Bengaluru Modern Architecture" 
+                    className="w-full h-full object-cover opacity-[0.15]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-white via-white/40 to-white"></div>
+            </div>
             <ServiceRequestModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

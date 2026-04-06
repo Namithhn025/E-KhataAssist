@@ -23,6 +23,22 @@ function App() {
   // Scroll to top on every route change
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Intersection Observer for scroll-reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    const revealedElements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+    revealedElements.forEach((el) => observer.observe(el));
+
+    return () => {
+      revealedElements.forEach((el) => observer.unobserve(el));
+    };
   }, [location.pathname]);
 
   // Default SEO reset for landing page
@@ -56,7 +72,7 @@ function App() {
               <About />
               <FAQ />
 
-              <section className="py-24 bg-[#f0fdf4] relative overflow-hidden">
+              <section className="py-16 bg-[#f0fdf4] relative overflow-hidden reveal">
                 {/* Background Decorations */}
                 <div className="absolute inset-0 blueprint-grid opacity-[0.15] pointer-events-none"></div>
                 <div className="absolute top-10 left-10 stamp-float opacity-[0.06] -z-0"></div>

@@ -36,7 +36,7 @@ const FAQ = () => {
     const [openIndex, setOpenIndex] = useState(0);
 
     return (
-        <section id="faq" className="py-24 bg-white relative overflow-hidden">
+        <section id="faq" className="py-16 bg-white relative overflow-hidden reveal">
             {/* Background Decorations */}
             <div className="absolute inset-0 blueprint-grid opacity-[0.2] pointer-events-none"></div>
             <div className="absolute top-20 right-10 stamp-float opacity-[0.05] -z-0"></div>
