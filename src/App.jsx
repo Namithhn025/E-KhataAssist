@@ -72,7 +72,7 @@ function App() {
               <About />
               <FAQ />
 
-              <section className="py-16 bg-[#f0fdf4] relative overflow-hidden reveal">
+              <section className="py-16 bg-[#f0fdf4] relative reveal">
                 {/* Background Decorations */}
                 <div className="absolute inset-0 blueprint-grid opacity-[0.15] pointer-events-none"></div>
                 <div className="absolute top-10 left-10 stamp-float opacity-[0.06] -z-0"></div>

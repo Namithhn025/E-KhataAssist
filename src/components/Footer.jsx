@@ -31,7 +31,7 @@ const ContactFooter = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
                 {/* ── Contact CTA Card ── */}
-                <div className="relative -mt-36 mb-20 rounded-3xl overflow-hidden shadow-2xl"
+                <div className="relative -mt-24 md:-mt-36 mb-20 rounded-3xl overflow-hidden shadow-2xl mx-1 md:mx-0"
                     style={{
                         background: 'linear-gradient(135deg, rgba(255,255,255,0.97) 0%, rgba(240,253,244,0.97) 100%)',
                         border: '1px solid rgba(21,128,61,0.15)',
@@ -42,7 +42,7 @@ const ContactFooter = () => {
                     <div className="h-1.5 w-full"
                         style={{ background: 'linear-gradient(90deg, #15803d, #22c55e, #86efac, #22c55e, #15803d)' }}
                     />
-                    <div className="p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-12">
+                    <div className="p-6 md:p-12 flex flex-col md:flex-row items-center justify-between gap-10 md:gap-12">
                         {/* Left copy */}
                         <div className="flex-1">
                             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-4"
@@ -51,21 +51,21 @@ const ContactFooter = () => {
                                 <Phone size={12} />
                                 <span>Get In Touch</span>
                             </div>
-                            <h3 className="text-3xl md:text-4xl font-black text-gray-900 mb-3 tracking-tight">
+                            <h3 className="text-2xl md:text-4xl font-black text-gray-900 mb-3 tracking-tight">
                                 Ready to get <span className="text-primary italic">started?</span>
                             </h3>
                             <p className="text-gray-500 text-base font-medium">
                                 Select a service and reach out to us instantly via WhatsApp or fill a simple form.
                             </p>
-                            <div className="mt-6 flex flex-col gap-2 text-sm text-gray-600">
-                                <a href="tel:9019786255" className="flex items-center gap-2 hover:text-primary transition-colors font-semibold">
-                                    <Phone size={14} className="text-primary" /> +91 90197 86255
+                            <div className="mt-6 flex flex-col gap-3 text-sm text-gray-700">
+                                <a href="tel:9019786255" className="flex items-center gap-2 hover:text-primary transition-all font-bold">
+                                    <Phone size={16} className="text-primary shrink-0" /> +91 90197 86255
                                 </a>
-                                <a href="tel:8088917577" className="flex items-center gap-2 hover:text-primary transition-colors">
-                                    <Phone size={14} className="text-gray-400" /> +91 80889 17577
+                                <a href="tel:8088917577" className="flex items-center gap-2 hover:text-primary transition-all font-bold">
+                                    <Phone size={16} className="text-primary shrink-0" /> +91 80889 17577
                                 </a>
-                                <a href="mailto:info@ekhataassist.in" className="flex items-center gap-2 hover:text-primary transition-colors">
-                                    <Mail size={14} className="text-gray-400" /> info@ekhataassist.in
+                                <a href="mailto:info@ekhataassist.in" className="flex items-center gap-2 hover:text-primary transition-all font-bold">
+                                    <Mail size={16} className="text-primary shrink-0" /> info@ekhataassist.in
                                 </a>
                             </div>
                         </div>

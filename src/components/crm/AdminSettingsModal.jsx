@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { X, Plus, Trash2, Check, UserPlus, Briefcase, Home } from 'lucide-react';
+import { X, Plus, Trash2, Check, UserPlus, Briefcase, Home, DollarSign } from 'lucide-react';
 
 const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
   const [newAcq, setNewAcq] = useState('');
   const [newServiceAcq, setNewServiceAcq] = useState('');
   const [newApartment, setNewApartment] = useState('');
+  const [editingPrice, setEditingPrice] = useState({ service: null, amount: '' });
+
+  const serviceOptions = [
+    'Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)',
+    'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration', 'Others'
+  ];
 
   if (!isOpen) return null;
 
@@ -25,6 +31,13 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
   const handleRemove = (type, name) => {
     const list = pocs[type].filter(n => n !== name);
     onUpdate({ ...pocs, [type]: list });
+  };
+
+  const handleUpdatePrice = (service, amount) => {
+    const pricing = { ...(pocs.pricing || {}) };
+    pricing[service] = amount;
+    onUpdate({ ...pocs, pricing });
+    setEditingPrice({ service: null, amount: '' });
   };
 
   return (
@@ -112,7 +125,58 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
              </div>
           </div>
 
-          {/* Service Acquisition POCs */}
+          {/* Service Fee Structures */}
+          <div className="space-y-4">
+             <div className="flex items-center gap-2 mb-2">
+                <DollarSign size={16} className="text-emerald-500" />
+                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Service Fee Structures</h3>
+             </div>
+             
+             <div className="grid grid-cols-1 gap-3">
+                {serviceOptions.map(service => {
+                  const currentPrice = pocs.pricing?.[service] || '0';
+                  const isEditing = editingPrice.service === service;
+
+                  return (
+                    <div key={service} className="flex items-center justify-between px-6 py-4 bg-slate-50 rounded-2xl border border-slate-100 group transition-all hover:bg-white hover:shadow-md">
+                      <span className="text-xs font-black text-slate-700 uppercase tracking-tight">{service}</span>
+                      
+                      <div className="flex items-center gap-3">
+                        {isEditing ? (
+                          <div className="flex items-center gap-2 animate-in slide-in-from-right-2">
+                            <input 
+                              autoFocus
+                              type="number"
+                              value={editingPrice.amount}
+                              onChange={(e) => setEditingPrice({ ...editingPrice, amount: e.target.value })}
+                              className="w-24 px-3 py-1.5 rounded-lg bg-white border border-primary text-xs font-bold text-slate-900 outline-none"
+                            />
+                            <button 
+                              onClick={() => handleUpdatePrice(service, editingPrice.amount)}
+                              className="p-1.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all"
+                            >
+                              <Check size={14} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-4">
+                            <span className="text-sm font-black text-emerald-600">₹{parseFloat(currentPrice).toLocaleString('en-IN')}</span>
+                            <button 
+                              onClick={() => setEditingPrice({ service, amount: currentPrice })}
+                              className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+                            >
+                              Edit Fee
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+             </div>
+          </div>
+
+          {/* Service Acquisition POCs (Restored) */}
           <div className="space-y-4">
              <div className="flex items-center gap-2 mb-2">
                 <Briefcase size={16} className="text-indigo-500" />

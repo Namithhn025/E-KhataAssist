@@ -13,12 +13,12 @@ const SERVICE_STAGES = [
 const CLOSING_STAGE = 'Application Submitted';
 
 const stageColors = {
-  'Document Received':     'bg-slate-100 text-slate-600 border-slate-200',
-  'eKYC Pending':          'bg-yellow-50 text-yellow-700 border-yellow-200',
-  'eKYC Done':             'bg-blue-50 text-blue-700 border-blue-200',
-  'Ready to eSign':        'bg-purple-50 text-purple-700 border-purple-200',
+  'Document Received': 'bg-slate-100 text-slate-600 border-slate-200',
+  'eKYC Pending': 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  'eKYC Done': 'bg-blue-50 text-blue-700 border-blue-200',
+  'Ready to eSign': 'bg-purple-50 text-purple-700 border-purple-200',
   'Application Submitted': 'bg-green-100 text-green-800 border-green-200',
-  'Blocked':               'bg-red-50 text-red-700 border-red-200',
+  'Blocked': 'bg-red-50 text-red-700 border-red-200',
 };
 
 const serviceOptions = [
@@ -69,6 +69,143 @@ const RejectionModal = ({ open, onConfirm, onCancel }) => {
   );
 };
 
+// ─── Close Confirm Modal ─────────────────────────────────────────────────────
+const CloseConfirmModal = ({ open, onConfirm, onCancel }) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6 animate-in zoom-in-95 duration-300">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
+            <CheckCircle size={22} className="text-emerald-500" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-slate-900">Close This Lead?</h3>
+            <p className="text-xs text-slate-400 font-medium">Application Submitted — this will move the lead to <span className="font-black text-blue-600">Closed</span> and queue it for admin approval.</p>
+          </div>
+        </div>
+        <div className="bg-blue-50 rounded-2xl px-5 py-4 border border-blue-100">
+          <p className="text-xs font-bold text-blue-700">⚠ Once closed, this lead will no longer appear in the active pipeline. Admin will review and approve for invoicing.</p>
+        </div>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 transition-all border border-slate-200">
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-200"
+          >
+            ✓ Confirm Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Active Confirm Modal ───────────────────────────────────────────────────
+const ActiveConfirmModal = ({ open, onConfirm, onCancel, customerName }) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6 animate-in zoom-in-95 duration-300">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center">
+            <CheckCircle size={22} className="text-green-500" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-slate-900">Move to Active?</h3>
+            <p className="text-xs text-slate-400 font-medium">Documents received & S-Acq POC assigned — <span className="font-black text-slate-700">{customerName}</span> will move to the <span className="font-black text-green-600">Active</span> pipeline.</p>
+          </div>
+        </div>
+        <div className="bg-green-50 rounded-2xl px-5 py-4 border border-green-100 space-y-1">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500" />
+            <p className="text-xs font-bold text-green-700">Documents have been confirmed as received</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500" />
+            <p className="text-xs font-bold text-green-700">Service Acquisition POC is assigned</p>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 transition-all border border-slate-200">
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white bg-green-500 hover:bg-green-600 transition-all shadow-lg shadow-green-200"
+          >
+            ✓ Move to Active
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Retry Confirm Modal ─────────────────────────────────────────────────────
+const RetryConfirmModal = ({ open, onConfirm, onCancel }) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6 animate-in zoom-in-95 duration-300">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center">
+            <RefreshCw size={22} className="text-blue-500" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-slate-900">Retry This Step?</h3>
+            <p className="text-xs text-slate-400 font-medium">This will move the lead back to <span className="font-black text-blue-600">Document Received</span> stage for a restart.</p>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 transition-all border border-slate-200">
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white bg-blue-500 hover:bg-blue-600 transition-all shadow-lg shadow-blue-200"
+          >
+            ✓ Confirm Retry
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Approve Confirm Modal ───────────────────────────────────────────────────
+const ApproveConfirmModal = ({ open, onConfirm, onCancel }) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6 animate-in zoom-in-95 duration-300">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center">
+            <BadgeCheck size={22} className="text-emerald-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-emerald-900">Approve for Invoice?</h3>
+            <p className="text-xs text-emerald-600 font-medium tracking-tight">Final verification complete. This will move the lead to <span className="font-black text-emerald-700">Approved</span> and generate an invoice entry.</p>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 transition-all border border-slate-200">
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-200"
+          >
+            ✓ Approved
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── Stage Progress Bar ─────────────────────────────────────────────────────
 const StageProgress = ({ stage }) => {
   const idx = SERVICE_STAGES.indexOf(stage);
@@ -86,35 +223,86 @@ const StageProgress = ({ stage }) => {
   );
 };
 
-const NestedServicesTable = ({ customer, onUpdate, pocs = {} }) => {
+const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode }) => {
   const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [showActiveModal, setShowActiveModal] = useState(false);
+  const [showRetryModal, setShowRetryModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [pendingPOC, setPendingPOC] = useState(null);
   const userRole = localStorage.getItem('crm_role') || 'worker';
   const isAdmin = userRole === 'admin';
+  const canApprove = isAdmin || userRole === 'worker'; // User explicitly requested workers can push to invoice
 
+  const isLocked = viewMode === 'sales' || viewMode === 'nexus';
   const isBlocked = customer.serviceStatus === 'Blocked';
-  const isClosed  = customer.serviceStatus === 'Closed';
+  const isClosed = customer.serviceStatus === 'Closed';
   const isApproved = customer.serviceStatus === 'Approved';
+  const showAmount = viewMode === 'invoices';
 
   // Available stages: all standard ones + terminal ones
+  // Available stages: standard progress stages + Blocked
   const availableStages = [...SERVICE_STAGES, 'Blocked'];
 
   const handleStageChange = (newStage) => {
-    if (isBlocked || isClosed || isApproved) return;
+    if (isBlocked || isClosed || isApproved || isLocked) return;
 
     if (newStage === 'Blocked') {
       setShowRejectionModal(true);
       return;
     }
 
-    onUpdate('serviceStage', newStage);
-
+    // Intercept closing stage — show confirmation BEFORE committing
     if (newStage === CLOSING_STAGE) {
-      onUpdate('serviceStatus', 'Closed');
-      onUpdate('closedDate', new Date().toISOString());
-      alert('✅ Application Submitted! Lead has been moved to CLOSED.');
+      setShowCloseModal(true);
+      return;
+    }
+
+    onUpdate('serviceStage', newStage);
+  };
+
+  const handleServiceChange = (newService) => {
+    if (isLocked) return;
+    if (newService === 'OTHER_CUSTOM') {
+      onUpdate('serviceRequested', ''); // Clear to let user type
+      return;
+    }
+    onUpdate('serviceRequested', newService);
+    // Auto-fill amount based on pricing settings
+    if (pocs.pricing && pocs.pricing[newService]) {
+      onUpdate('amount', pocs.pricing[newService]);
     }
   };
 
+  const handleConfirmClose = () => {
+    setShowCloseModal(false);
+    onUpdate('serviceStage', CLOSING_STAGE);
+    onUpdate('serviceStatus', 'Closed');
+    onUpdate('closedDate', new Date().toISOString());
+  };
+
+  const handleConfirmActive = () => {
+    setShowActiveModal(false);
+    onUpdate('docsSubmitted', true);
+    onUpdate('docsSubmittedDate', new Date().toISOString());
+    // Also save the pending POC if the modal was triggered by a POC change
+    if (pendingPOC !== null) {
+      onUpdate('serviceAcqPOC', pendingPOC);
+      setPendingPOC(null);
+    }
+  };
+
+  const handleConfirmRetry = () => {
+    setShowRetryModal(false);
+    onUpdate('serviceStatus', 'Retry');
+    onUpdate('serviceStage', 'Document Received');
+  };
+
+  const handleConfirmApprove = () => {
+    setShowApproveModal(false);
+    onUpdate('serviceStatus', 'Approved');
+    onUpdate('approvedDate', new Date().toISOString());
+  };
   const handleConfirmRejection = (reason) => {
     setShowRejectionModal(false);
     onUpdate('serviceStage', 'Blocked');
@@ -139,9 +327,30 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {} }) => {
         onConfirm={handleConfirmRejection}
         onCancel={() => setShowRejectionModal(false)}
       />
+      <CloseConfirmModal
+        open={showCloseModal}
+        onConfirm={handleConfirmClose}
+        onCancel={() => setShowCloseModal(false)}
+      />
+      <ActiveConfirmModal
+        open={showActiveModal}
+        onConfirm={handleConfirmActive}
+        onCancel={() => setShowActiveModal(false)}
+        customerName={customer.customerName}
+      />
+      <RetryConfirmModal
+        open={showRetryModal}
+        onConfirm={handleConfirmRetry}
+        onCancel={() => setShowRetryModal(false)}
+      />
+      <ApproveConfirmModal
+        open={showApproveModal}
+        onConfirm={handleConfirmApprove}
+        onCancel={() => setShowApproveModal(false)}
+      />
 
       <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-xl ring-1 ring-slate-900/5">
-        
+
         {/* Banner Section */}
         {isBlocked && (
           <div className="px-8 py-4 bg-red-50 border-b border-red-100 flex items-center justify-between">
@@ -153,45 +362,18 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {} }) => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-               <div className="flex items-center gap-2">
-                 <span className="text-[10px] font-black text-slate-400 uppercase">Updated to Customer?</span>
-                 <input 
-                   type="checkbox" 
-                   checked={customer.updatedToCustomer || false}
-                   onChange={(e) => onUpdate('updatedToCustomer', e.target.checked)}
-                   className="w-4 h-4 rounded border-slate-300 text-red-500 focus:ring-red-500" 
-                 />
-               </div>
-               {isAdmin && (
-                 <button onClick={() => onUpdate('serviceStatus', 'Open')} className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline">Revive Lead</button>
-               )}
-            </div>
-          </div>
-        )}
-
-        {isClosed && !isApproved && (
-          <div className="px-8 py-5 bg-blue-50 border-b border-blue-100 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3 text-blue-700">
-              <BadgeCheck size={20} className="animate-pulse" />
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.1em]">Verification Required</p>
-                <p className="text-sm font-bold">Standard closing reached — Admin must approve for invoice</p>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black text-slate-400 uppercase">Updated to Customer?</span>
+                <input
+                  type="checkbox"
+                  disabled={isLocked}
+                  checked={customer.updatedToCustomer || false}
+                  onChange={(e) => onUpdate('updatedToCustomer', e.target.checked)}
+                  className="w-4 h-4 rounded border-slate-300 text-red-500 focus:ring-red-500"
+                />
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => { onUpdate('serviceStatus', 'Retry'); onUpdate('serviceStage', 'Document Received'); }}
-                className="px-6 py-2.5 rounded-2xl bg-white border border-blue-200 text-blue-600 text-[10px] font-black uppercase tracking-widest hover:bg-blue-50 transition-all font-mono"
-              >
-                <RefreshCw size={12} className="inline mr-2" /> Retry Step
-              </button>
-              {isAdmin && (
-                <button 
-                  onClick={() => { onUpdate('serviceStatus', 'Approved'); onUpdate('approvedDate', new Date().toISOString()); }}
-                  className="px-8 py-2.5 rounded-2xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/20"
-                >
-                  Confirm Approve
-                </button>
+              {isAdmin && !isLocked && (
+                <button onClick={() => onUpdate('serviceStatus', 'Open')} className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline">Revive Lead</button>
               )}
             </div>
           </div>
@@ -206,18 +388,17 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {} }) => {
                 <th className="px-8 py-5">Apartment/Site</th>
                 <th className="px-8 py-5">Acq. POC</th>
                 <th className="px-8 py-5">S-Acq. POC</th>
-                <th className="px-8 py-5">Assigned Service Team</th>
                 <th className="px-8 py-5 min-w-[240px]">Live Lifecycle Stage</th>
                 <th className="px-8 py-5">Age (S-Date)</th>
                 <th className="px-8 py-5 text-center">ePID (Mandatory)</th>
                 <th className="px-8 py-5 text-center">Priority</th>
-                <th className="px-8 py-5 text-center">Amount</th>
+                {showAmount && <th className="px-8 py-5 text-center">Amount</th>}
                 <th className="px-8 py-5 text-center">Docs Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               <tr className="group hover:bg-slate-50/50 transition-all">
-                
+
                 {/* Core Registry: Name & Phone */}
                 <td className="px-8 py-6">
                   <div className="space-y-1">
@@ -228,148 +409,191 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {} }) => {
 
                 {/* Product/Service */}
                 <td className="px-8 py-6">
-                  <select
-                    value={customer.serviceRequested || customer.service || ''}
-                    onChange={e => onUpdate('serviceRequested', e.target.value)}
-                    className="bg-blue-50 border-none rounded-xl px-4 py-2.5 text-[10px] font-black text-blue-600 outline-none cursor-pointer hover:bg-blue-100 transition-all appearance-none uppercase"
-                  >
-                    <option value="">N/A</option>
-                    {serviceOptions.map(opt => <option key={opt}>{opt}</option>)}
-                  </select>
+                  <div className="flex flex-col gap-2">
+                    <select
+                      disabled={!isAdmin || isLocked}
+                      value={serviceOptions.includes(customer.serviceRequested) ? customer.serviceRequested : (customer.serviceRequested ? 'OTHER_CUSTOM' : '')}
+                      onChange={e => handleServiceChange(e.target.value)}
+                      className="bg-blue-50 border-none rounded-xl px-4 py-2.5 text-[10px] font-black text-blue-600 outline-none cursor-pointer hover:bg-blue-100 transition-all appearance-none uppercase disabled:opacity-60"
+                    >
+                      <option value="">N/A</option>
+                      {serviceOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      <option value="OTHER_CUSTOM" className="text-primary font-bold">+ Other (Custom Entry)</option>
+                    </select>
+                    {(!serviceOptions.includes(customer.serviceRequested) && customer.serviceRequested) || (customer.serviceRequested === '') ? (
+                      <input
+                        type="text"
+                        disabled={isLocked}
+                        placeholder="Enter service name..."
+                        value={customer.serviceRequested}
+                        onChange={(e) => onUpdate('serviceRequested', e.target.value)}
+                        className="px-3 py-1.5 bg-white border border-blue-100 rounded-lg text-[10px] font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-400/20"
+                      />
+                    ) : null}
+                  </div>
                 </td>
 
                 {/* Apartment/Site */}
                 <td className="px-8 py-6">
-                   <div className="flex items-center gap-2 text-xs font-black text-slate-700 uppercase tracking-widest">
-                      <Globe size={12} className="text-slate-300" />
-                      {customer.apartment || customer.society || 'Direct'}
-                   </div>
+                  <div className="flex items-center gap-2 text-xs font-black text-slate-700 uppercase tracking-widest">
+                    <Globe size={12} className="text-slate-300" />
+                    {customer.apartment || customer.society || 'Direct'}
+                  </div>
                 </td>
 
                 {/* Acq. POC: Admin only editable */}
                 <td className="px-8 py-6">
-                   <select
-                     disabled={!isAdmin}
-                     value={customer.acqPOC || ''}
-                     onChange={e => onUpdate('acqPOC', e.target.value)}
-                     className="bg-slate-100 font-bold border-none rounded-xl px-4 py-2.5 text-[10px] text-slate-600 outline-none disabled:opacity-60 cursor-pointer appearance-none"
-                   >
-                     <option value="">Unassigned</option>
-                     {pocs.acquisition?.map(name => <option key={name}>{name}</option>)}
-                   </select>
+                  <select
+                    disabled={!isAdmin || isLocked}
+                    value={customer.acqPOC || ''}
+                    onChange={e => onUpdate('acqPOC', e.target.value)}
+                    className={`bg-slate-100 font-bold border-none rounded-xl px-4 py-2.5 text-[10px] text-slate-600 outline-none disabled:opacity-60 transition-all ${isLocked ? 'cursor-default' : 'cursor-pointer'} appearance-none`}
+                  >
+                    <option value="">Unassigned</option>
+                    {pocs.acquisition?.map(name => <option key={name}>{name}</option>)}
+                  </select>
                 </td>
 
                 {/* S-Acq. POC */}
                 <td className="px-8 py-6">
-                   <select
-                     disabled={!isAdmin}
-                     value={customer.serviceAcqPOC || ''}
-                     onChange={e => onUpdate('serviceAcqPOC', e.target.value)}
-                     className="bg-indigo-50 font-bold border-none rounded-xl px-4 py-2.5 text-[10px] text-indigo-500 outline-none disabled:opacity-60 cursor-pointer appearance-none"
-                   >
-                     <option value="">Unassigned</option>
-                     {pocs.serviceAcquisition?.map(name => <option key={name}>{name}</option>)}
-                   </select>
+                  <select
+                    disabled={!isAdmin || isLocked}
+                    value={customer.serviceAcqPOC || ''}
+                    onChange={e => {
+                      const val = e.target.value;
+                      // If docs already submitted and assigning a POC → confirm Active move first
+                      if (val && customer.docsSubmitted) {
+                        setPendingPOC(val);
+                        setShowActiveModal(true);
+                      } else {
+                        onUpdate('serviceAcqPOC', val);
+                      }
+                    }}
+                    className={`bg-indigo-50 font-bold border-none rounded-xl px-4 py-2.5 text-[10px] text-indigo-500 outline-none disabled:opacity-60 transition-all ${isLocked ? 'cursor-default' : 'cursor-pointer'} appearance-none`}
+                  >
+                    <option value="">Unassigned</option>
+                    {pocs.serviceAcquisition?.map(name => <option key={name}>{name}</option>)}
+                  </select>
                 </td>
 
-                {/* Service POC (NEW): Admin only editable */}
-                <td className="px-8 py-6">
-                   <select
-                     disabled={!isAdmin}
-                     value={customer.servicePOC || ''}
-                     onChange={e => onUpdate('servicePOC', e.target.value)}
-                     className="bg-purple-50 font-black border-none rounded-xl px-4 py-2.5 text-[10px] text-purple-600 outline-none disabled:opacity-60 cursor-pointer appearance-none shadow-sm"
-                   >
-                     <option value="">AWAITING ASSIGNMENT</option>
-                     {pocs.service?.map(name => <option key={name}>{name}</option>)}
-                   </select>
-                </td>
+
 
                 {/* Lifecycle Stage */}
                 <td className="px-8 py-6">
-                   <div className="space-y-3">
-                     <select
-                       value={customer.serviceStatus === 'Blocked' ? 'Blocked' : (customer.serviceStage || 'Document Received')}
-                       onChange={e => handleStageChange(e.target.value)}
-                       disabled={isClosed || isApproved}
-                       className={`w-full px-5 py-3 rounded-2xl border-none text-[10px] font-black uppercase tracking-widest outline-none shadow-sm transition-all cursor-pointer ${stageColors[isBlocked ? 'Blocked' : (customer.serviceStage || 'Document Received')] || 'bg-slate-100'}`}
-                     >
+                    <div className="space-y-3">
+                      <select
+                        value={customer.serviceStatus === 'Blocked' ? 'Blocked' : (customer.serviceStage || 'Document Received')}
+                        onChange={e => handleStageChange(e.target.value)}
+                        disabled={isClosed || isApproved || isBlocked || isLocked}
+                        className={`w-full px-5 py-3 rounded-2xl border-none text-[10px] font-black uppercase tracking-widest outline-none shadow-sm transition-all ${isLocked ? 'cursor-default bg-slate-50' : 'cursor-pointer'} ${stageColors[isBlocked ? 'Blocked' : (customer.serviceStage || 'Document Received')] || 'bg-slate-100'}`}
+                      >
+                        <option value="Blocked" disabled hidden>Blocked</option>
                         {availableStages.map(s => <option key={s} value={s}>{s}</option>)}
-                     </select>
-                     {!isBlocked && !isClosed && <StageProgress stage={customer.serviceStage || 'Document Received'} />}
-                   </div>
+                      </select>
+                      
+                      {subMode === 'closed' && isClosed && !isApproved && (
+                         <div className="flex flex-col gap-2 pt-2 animate-in slide-in-from-top-2 duration-300">
+                            {canApprove && (
+                               <button 
+                                 onClick={() => setShowApproveModal(true)}
+                                 className="w-full py-2.5 bg-emerald-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
+                               >
+                                 <BadgeCheck size={12} /> Confirm Approve
+                               </button>
+                            )}
+                            <button 
+                              onClick={() => setShowRetryModal(true)}
+                              className="w-full py-2.5 bg-slate-50 text-slate-400 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
+                            >
+                              <RefreshCw size={12} /> Retry Step
+                            </button>
+                         </div>
+                      )}
+
+                      {!isBlocked && !isClosed && <StageProgress stage={customer.serviceStage || 'Document Received'} />}
+                    </div>
                 </td>
 
                 {/* Age */}
                 <td className="px-8 py-6">
-                   <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-900 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
-                      <Clock size={12} className="text-slate-300" />
-                      {calculateAge(customer.docsSubmittedDate || customer.createdAt)}
-                   </div>
+                  <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-900 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
+                    <Clock size={12} className="text-slate-300" />
+                    {calculateAge(customer.docsSubmittedDate || customer.createdAt)}
+                  </div>
                 </td>
 
                 {/* ePID: 10 Digits, POC adds once, Admin edits */}
                 <td className="px-8 py-6 text-center">
-                   <div className="relative inline-block w-40">
-                      <input 
-                        type="text"
-                        placeholder="N/A"
-                        value={customer.ePID || ''}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/\D/g, '').substring(0, 10);
-                          if (!isAdmin && customer.ePID) return; // Add-once logic
-                          onUpdate('ePID', val);
-                        }}
-                        className={`w-full px-4 py-2.5 rounded-xl border font-mono text-[11px] font-black text-center outline-none transition-all ${
-                          customer.ePID?.length === 10 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-400 focus:border-primary'
+                  <div className="relative inline-block w-40">
+                    <input
+                      type="text"
+                      placeholder="N/A"
+                      value={customer.ePID || ''}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').substring(0, 10);
+                        if (isLocked) return;
+                        if (!isAdmin && customer.ePID) return; // Add-once logic
+                        onUpdate('ePID', val);
+                      }}
+                      disabled={isLocked}
+                      className={`w-full px-4 py-2.5 rounded-xl border font-mono text-[11px] font-black text-center outline-none transition-all ${customer.ePID?.length === 10 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-400 focus:border-primary'
                         }`}
-                      />
-                      {(!isAdmin && customer.ePID) && <Lock size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300" />}
-                   </div>
+                    />
+                    {(!isAdmin && customer.ePID) && <Lock size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300" />}
+                  </div>
                 </td>
 
                 {/* Priority: Admin only */}
                 <td className="px-8 py-6 text-center">
-                   <button 
-                     disabled={!isAdmin}
-                     onClick={() => onUpdate('priority', customer.priority === 'High' ? 'Medium' : (customer.priority === 'Medium' ? 'Low' : 'High'))}
-                     className={`px-4 py-2 rounded-3xl text-[9px] font-black uppercase tracking-[0.2em] shadow-sm disabled:opacity-50 ${
+                  <button
+                    disabled={!isAdmin || isLocked}
+                    onClick={() => onUpdate('priority', customer.priority === 'High' ? 'Medium' : (customer.priority === 'Medium' ? 'Low' : 'High'))}
+                    className={`px-4 py-2 rounded-3xl text-[9px] font-black uppercase tracking-[0.2em] shadow-sm disabled:opacity-50 transition-all ${
                         customer.priority === 'High' ? 'bg-red-500 text-white shadow-red-200' :
                         customer.priority === 'Medium' ? 'bg-yellow-500 text-white shadow-yellow-200' :
-                        'bg-slate-200 text-slate-500'
-                     }`}
-                   >
-                     {customer.priority || 'Low'}
-                   </button>
+                          'bg-slate-200 text-slate-500'
+                      }`}
+                  >
+                    {customer.priority || 'Low'}
+                  </button>
                 </td>
 
                 {/* Amount: Admin Only */}
-                <td className="px-8 py-6 text-center">
-                   {isAdmin ? (
+                {showAmount && (
+                  <td className="px-8 py-6 text-center">
+                    {isAdmin ? (
                       <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-2.5">
-                         <DollarSign size={12} className="text-emerald-500" />
-                         <input 
-                           type="text"
-                           value={customer.amount || ''}
-                           onChange={e => onUpdate('amount', e.target.value)}
-                           className="bg-transparent text-[12px] font-black text-emerald-700 w-16 outline-none"
-                         />
+                        <DollarSign size={12} className="text-emerald-500" />
+                        <input
+                          disabled={isLocked}
+                          type="text"
+                          value={customer.amount || ''}
+                          onChange={e => onUpdate('amount', e.target.value)}
+                          className={`bg-transparent text-[12px] font-black text-emerald-700 w-16 outline-none ${isLocked ? 'cursor-default' : ''}`}
+                        />
                       </div>
-                   ) : <span className="text-[10px] font-bold text-slate-300 italic ring-1 ring-slate-100 px-3 py-1 rounded-full">PRIVATE</span>}
-                </td>
+                    ) : <span className="text-[10px] font-bold text-slate-300 italic ring-1 ring-slate-100 px-3 py-1 rounded-full">PRIVATE</span>}
+                  </td>
+                )}
 
                 {/* Docs Status */}
                 <td className="px-8 py-6 text-center">
-                   <button 
-                     onClick={() => {
-                       const val = !customer.docsSubmitted;
-                       onUpdate('docsSubmitted', val);
-                       if(val) onUpdate('docsSubmittedDate', new Date().toISOString());
-                     }}
-                     className={`w-12 h-6 rounded-full relative transition-all ${customer.docsSubmitted ? 'bg-emerald-500' : 'bg-slate-200'}`}
-                   >
-                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all ${customer.docsSubmitted ? 'left-7' : 'left-1'}`} />
-                   </button>
+                  <button
+                    disabled={isLocked}
+                    onClick={() => {
+                      const val = !customer.docsSubmitted;
+                      // If toggling ON and S-Acq POC is already assigned → confirm Active move first
+                      if (val && customer.serviceAcqPOC) {
+                        setShowActiveModal(true);
+                      } else {
+                        onUpdate('docsSubmitted', val);
+                        if (val) onUpdate('docsSubmittedDate', new Date().toISOString());
+                      }
+                    }}
+                    className={`w-12 h-6 rounded-full relative transition-all ${customer.docsSubmitted ? 'bg-emerald-500' : 'bg-slate-200'} ${isLocked ? 'cursor-not-allowed opacity-60' : ''}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all ${customer.docsSubmitted ? 'left-7' : 'left-1'}`} />
+                  </button>
                 </td>
 
               </tr>
@@ -377,48 +601,51 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {} }) => {
               {/* SECONDARY ROW: Notes & Special Challenges */}
               <tr>
                 <td colSpan={12} className="px-8 py-4 bg-slate-50/30">
-                   <div className="flex gap-10">
-                      {/* Internal Notes / Call Log */}
-                      <div className="flex-1 space-y-3">
-                         <div className="flex items-center gap-2">
-                            <MessageSquare size={12} className="text-slate-400" />
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Call Registry & Notes</span>
-                         </div>
-                         <div className="flex gap-4 items-center">
-                            <select 
-                              value={customer.callStatus || 'Not Connected'}
-                              onChange={e => onUpdate('callStatus', e.target.value)}
-                              className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-[10px] font-bold text-slate-700 outline-none cursor-pointer"
-                            >
-                               <option>Connected</option>
-                               <option>Not Connected</option>
-                               <option>Busy</option>
-                               <option>Follow Up</option>
-                            </select>
-                            <input 
-                              type="text"
-                              value={customer.notes || ''}
-                              onChange={e => onUpdate('notes', e.target.value)}
-                              placeholder="Record lead details here..."
-                              className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-600 outline-none focus:ring-4 focus:ring-primary/10 tracking-tight"
-                            />
-                         </div>
+                  <div className="flex gap-10">
+                    {/* Internal Notes / Call Log */}
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare size={12} className="text-slate-400" />
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Call Registry & Notes</span>
                       </div>
+                      <div className="flex gap-4 items-center">
+                        <select
+                          disabled={isLocked}
+                          value={customer.callStatus || 'Not Connected'}
+                          onChange={e => onUpdate('callStatus', e.target.value)}
+                          className={`bg-white border border-slate-200 rounded-xl px-4 py-2 text-[10px] font-bold text-slate-700 outline-none transition-all ${isLocked ? 'cursor-default opacity-70' : 'cursor-pointer'}`}
+                        >
+                          <option>Connected</option>
+                          <option>Not Connected</option>
+                          <option>Busy</option>
+                          <option>Follow Up</option>
+                        </select>
+                        <input
+                          disabled={isLocked}
+                          type="text"
+                          value={customer.notes || ''}
+                          onChange={e => onUpdate('notes', e.target.value)}
+                          placeholder={isLocked ? "View only mode" : "Record lead details here..."}
+                          className={`flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-600 outline-none focus:ring-4 focus:ring-primary/10 tracking-tight transition-all ${isLocked ? 'opacity-70' : ''}`}
+                        />
+                      </div>
+                    </div>
 
-                      {/* Special Notes / Challenges */}
-                      <div className="flex-1 space-y-3">
-                         <div className="flex items-center gap-2">
-                            <AlertTriangle size={12} className="text-amber-500" />
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Special Notes / Challenges</span>
-                         </div>
-                         <textarea 
-                           value={customer.specialNotes || ''}
-                           onChange={e => onUpdate('specialNotes', e.target.value)}
-                           placeholder="Add technical blockers or specific challenges..."
-                           className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-600 outline-none focus:ring-4 focus:ring-primary/10 tracking-tight h-10 resize-none no-scrollbar"
-                         />
+                    {/* Special Notes / Challenges */}
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle size={12} className="text-amber-500" />
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Special Notes / Challenges</span>
                       </div>
-                   </div>
+                      <textarea
+                        disabled={isLocked}
+                        value={customer.specialNotes || ''}
+                        onChange={e => onUpdate('specialNotes', e.target.value)}
+                        placeholder={isLocked ? "View only mode" : "Add technical blockers or specific challenges..."}
+                        className={`w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-600 outline-none focus:ring-4 focus:ring-primary/10 tracking-tight h-10 resize-none no-scrollbar transition-all ${isLocked ? 'opacity-70' : ''}`}
+                      />
+                    </div>
+                  </div>
                 </td>
               </tr>
             </tbody>

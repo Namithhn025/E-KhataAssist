@@ -254,9 +254,9 @@ const AddLeadModal = ({ isOpen, onClose, onAdd, pocs = {} }) => {
              
              <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-2">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Acquisition POC <span className="text-red-500">*</span></label>
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Acquisition POC</label>
                    <div className="relative">
-                      <select name="acqPOC" value={formData.acqPOC} onChange={handleChange} required className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none transition-all font-bold text-slate-900 appearance-none cursor-pointer">
+                      <select name="acqPOC" value={formData.acqPOC} onChange={handleChange} className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none transition-all font-bold text-slate-900 appearance-none cursor-pointer">
                          <option value="">Select acquisition POC</option>
                          {pocs.acquisition?.map(name => (
                             <option key={name} value={name}>{name}</option>
@@ -267,9 +267,9 @@ const AddLeadModal = ({ isOpen, onClose, onAdd, pocs = {} }) => {
                 </div>
 
                 <div className="space-y-2">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Service Acquisition POC <span className="text-red-500">*</span></label>
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Service Acquisition POC</label>
                    <div className="relative">
-                      <select name="serviceAcqPOC" value={formData.serviceAcqPOC} onChange={handleChange} required className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none transition-all font-bold text-slate-900 appearance-none cursor-pointer">
+                      <select name="serviceAcqPOC" value={formData.serviceAcqPOC} onChange={handleChange} className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none transition-all font-bold text-slate-900 appearance-none cursor-pointer">
                          <option value="">Select service acq POC</option>
                          {pocs.serviceAcquisition?.map(name => (
                             <option key={name} value={name}>{name}</option>

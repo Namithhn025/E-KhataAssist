@@ -22,18 +22,17 @@ const MetricSummary = ({ metrics, viewMode }) => {
   if (viewMode !== 'sales') return null;
 
   const cards = [
-    { label: 'Total Leads',  count: metrics.total,      color: 'text-red-600',    bgColor: 'bg-red-50/50',     borderColor: 'border-red-100'    },
-    { label: 'Pre-active',   count: metrics.preActive,  color: 'text-yellow-600', bgColor: 'bg-yellow-50/50',  borderColor: 'border-yellow-100' },
-    { label: 'Active',       count: metrics.active,     color: 'text-green-600',  bgColor: 'bg-green-50/50',   borderColor: 'border-green-100'  },
-    { label: 'Closed',       count: metrics.closed,     color: 'text-blue-600',   bgColor: 'bg-blue-50/50',    borderColor: 'border-blue-100'   },
-    { label: 'Blocked',      count: metrics.blocked,    color: 'text-red-600',    bgColor: 'bg-red-50/50',     borderColor: 'border-red-100'    },
-    { label: 'Retry',        count: metrics.retry,      color: 'text-orange-600', bgColor: 'bg-orange-50/50',  borderColor: 'border-orange-100' },
-    { label: 'Approved',     count: metrics.approved,   color: 'text-emerald-600',bgColor: 'bg-emerald-50/50', borderColor: 'border-emerald-100'},
-    { label: 'Total SRS',    count: metrics.totalSRs,   color: 'text-slate-900',  bgColor: 'bg-white',         borderColor: 'border-slate-100'  },
+    { label: 'Total Leads', count: metrics.total,     color: 'text-slate-900',  bgColor: 'bg-white',          borderColor: 'border-slate-200'  },
+    { label: 'Pre-active',  count: metrics.preActive, color: 'text-yellow-600', bgColor: 'bg-yellow-50/50',   borderColor: 'border-yellow-100' },
+    { label: 'Active',      count: metrics.active,    color: 'text-green-600',  bgColor: 'bg-green-50/50',    borderColor: 'border-green-100'  },
+    { label: 'Closed',      count: metrics.closed,    color: 'text-blue-600',   bgColor: 'bg-blue-50/50',     borderColor: 'border-blue-100'   },
+    { label: 'Blocked',     count: metrics.blocked,   color: 'text-red-600',    bgColor: 'bg-red-50/50',      borderColor: 'border-red-100'    },
+    { label: 'Retry',       count: metrics.retry,     color: 'text-orange-600', bgColor: 'bg-orange-50/50',   borderColor: 'border-orange-100' },
+    { label: 'Approved',    count: metrics.approved,  color: 'text-emerald-600',bgColor: 'bg-emerald-50/50',  borderColor: 'border-emerald-100'},
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 px-8 py-6 mb-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 px-8 py-6 mb-4">
       {cards.map((card, index) => (
         <MetricCard key={index} {...card} />
       ))}

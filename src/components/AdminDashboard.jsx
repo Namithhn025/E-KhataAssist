@@ -27,6 +27,7 @@ const AdminDashboard = () => {
   const [noteInputId, setNoteInputId] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [servicesSubMode, setServicesSubMode] = useState('active');
+  const [visibleFilters, setVisibleFilters] = useState(['priority', 'acqPOC', 'serviceAcqPOC', 'stage', 'service']);
   const userRole = localStorage.getItem('crm_role') || 'worker';
   const isAdmin = userRole === 'admin';
   
@@ -130,7 +131,7 @@ const AdminDashboard = () => {
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
     active: serviceLeads.filter(c =>
-      c.docsSubmitted &&
+      c.docsSubmitted && c.serviceAcqPOC &&
       c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
@@ -163,10 +164,10 @@ const AdminDashboard = () => {
         const isRetry    = c.serviceStatus === 'Retry';
         const isApproved = c.serviceStatus === 'Approved';
 
-        // Pre-active: has service, docs NOT submitted yet OR Service POC not assigned
-        const isPreActive = (!c.docsSubmitted || !c.servicePOC) && !isBlocked && !isClosed && !isRetry && !isApproved;
-        // Active: docs submitted AND service POC assigned, still in progress
-        const isActive = c.docsSubmitted && c.servicePOC && !isBlocked && !isClosed && !isRetry && !isApproved;
+        // Pre-active: has service, docs NOT submitted yet OR Service Acquisition POC not assigned
+        const isPreActive = (!c.docsSubmitted || !c.serviceAcqPOC) && !isBlocked && !isClosed && !isRetry && !isApproved;
+        // Active: docs submitted AND Service Acquisition POC assigned, still in progress
+        const isActive = c.docsSubmitted && c.serviceAcqPOC && !isBlocked && !isClosed && !isRetry && !isApproved;
 
         if (servicesSubMode === 'pre-active' && !isPreActive) return false;
         if (servicesSubMode === 'active'     && !isActive)    return false;
@@ -183,9 +184,10 @@ const AdminDashboard = () => {
     const matchesServiceAcqPOC = !activeFilters.serviceAcqPOC || c.serviceAcqPOC === activeFilters.serviceAcqPOC;
     const matchesServicePOC = !activeFilters.servicePOC || c.servicePOC === activeFilters.servicePOC;
     const matchesPriority = !activeFilters.priority || c.priority === activeFilters.priority;
-    const matchesStage = !activeFilters.stage || c.status === activeFilters.stage;
+    const matchesStage = !activeFilters.stage || (c.status === activeFilters.stage || c.serviceStage === activeFilters.stage);
+    const matchesService = !activeFilters.service || (c.serviceRequested === activeFilters.service || c.serviceType === activeFilters.service || c.service === activeFilters.service);
     
-    return matchesSearch && matchesInterest && matchesAcqPOC && matchesServiceAcqPOC && matchesServicePOC && matchesPriority && matchesStage;
+    return matchesSearch && matchesInterest && matchesAcqPOC && matchesServiceAcqPOC && matchesServicePOC && matchesPriority && matchesStage && matchesService;
   });
 
   const serviceOptions = [
@@ -217,12 +219,13 @@ const AdminDashboard = () => {
           {/* Header */}
           <DashboardHeader 
             title={
-              selectedSource === 'nexus' ? 'Nexus' :
+              selectedSource === 'nexus' ? 'Overview' :
               selectedSource === 'camp' ? 'Camp' :
               selectedSource === 'invoices' ? 'Invoices' :
               selectedSource === 'services' ? `Services / ${servicesSubMode.charAt(0).toUpperCase() + servicesSubMode.slice(1)}` : 
               'Sales'
             }
+            viewMode={selectedSource}
             onSearch={setSearchQuery}
             onBulkUpload={() => alert('Bulk Upload clicked')}
             onNewLead={() => setIsAddCustomerOpen(true)}
@@ -231,6 +234,8 @@ const AdminDashboard = () => {
           {/* Filter Bar */}
           <FilterBar 
             activeFilters={activeFilters}
+            visibleFilters={visibleFilters}
+            setVisibleFilters={setVisibleFilters}
             viewMode={selectedSource}
             onFilterChange={(key, val) => setActiveFilters({...activeFilters, [key]: val})}
             onReset={() => setActiveFilters({})}
@@ -239,6 +244,111 @@ const AdminDashboard = () => {
   
           {/* Metric Summary Dashboard */}
           <MetricSummary metrics={metrics} viewMode={selectedSource} />
+
+          {/* ── OVERVIEW (NEXUS) VIEW ────────────────────────────────── */}
+          {selectedSource === 'nexus' && (() => {
+            const total = customers.length;
+            const serviceLeadsAll = customers.filter(c => c.serviceType || c.serviceRequested || c.service);
+            const salesOnly = customers.filter(c => !c.sourceVault || c.sourceVault === 'sales');
+
+            const slices = [
+              { label: 'Pre-active',  count: metrics.preActive, color: '#f59e0b', bg: 'bg-amber-400'   },
+              { label: 'Active',      count: metrics.active,    color: '#22c55e', bg: 'bg-green-500'   },
+              { label: 'Blocked',     count: metrics.blocked,   color: '#ef4444', bg: 'bg-red-500'     },
+              { label: 'Closed',      count: metrics.closed,    color: '#3b82f6', bg: 'bg-blue-500'    },
+              { label: 'Retry',       count: metrics.retry,     color: '#f97316', bg: 'bg-orange-500'  },
+              { label: 'Approved',    count: metrics.approved,  color: '#10b981', bg: 'bg-emerald-500' },
+            ];
+
+            // Build conic-gradient stops
+            const pieTotal = slices.reduce((s, sl) => s + sl.count, 0) || 1;
+            let cumDeg = 0;
+            const conicStops = slices.map(sl => {
+              const deg = (sl.count / pieTotal) * 360;
+              const stop = `${sl.color} ${cumDeg.toFixed(1)}deg ${(cumDeg + deg).toFixed(1)}deg`;
+              cumDeg += deg;
+              return stop;
+            }).join(', ');
+
+            return (
+              <div className="px-8 pb-20 pt-2 space-y-8">
+
+                {/* Top Summary Cards */}
+                <div className="grid grid-cols-3 gap-5">
+                  {[
+                    { label: 'Total Leads (All)',  value: total,                  sub: 'Across all pipelines',        color: 'text-slate-900',   bg: 'bg-white border-slate-200' },
+                    { label: 'In Services',         value: serviceLeadsAll.length, sub: 'Has a service request',       color: 'text-blue-700',    bg: 'bg-blue-50 border-blue-100' },
+                    { label: 'Approved / Invoiced', value: metrics.approved,       sub: 'Ready to invoice',            color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
+                  ].map(({ label, value, sub, color, bg }) => (
+                    <div key={label} className={`rounded-3xl border p-7 ${bg} shadow-sm flex flex-col gap-2`}>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</p>
+                      <p className={`text-4xl font-black ${color}`}>{value}</p>
+                      <p className="text-xs font-bold text-slate-400">{sub}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pie Chart + Legend */}
+                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 flex flex-col md:flex-row items-center gap-12">
+                  {/* Donut / Pie */}
+                  <div className="relative shrink-0">
+                    <div
+                      style={{
+                        background: `conic-gradient(${conicStops})`,
+                        width: 220,
+                        height: 220,
+                        borderRadius: '50%',
+                      }}
+                    />
+                    {/* Donut hole */}
+                    <div
+                      className="absolute bg-white rounded-full flex flex-col items-center justify-center"
+                      style={{ width: 110, height: 110, top: 55, left: 55 }}
+                    >
+                      <span className="text-3xl font-black text-slate-900">{pieTotal}</span>
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">SRs Total</span>
+                    </div>
+                  </div>
+
+                  {/* Legend + stats */}
+                  <div className="flex-1 grid grid-cols-2 gap-4">
+                    {slices.map(sl => {
+                      const pct = pieTotal > 0 ? ((sl.count / pieTotal) * 100).toFixed(1) : '0.0';
+                      return (
+                        <div key={sl.label} className="flex items-center gap-4 bg-slate-50 rounded-2xl px-5 py-4 border border-slate-100">
+                          <div className={`w-3 h-3 rounded-full ${sl.bg} shrink-0`} />
+                          <div className="flex-1">
+                            <p className="text-xs font-black text-slate-700">{sl.label}</p>
+                            <p className="text-[10px] font-bold text-slate-400">{pct}% of pipeline</p>
+                          </div>
+                          <span className="text-xl font-black text-slate-900">{sl.count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Sales-specific breakdown */}
+                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-5">Sales Pipeline Breakdown</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { label: 'Total Sales Leads', count: salesOnly.length,   color: 'text-slate-900' },
+                      { label: 'Follow Up',          count: metrics.followUp,   color: 'text-purple-600' },
+                      { label: 'Missed Follow Up',   count: metrics.missed,     color: 'text-red-600'   },
+                      { label: 'Advance Pending',    count: metrics.advance,    color: 'text-amber-600' },
+                    ].map(({ label, count, color }) => (
+                      <div key={label} className="rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+                        <p className={`text-3xl font-black mt-1 ${color}`}>{count || 0}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            );
+          })()}
 
           {/* ── INVOICES VIEW ────────────────────────────────────────── */}
           {(selectedSource === 'invoices' && userRole === 'admin') && (() => {
@@ -324,19 +434,22 @@ const AdminDashboard = () => {
                             <p className="text-sm font-bold text-slate-900">{customer.acqPOC || 'N/A'}</p>
                             <p className="text-[10px] font-bold text-slate-500">Acquisition POC</p>
                           </div>
-                          <div className="space-y-1">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Service POC</p>
-                            <p className="text-sm font-bold text-slate-900">{customer.servicePOC || 'N/A'}</p>
-                            <p className="text-[10px] font-bold text-slate-500">Assigned Service Team</p>
-                          </div>
                           <div className="space-y-1 md:col-span-1">
                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Special Notes</p>
                             <p className="text-xs font-bold text-slate-600 line-clamp-2 italic">{customer.specialNotes || 'No specific challenges noted'}</p>
                           </div>
-                          <div className="space-y-1">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Amount</p>
-                            <p className="text-2xl font-black text-emerald-600">₹{parseFloat(customer.amount || 0).toLocaleString('en-IN')}</p>
-                          </div>
+                           <div className="space-y-1">
+                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Amount</p>
+                             <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-2">
+                                <span className="text-emerald-600 font-black">₹</span>
+                                <input 
+                                  type="text"
+                                  value={customer.amount || '0'}
+                                  onChange={(e) => handlePOCUpdate(customer.id, 'amount', e.target.value)}
+                                  className="bg-transparent text-2xl font-black text-emerald-600 outline-none w-24"
+                                />
+                             </div>
+                           </div>
                         </div>
                       </div>
                     ))}
@@ -362,7 +475,6 @@ const AdminDashboard = () => {
                         <th className="px-6 py-5">Phone number</th>
                         <th className="px-6 py-5">Service</th>
                         {servicesSubMode === 'blocked' && <th className="px-6 py-5">Blocker POC</th>}
-                        <th className="px-6 py-5">Status</th>
                       </>
                     ) : (
                       <>
@@ -371,7 +483,6 @@ const AdminDashboard = () => {
                         <th className="px-6 py-5 text-center">Priority</th>
                         <th className="px-6 py-5">Acq. POC</th>
                         <th className="px-6 py-5">S-Acq. POC</th>
-                        <th className="px-6 py-5">Service POC</th>
                       </>
                     )}
                   </tr>
@@ -429,9 +540,7 @@ const AdminDashboard = () => {
                                  <span className="text-xs font-bold text-slate-500 text-center block w-full">-</span>
                               </td>
                             )}
-                            <td className="px-6 py-6">
-                               <span className="px-2.5 py-1 rounded-md bg-slate-100 text-[10px] font-black text-slate-500 border border-slate-200">S-PENDING</span>
-                            </td>
+
                           </>
                         ) : (
                           <>
@@ -489,142 +598,91 @@ const AdminDashboard = () => {
                                  ))}
                               </select>
                             </td>
-                            <td className="px-6 py-6 font-bold">
-                               <select 
-                                 disabled={!isAdmin}
-                                 value={customer.servicePOC || ''}
-                                 onChange={(e) => handlePOCUpdate(customer.id, 'servicePOC', e.target.value)}
-                                 className="bg-purple-50 border border-purple-100 font-black hover:border-purple-300 rounded-xl px-4 py-2 text-[10px] text-purple-600 outline-none focus:ring-4 focus:ring-purple-100 min-w-[120px] transition-all cursor-pointer disabled:opacity-60"
-                              >
-                                 <option value="">Awaiting POC</option>
-                                 {pocs.service?.map(name => (
-                                    <option key={name} value={name}>{name}</option>
-                                 ))}
-                              </select>
-                            </td>
+
                           </>
                         )}
                       </tr>
                       {expandedRows.has(customer.id) && (
                         <tr className="bg-[#f8fafc]">
-                          <td colSpan={selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 7 : 6) : 7} className="px-10 py-12">
+                          <td colSpan={selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 6 : 5) : 6} className="px-10 py-12">
                             <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-top-2 duration-500">
                                
-                               {/* Row Stats & Icons Integration */}
-                               <div className="flex items-center justify-between px-6 py-4 bg-white rounded-2xl border border-slate-100 shadow-sm border-l-4 border-l-primary">
-                                  <div className="flex items-center gap-8">
-                                     <div className="space-y-1">
-                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer Entity</div>
-                                        <div className="flex items-center gap-2">
-                                           <span className="text-sm font-black text-slate-900">{customer.customerName}</span>
-                                           <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded italic">UIDE{customer.id.substring(0,4).toUpperCase()}</span>
-                                        </div>
-                                     </div>
-                                     <div className="w-[1px] h-8 bg-slate-100" />
-                                     <div className="space-y-1">
-                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email Registry</div>
-                                        <div className="text-xs font-bold text-slate-700">{customer.email || 'N/A'}</div>
-                                     </div>
-                                  </div>
-                                  <div className="flex items-center gap-4">
-                                     <div className="flex flex-col items-end mr-4">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Lead Health</span>
-                                        <div className="flex items-center gap-1">
-                                           <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                                           <span className="text-[10px] font-black text-green-600 uppercase">Active</span>
-                                        </div>
-                                     </div>
-                                     <div className="flex gap-2">
-                                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 hover:text-primary hover:bg-white hover:shadow-md transition-all cursor-pointer"><FileText size={18} /></div>
-                                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 hover:text-primary hover:bg-white hover:shadow-md transition-all cursor-pointer"><Phone size={18} /></div>
-                                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 hover:text-primary hover:bg-white hover:shadow-md transition-all cursor-pointer"><MessageSquare size={18} /></div>
-                                     </div>
-                                  </div>
-                               </div>
+                               {/* Redundant Row Removed per User Request */}
+                               <div className="h-0.5 w-full bg-slate-50/50" />
 
                                {/* Advanced Services Table */}
                                <div className="space-y-4">
                                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 px-2">
                                      <div className="w-2 h-2 rounded bg-primary" /> Active Service Requests
                                   </h4>
-                                  <NestedServicesTable 
-                                    customer={customer} 
-                                    onUpdate={(field, val) => handlePOCUpdate(customer.id, field, val)} 
-                                    pocs={pocs}
-                                  />
-                               </div>
+                                   <NestedServicesTable 
+                                     customer={customer} 
+                                     onUpdate={(field, val) => handlePOCUpdate(customer.id, field, val)} 
+                                     pocs={pocs}
+                                     viewMode={selectedSource}
+                                     subMode={servicesSubMode}
+                                   />
+                                </div>
 
-                               {/* Internal Notes Timeline */}
-                               <div className="grid md:grid-cols-4 gap-10">
-                                 <div className="md:col-span-1 space-y-4">
-                                    <div className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-4">
-                                       <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Metadata</h4>
-                                       <div className="space-y-3">
-                                          <div className="flex justify-between items-center"><span className="text-[10px] text-slate-400 font-bold uppercase">ePID</span><span className="text-[10px] font-black text-slate-900 font-mono italic">{customer.ePID}</span></div>
-                                          <div className="flex justify-between items-center"><span className="text-[10px] text-slate-400 font-bold uppercase">Source</span><span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full uppercase tracking-tighter">Meta Ads</span></div>
-                                       </div>
-                                    </div>
-                                 </div>
-                                 <div className="md:col-span-3 space-y-4">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">Administrative Logs & Timeline</h4>
+                                <div className="space-y-4">
+                                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">Administrative Logs & Timeline</h4>
                                   
-                                  <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm min-h-[140px] flex flex-col gap-4">
-                                     {/* Notes List */}
-                                     {customer.internalNotes && customer.internalNotes.length > 0 ? (
-                                        <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 no-scrollbar">
-                                           {customer.internalNotes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map((note, idx) => (
-                                              <div key={idx} className="flex gap-3 items-start animate-in fade-in slide-in-from-left-2 duration-300">
-                                                 <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
-                                                    <User size={14} />
-                                                 </div>
-                                                 <div className="flex-1 space-y-1">
-                                                    <div className="flex justify-between items-center text-[10px] font-bold">
-                                                       <span className="text-slate-900">{note.author}</span>
-                                                       <span className="text-slate-400">{new Date(note.timestamp).toLocaleString()}</span>
-                                                    </div>
-                                                    <p className="text-xs text-slate-600 bg-slate-50/50 p-3 rounded-xl border border-slate-100/50">{note.text}</p>
-                                                 </div>
-                                              </div>
-                                           ))}
-                                        </div>
-                                     ) : (
-                                        <div className="flex-1 flex flex-col items-center justify-center text-center space-y-2 group py-4">
-                                           <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 group-hover:scale-110 transition-transform">
-                                              <FileText size={20} />
-                                           </div>
-                                           <p className="text-xs font-bold text-slate-400">Activity stream encrypted. Start tagging this lead to see logs.</p>
-                                        </div>
-                                     )}
+                                   <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm min-h-[140px] flex flex-col gap-4">
+                                      {/* Notes List */}
+                                      {customer.internalNotes && customer.internalNotes.length > 0 ? (
+                                         <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 no-scrollbar">
+                                            {customer.internalNotes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map((note, idx) => (
+                                               <div key={idx} className="flex gap-3 items-start animate-in fade-in slide-in-from-left-2 duration-300">
+                                                  <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                                                     <User size={14} />
+                                                  </div>
+                                                  <div className="flex-1 space-y-1">
+                                                     <div className="flex justify-between items-center text-[10px] font-bold">
+                                                        <span className="text-slate-900">{note.author}</span>
+                                                        <span className="text-slate-400">{new Date(note.timestamp).toLocaleString()}</span>
+                                                     </div>
+                                                     <p className="text-xs text-slate-600 bg-slate-50/50 p-3 rounded-xl border border-slate-100/50">{note.text}</p>
+                                                  </div>
+                                               </div>
+                                            ))}
+                                         </div>
+                                      ) : (
+                                         <div className="flex-1 flex flex-col items-center justify-center text-center space-y-2 group py-4">
+                                            <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 group-hover:scale-110 transition-transform">
+                                               <FileText size={20} />
+                                            </div>
+                                            <p className="text-xs font-bold text-slate-400">Activity stream encrypted. Start tagging this lead to see logs.</p>
+                                         </div>
+                                      )}
 
-                                     {/* Add Note Input */}
-                                     {noteInputId === customer.id ? (
-                                        <div className="flex flex-col gap-2 animate-in zoom-in-95 duration-200">
-                                           <textarea 
-                                              value={noteText}
-                                              onChange={(e) => setNoteText(e.target.value)}
-                                              placeholder="Type your internal note here..."
-                                              className="w-full p-4 rounded-xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-xs font-medium min-h-[80px]"
-                                              autoFocus
-                                           />
-                                           <div className="flex justify-end gap-2">
-                                              <button onClick={() => { setNoteInputId(null); setNoteText(''); }} className="px-4 py-2 text-xs font-black text-slate-400 uppercase tracking-widest hover:bg-slate-50 rounded-lg">Cancel</button>
-                                              <button onClick={() => handleAddNote(customer.id)} className="px-6 py-2 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-lg shadow-lg hover:bg-slate-800 transition-all">Post Note</button>
-                                           </div>
-                                        </div>
-                                     ) : (
-                                        <div className="flex justify-center pt-2 border-t border-slate-50">
-                                           <button 
-                                              onClick={() => setNoteInputId(customer.id)}
-                                              className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-2 group"
-                                           >
-                                              <Plus size={14} className="group-hover:rotate-90 transition-transform" /> Add Internal Note
-                                           </button>
-                                        </div>
-                                     )}
-                                  </div>
-                                 </div>
-                               </div>
-                            </div>
+                                      {/* Add Note Input */}
+                                      {noteInputId === customer.id ? (
+                                         <div className="flex flex-col gap-2 animate-in zoom-in-95 duration-200">
+                                            <textarea 
+                                               value={noteText}
+                                               onChange={(e) => setNoteText(e.target.value)}
+                                               placeholder="Type your internal note here..."
+                                               className="w-full p-4 rounded-xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all text-xs font-medium min-h-[80px]"
+                                               autoFocus
+                                            />
+                                            <div className="flex justify-end gap-2">
+                                               <button onClick={() => { setNoteInputId(null); setNoteText(''); }} className="px-4 py-2 text-xs font-black text-slate-400 uppercase tracking-widest hover:bg-slate-50 rounded-lg">Cancel</button>
+                                               <button onClick={() => handleAddNote(customer.id)} className="px-6 py-2 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-lg shadow-lg hover:bg-slate-800 transition-all">Post Note</button>
+                                            </div>
+                                         </div>
+                                      ) : (
+                                         <div className="flex justify-center pt-2 border-t border-slate-50">
+                                            <button 
+                                               onClick={() => setNoteInputId(customer.id)}
+                                               className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-2 group"
+                                            >
+                                               <Plus size={14} className="group-hover:rotate-90 transition-transform" /> Add Internal Note
+                                            </button>
+                                         </div>
+                                      )}
+                                   </div>
+                                </div>
+                             </div>
                           </td>
                         </tr>
                       )}

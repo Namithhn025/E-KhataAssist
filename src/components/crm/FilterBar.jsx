@@ -1,73 +1,145 @@
-import React from 'react';
-import { SlidersHorizontal, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { SlidersHorizontal, RefreshCw, X, Plus } from 'lucide-react';
 
-const FilterSelect = ({ label, options, value, onChange }) => {
+const FilterSelect = ({ label, options, value, onChange, onRemove, isRemovable }) => {
   return (
-    <div className="flex flex-col gap-1.5 h-full">
-      <select 
-        value={value}
-        onChange={onChange}
-        className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none hover:border-slate-300 focus:ring-4 focus:ring-slate-100 transition-all cursor-pointer min-w-32"
-      >
-        <option value="">{label}</option>
-        {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-      </select>
+    <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl hover:border-slate-300 focus-within:ring-4 focus-within:ring-slate-100 transition-all shadow-sm group">
+      <div className="flex flex-col">
+        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</span>
+        <select 
+          value={value}
+          onChange={onChange}
+          className="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer min-w-24 appearance-none"
+        >
+          <option value="">All</option>
+          {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+        </select>
+      </div>
+      {isRemovable && (
+        <button 
+          onClick={onRemove}
+          className="p-1 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-colors"
+        >
+          <X size={14} />
+        </button>
+      )}
     </div>
   );
 };
 
-const FilterBar = ({ activeFilters, onFilterChange, onReset, viewMode, pocs = {} }) => {
-  const commonFilters = [
-    { label: 'Priority', key: 'priority', options: ['High', 'Medium', 'Low'] },
-    { label: 'Acquisition Team', key: 'acqPOC', options: pocs.acquisition || [] },
-    { label: 'Service Acquisition', key: 'serviceAcqPOC', options: pocs.serviceAcquisition || [] },
-  ];
+const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterChange, onReset, viewMode, pocs = {} }) => {
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const menuRef = useRef(null);
 
-  const salesFilters = [
-    ...commonFilters,
-    { label: 'Interest', key: 'interest', options: ['Hot', 'Warm', 'Cold'] },
-    { label: 'Service Stage', key: 'stage', options: [
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowAddMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const allFilterSpecs = {
+    priority: { label: 'Priority', options: ['High', 'Medium', 'Low'] },
+    acqPOC: { label: 'Acquisit. POC', options: pocs.acquisition || [] },
+    serviceAcqPOC: { label: 'S-Acquisit. POC', options: pocs.serviceAcquisition || [] },
+    service: { label: 'Service Type', options: [
+      'Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)', 
+      'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration', 'Others'
+    ]},
+    stage: { label: 'Service Stage', options: [
       'Document Received', 'eKYC Pending', 'eKYC Done', 
       'Ready to eSign', 'Application Submitted', 'Approved', 'Rejected'
     ]},
-  ];
+    apartment: { label: 'Apartment', options: pocs.apartments || [] },
+    source: { label: 'Lead Source', options: ['Direct', 'Referral', 'Marketing', 'Partner'] }
+  };
 
-  const serviceFilters = [
-    ...commonFilters,
-    { label: 'Service Type', key: 'service', options: ['Ekatha', 'Katha Transfer', 'Bescom', 'Others'] },
-    { label: 'Stage', key: 'stage', options: ['Awaiting Docs', 'Filing', 'Correction', 'Escalated'] },
-    { label: 'Blocker POC', key: 'blockerPOC', options: pocs.acquisition || [] },
-  ];
+  const commonKeys = ['priority', 'acqPOC', 'serviceAcqPOC', 'stage', 'service'];
+  
+  const handleAddFilter = (key) => {
+    if (!visibleFilters.includes(key)) {
+      setVisibleFilters([...visibleFilters, key]);
+    }
+    setShowAddMenu(false);
+  };
 
-  const filterSpecs = viewMode === 'services' ? serviceFilters : salesFilters;
+  const handleRemoveFilter = (key) => {
+    setVisibleFilters(visibleFilters.filter(k => k !== key));
+    onFilterChange(key, ''); // Reset value
+  };
+
+  const handleReset = () => {
+    setVisibleFilters(commonKeys);
+    onReset();
+  };
 
   return (
-    <div className="px-8 py-4 flex items-center gap-4 border-b border-slate-50 bg-white/50 backdrop-blur-sm sticky top-24 z-30">
+    <div className="px-8 py-4 flex items-center gap-4 border-b border-slate-50 bg-white/50 backdrop-blur-sm sticky top-24 z-30 overflow-visible">
       <button 
-        onClick={onReset}
+        onClick={handleReset}
         className="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-900 transition-all shadow-sm transform active:rotate-180 duration-500"
       >
         <RefreshCw size={18} />
       </button>
 
-      <div className="flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth">
-        {filterSpecs.map((spec) => (
-          <FilterSelect 
-            key={spec.key}
-            label={spec.label}
-            options={spec.options}
-            value={activeFilters[spec.key] || ''}
-            onChange={(e) => onFilterChange(spec.key, e.target.value)}
-          />
-        ))}
-        <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-black text-slate-700 shadow-sm transition-all whitespace-nowrap">
-          <SlidersHorizontal size={14} /> More Filters
-        </button>
+      <div className="flex items-center gap-3 overflow-x-auto no-scrollbar scroll-smooth flex-1 py-1">
+        {visibleFilters.map((key) => {
+          const spec = allFilterSpecs[key];
+          if (!spec) return null;
+          return (
+            <FilterSelect 
+              key={key}
+              label={spec.label}
+              options={spec.options}
+              value={activeFilters[key] || ''}
+              onChange={(e) => onFilterChange(key, e.target.value)}
+              onRemove={() => handleRemoveFilter(key)}
+              isRemovable={!commonKeys.includes(key)}
+            />
+          );
+        })}
       </div>
 
-      <div className="ml-auto flex items-center gap-2 text-xs font-bold text-slate-500 whitespace-nowrap bg-slate-100/50 px-4 py-2 rounded-xl border border-slate-200">
-        Sort by: 
-        <select className="bg-transparent border-none outline-none text-slate-900 cursor-pointer">
+      <div className="relative">
+        <button 
+           onClick={() => setShowAddMenu(!showAddMenu)}
+           className="flex items-center gap-2 px-5 py-3 rounded-xl border border-dashed border-slate-200 bg-white hover:border-primary hover:bg-slate-50 text-xs font-black text-slate-400 hover:text-primary transition-all whitespace-nowrap shadow-sm group"
+        >
+          <Plus size={14} className="group-hover:rotate-90 transition-transform" /> Add Filter
+        </button>
+
+        {showAddMenu && (
+          <div 
+            ref={menuRef}
+            className="absolute top-full right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 py-3 z-[100] animate-in zoom-in-95 duration-200 origin-top-right scale-100"
+          >
+             <div className="px-4 py-2 mb-2">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Available Columns</p>
+             </div>
+             <div className="max-h-64 overflow-y-auto no-scrollbar px-2 space-y-1">
+               {Object.entries(allFilterSpecs).filter(([k]) => !visibleFilters.includes(k)).map(([key, spec]) => (
+                 <button 
+                   key={key}
+                   onClick={() => handleAddFilter(key)}
+                   className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-primary rounded-xl transition-all flex items-center justify-between group"
+                 >
+                   {spec.label}
+                   <div className="w-5 h-5 bg-slate-50 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Plus size={12} />
+                   </div>
+                 </button>
+               ))}
+             </div>
+          </div>
+        )}
+      </div>
+
+      <div className="ml-auto flex items-center gap-2 text-xs font-bold text-slate-500 whitespace-nowrap bg-slate-100/50 px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
+        <span className="text-slate-400">Sort:</span> 
+        <select className="bg-transparent border-none outline-none text-slate-900 cursor-pointer font-black uppercase text-[10px] tracking-widest">
           <option>Date Added</option>
           <option>Recently Updated</option>
           <option>Priority (High to Low)</option>

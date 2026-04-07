@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
-  LayoutGrid, Compass, ShoppingBag, Briefcase, FileText, 
-  Activity, Target, Settings, LogOut, ChevronDown,
+  BarChart2, Compass, ShoppingBag, Briefcase, FileText, 
+  Settings, LogOut, ChevronDown,
   Clock, PlayCircle, XCircle, CheckCircle, RefreshCw
 } from 'lucide-react';
 
@@ -17,9 +17,9 @@ const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode,
   ];
 
   const menuItems = [
-    { id: 'nexus', name: 'Nexus', icon: LayoutGrid },
-    { id: 'camp',  name: 'Camp',  icon: Compass    },
-    { id: 'sales', name: 'Sales', icon: ShoppingBag },
+    ...(userRole === 'admin' ? [{ id: 'nexus', name: 'Overview', icon: BarChart2 }] : []),
+    { id: 'camp',  name: 'Camp',     icon: Compass   },
+    { id: 'sales', name: 'Sales',    icon: ShoppingBag },
     { 
       id: 'services', 
       name: 'Services', 
@@ -27,11 +27,9 @@ const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode,
       hasDropdown: true,
       subItems: allSubItems,
     },
-    { id: 'control-tower', name: 'Control Tower', icon: Activity  },
-    { id: 'marketing',     name: 'Marketing',     icon: Target    },
     ...(userRole === 'admin' ? [
-        { id: 'invoices',      name: 'Invoices',      icon: FileText  },
-        { id: 'admin',         name: 'Admin',    icon: Settings }
+        { id: 'invoices', name: 'Invoices', icon: FileText },
+        { id: 'admin',    name: 'Admin',    icon: Settings }
     ] : []),
   ];
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, Upload, Plus } from 'lucide-react';
 
-const DashboardHeader = ({ title, onSearch, onBulkUpload, onNewLead }) => {
+const DashboardHeader = ({ title, onSearch, onBulkUpload, onNewLead, viewMode }) => {
   return (
     <div className="flex justify-between items-center px-8 py-6 bg-white border-b border-slate-100 shadow-sm sticky top-0 z-40 backdrop-blur-md bg-opacity-70">
       <div>
@@ -30,12 +30,14 @@ const DashboardHeader = ({ title, onSearch, onBulkUpload, onNewLead }) => {
             <Upload size={18} className="text-slate-500" /> Bulk Upload
           </button>
           
-          <button 
-            onClick={onNewLead}
-            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#0f172a] hover:bg-[#1e293b] text-white font-bold text-sm shadow-xl shadow-slate-200 transition-all transform active:scale-[0.98]"
-          >
-            <Plus size={20} /> New Lead
-          </button>
+          {viewMode === 'sales' && (
+            <button 
+              onClick={onNewLead}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#0f172a] hover:bg-[#1e293b] text-white font-bold text-sm shadow-xl shadow-slate-200 transition-all transform active:scale-[0.98]"
+            >
+              <Plus size={20} /> New Lead
+            </button>
+          )}
         </div>
       </div>
     </div>
