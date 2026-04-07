@@ -27,10 +27,12 @@ const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode,
       hasDropdown: true,
       subItems: allSubItems,
     },
-    { id: 'invoices',      name: 'Invoices',      icon: FileText  },
     { id: 'control-tower', name: 'Control Tower', icon: Activity  },
     { id: 'marketing',     name: 'Marketing',     icon: Target    },
-    ...(userRole === 'admin' ? [{ id: 'admin', name: 'Admin', icon: Settings }] : []),
+    ...(userRole === 'admin' ? [
+        { id: 'invoices',      name: 'Invoices',      icon: FileText  },
+        { id: 'admin',         name: 'Admin',    icon: Settings }
+    ] : []),
   ];
 
   return (

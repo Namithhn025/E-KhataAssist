@@ -17,8 +17,6 @@ import { ChevronDown, MessageSquare } from 'lucide-react';
 const AdminDashboard = () => {
   const [selectedSource, setSelectedSource] = useState('sales');
   const [customers, setCustomers] = useState([]);
-  const [apartments, setApartments] = useState([]);
-  const [selectedApartment, setSelectedApartment] = useState('all');
   const [activeFilters, setActiveFilters] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
@@ -29,23 +27,24 @@ const AdminDashboard = () => {
   const [noteInputId, setNoteInputId] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [servicesSubMode, setServicesSubMode] = useState('active');
+  const userRole = localStorage.getItem('crm_role') || 'worker';
+  const isAdmin = userRole === 'admin';
   
   const navigate = useNavigate();
 
-  // Load Apartments
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'apartments'), (snapshot) => {
-      setApartments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
-    return unsubscribe;
-  }, []);
-
-  // Load Settings (POCs)
-  const [pocs, setPocs] = useState({ acquisition: ['Rasika', 'Ahmed', 'Suresh'], sales: ['Deepak', 'Manju', 'Kiran'] });
+  // Load Settings (POCs & Apartments)
+  const [pocs, setPocs] = useState({ 
+    acquisition: ['Rasika', 'Ahmed', 'Suresh'], 
+    serviceAcquisition: [], 
+    service: ['Deepak', 'Manju', 'Kiran'],
+    apartments: [] 
+  });
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, 'settings', 'crm_config'), (snapshot) => {
       if (snapshot.exists()) {
-        setPocs(snapshot.data().pocs || { acquisition: [], sales: [] });
+        const data = snapshot.data().pocs || { acquisition: [], serviceAcquisition: [], service: [], apartments: [] };
+        if (!data.apartments) data.apartments = [];
+        setPocs(data);
       }
     });
     return unsubscribe;
@@ -164,10 +163,10 @@ const AdminDashboard = () => {
         const isRetry    = c.serviceStatus === 'Retry';
         const isApproved = c.serviceStatus === 'Approved';
 
-        // Pre-active: has service, docs NOT submitted yet
-        const isPreActive = !c.docsSubmitted && !isBlocked && !isClosed && !isRetry && !isApproved;
-        // Active: docs submitted, still in progress
-        const isActive = c.docsSubmitted && !isBlocked && !isClosed && !isRetry && !isApproved;
+        // Pre-active: has service, docs NOT submitted yet OR Service POC not assigned
+        const isPreActive = (!c.docsSubmitted || !c.servicePOC) && !isBlocked && !isClosed && !isRetry && !isApproved;
+        // Active: docs submitted AND service POC assigned, still in progress
+        const isActive = c.docsSubmitted && c.servicePOC && !isBlocked && !isClosed && !isRetry && !isApproved;
 
         if (servicesSubMode === 'pre-active' && !isPreActive) return false;
         if (servicesSubMode === 'active'     && !isActive)    return false;
@@ -181,11 +180,12 @@ const AdminDashboard = () => {
     
     const matchesInterest = !activeFilters.interest || c.interest === activeFilters.interest;
     const matchesAcqPOC = !activeFilters.acqPOC || c.acqPOC === activeFilters.acqPOC;
-    const matchesSalesPOC = !activeFilters.salesPOC || c.salesPOC === activeFilters.salesPOC;
+    const matchesServiceAcqPOC = !activeFilters.serviceAcqPOC || c.serviceAcqPOC === activeFilters.serviceAcqPOC;
+    const matchesServicePOC = !activeFilters.servicePOC || c.servicePOC === activeFilters.servicePOC;
     const matchesPriority = !activeFilters.priority || c.priority === activeFilters.priority;
     const matchesStage = !activeFilters.stage || c.status === activeFilters.stage;
     
-    return matchesSearch && matchesInterest && matchesAcqPOC && matchesSalesPOC && matchesPriority && matchesStage;
+    return matchesSearch && matchesInterest && matchesAcqPOC && matchesServiceAcqPOC && matchesServicePOC && matchesPriority && matchesStage;
   });
 
   const serviceOptions = [
@@ -202,12 +202,13 @@ const AdminDashboard = () => {
           selectedSource={selectedSource} 
           setSelectedSource={(source) => {
              if (source === 'admin') setIsAdminSettingsOpen(true);
+             else if (source === 'invoices' && userRole !== 'admin') return;
              else setSelectedSource(source);
           }} 
           servicesSubMode={servicesSubMode}
           setServicesSubMode={setServicesSubMode}
           onLogout={handleLogout}
-          userRole="admin"
+          userRole={userRole}
         />
   
         {/* Main Content - Scrollable Right */}
@@ -216,6 +217,8 @@ const AdminDashboard = () => {
           {/* Header */}
           <DashboardHeader 
             title={
+              selectedSource === 'nexus' ? 'Nexus' :
+              selectedSource === 'camp' ? 'Camp' :
               selectedSource === 'invoices' ? 'Invoices' :
               selectedSource === 'services' ? `Services / ${servicesSubMode.charAt(0).toUpperCase() + servicesSubMode.slice(1)}` : 
               'Sales'
@@ -231,13 +234,14 @@ const AdminDashboard = () => {
             viewMode={selectedSource}
             onFilterChange={(key, val) => setActiveFilters({...activeFilters, [key]: val})}
             onReset={() => setActiveFilters({})}
+            pocs={pocs}
           />
   
           {/* Metric Summary Dashboard */}
           <MetricSummary metrics={metrics} viewMode={selectedSource} />
 
           {/* ── INVOICES VIEW ────────────────────────────────────────── */}
-          {selectedSource === 'invoices' && (() => {
+          {(selectedSource === 'invoices' && userRole === 'admin') && (() => {
             const approvedLeads = customers.filter(c => c.serviceStatus === 'Approved');
             return (
               <div className="px-8 pb-20 pt-4">
@@ -304,7 +308,7 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Invoice Body */}
-                        <div className="px-8 py-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="px-8 py-6 grid grid-cols-2 md:grid-cols-5 gap-6">
                           <div className="space-y-1">
                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Customer</p>
                             <p className="text-sm font-black text-slate-900">{customer.customerName}</p>
@@ -313,12 +317,21 @@ const AdminDashboard = () => {
                           <div className="space-y-1">
                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Service</p>
                             <p className="text-sm font-bold text-slate-900">{customer.serviceRequested || customer.service || customer.serviceType || 'N/A'}</p>
-                            <p className="text-[10px] font-bold text-slate-500">{customer.society || 'N/A'}</p>
+                            <p className="text-[10px] font-bold text-slate-500">{customer.apartment || customer.society || 'N/A'}</p>
                           </div>
                           <div className="space-y-1">
                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Handled By</p>
                             <p className="text-sm font-bold text-slate-900">{customer.acqPOC || 'N/A'}</p>
                             <p className="text-[10px] font-bold text-slate-500">Acquisition POC</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Service POC</p>
+                            <p className="text-sm font-bold text-slate-900">{customer.servicePOC || 'N/A'}</p>
+                            <p className="text-[10px] font-bold text-slate-500">Assigned Service Team</p>
+                          </div>
+                          <div className="space-y-1 md:col-span-1">
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Special Notes</p>
+                            <p className="text-xs font-bold text-slate-600 line-clamp-2 italic">{customer.specialNotes || 'No specific challenges noted'}</p>
                           </div>
                           <div className="space-y-1">
                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Amount</p>
@@ -355,9 +368,10 @@ const AdminDashboard = () => {
                       <>
                         <th className="px-6 py-5">Name & ID </th>
                         <th className="px-6 py-5">Phone Number</th>
-                        <th className="px-6 py-5">Priority</th>
-                        <th className="px-6 py-5">Acquisition POC</th>
-                        <th className="px-6 py-5">Marketing/Activity</th>
+                        <th className="px-6 py-5 text-center">Priority</th>
+                        <th className="px-6 py-5">Acq. POC</th>
+                        <th className="px-6 py-5">S-Acq. POC</th>
+                        <th className="px-6 py-5">Service POC</th>
                       </>
                     )}
                   </tr>
@@ -436,51 +450,64 @@ const AdminDashboard = () => {
                                  </button>
                                </div>
                             </td>
-                            <td className="px-6 py-6">
+                            <td className="px-6 py-6 text-center">
                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
                                  customer.priority === 'High' ? 'bg-red-50 text-red-600 border-red-100' :
                                  customer.priority === 'Medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
                                  'bg-slate-100 text-slate-500 border-slate-200'
-                               }`}>
+                               }`}
+                               onClick={() => isAdmin && handlePOCUpdate(customer.id, 'priority', customer.priority === 'High' ? 'Medium' : (customer.priority === 'Medium' ? 'Low' : 'High'))}
+                               style={{ cursor: isAdmin ? 'pointer' : 'default' }}
+                               >
                                  {customer.priority || 'Low'}
                                </span>
                             </td>
                             <td className="px-6 py-6">
                               <select 
+                                 disabled={!isAdmin}
                                  value={customer.acqPOC || ''}
                                  onChange={(e) => handlePOCUpdate(customer.id, 'acqPOC', e.target.value)}
-                                 className="bg-white/50 border border-slate-100 font-bold hover:border-slate-300 rounded-xl px-4 py-2 text-xs text-slate-700 outline-none focus:ring-4 focus:ring-slate-100 min-w-32 transition-all cursor-pointer"
+                                 className="bg-white/50 border border-slate-100 font-bold hover:border-slate-300 rounded-xl px-4 py-2 text-[10px] text-slate-700 outline-none focus:ring-4 focus:ring-slate-100 min-w-[120px] transition-all cursor-pointer disabled:opacity-60"
                               >
-                                 <option value="">Select...</option>
+                                 <option value="">Select Acq...</option>
                                  {pocs.acquisition?.map(name => (
                                     <option key={name} value={name}>{name}</option>
                                  ))}
                               </select>
                             </td>
+
                             <td className="px-6 py-6">
-                               <div className="flex items-center gap-4">
-                                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100">
-                                     <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-[10px] text-white font-bold">M</div>
-                                     <span className="text-[10px] font-black text-blue-600 uppercase tracking-tighter">Meta</span>
-                                  </div>
-                                  <div className="text-[10px] space-y-0.5">
-                                     <div className="font-bold text-slate-400">Total: <span className="text-slate-900 font-black">0</span></div>
-                                     <div className="font-bold text-green-600">Connect: <span className="font-black">0</span></div>
-                                     <div className="font-bold text-red-500">Not Con: <span className="font-black">0</span></div>
-                                  </div>
-                                  <div className="flex gap-2 text-slate-400">
-                                     <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 hover:text-primary transition-colors cursor-pointer"><BookOpen size={14} /></div>
-                                     <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 hover:text-primary transition-colors cursor-pointer"><Phone size={14} /></div>
-                                     <div className="p-2 rounded-lg bg-slate-50 border border-slate-100 hover:text-primary transition-colors cursor-pointer"><MessageCircle size={14} /></div>
-                                  </div>
-                               </div>
+                              <select 
+                                 disabled={!isAdmin}
+                                 value={customer.serviceAcqPOC || ''}
+                                 onChange={(e) => handlePOCUpdate(customer.id, 'serviceAcqPOC', e.target.value)}
+                                 className="bg-indigo-50 border border-indigo-100 font-bold hover:border-indigo-300 rounded-xl px-4 py-2 text-[10px] text-indigo-500 outline-none focus:ring-4 focus:ring-indigo-100 min-w-[120px] transition-all cursor-pointer disabled:opacity-60"
+                              >
+                                 <option value="">Select S-Acq...</option>
+                                 {pocs.serviceAcquisition?.map(name => (
+                                    <option key={name} value={name}>{name}</option>
+                                 ))}
+                              </select>
+                            </td>
+                            <td className="px-6 py-6 font-bold">
+                               <select 
+                                 disabled={!isAdmin}
+                                 value={customer.servicePOC || ''}
+                                 onChange={(e) => handlePOCUpdate(customer.id, 'servicePOC', e.target.value)}
+                                 className="bg-purple-50 border border-purple-100 font-black hover:border-purple-300 rounded-xl px-4 py-2 text-[10px] text-purple-600 outline-none focus:ring-4 focus:ring-purple-100 min-w-[120px] transition-all cursor-pointer disabled:opacity-60"
+                              >
+                                 <option value="">Awaiting POC</option>
+                                 {pocs.service?.map(name => (
+                                    <option key={name} value={name}>{name}</option>
+                                 ))}
+                              </select>
                             </td>
                           </>
                         )}
                       </tr>
                       {expandedRows.has(customer.id) && (
                         <tr className="bg-[#f8fafc]">
-                          <td colSpan={selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 7 : 6) : 6} className="px-10 py-12">
+                          <td colSpan={selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 7 : 6) : 7} className="px-10 py-12">
                             <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-top-2 duration-500">
                                
                                {/* Row Stats & Icons Integration */}
@@ -523,6 +550,7 @@ const AdminDashboard = () => {
                                   <NestedServicesTable 
                                     customer={customer} 
                                     onUpdate={(field, val) => handlePOCUpdate(customer.id, field, val)} 
+                                    pocs={pocs}
                                   />
                                </div>
 
@@ -604,7 +632,7 @@ const AdminDashboard = () => {
                   ))}
                   {filteredCustomers.length === 0 && (
                     <tr>
-                       <td colSpan={selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 7 : 6) : 6} className="py-24 text-center">
+                       <td colSpan={selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 7 : 6) : 7} className="py-24 text-center">
                           <div className="flex flex-col items-center justify-center space-y-4">
                              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100 text-slate-300">
                                 <Search size={24} />

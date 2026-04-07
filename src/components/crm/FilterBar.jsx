@@ -16,12 +16,16 @@ const FilterSelect = ({ label, options, value, onChange }) => {
   );
 };
 
-const FilterBar = ({ activeFilters, onFilterChange, onReset, viewMode }) => {
-  const salesFilters = [
-    { label: 'Interest', key: 'interest', options: ['Hot', 'Warm', 'Cold'] },
-    { label: 'Acquisition POC', key: 'acqPOC', options: ['Rasika', 'Ahmed', 'Suresh'] },
-    { label: 'Sales POC', key: 'salesPOC', options: ['Deepak', 'Manju', 'Kiran'] },
+const FilterBar = ({ activeFilters, onFilterChange, onReset, viewMode, pocs = {} }) => {
+  const commonFilters = [
     { label: 'Priority', key: 'priority', options: ['High', 'Medium', 'Low'] },
+    { label: 'Acquisition Team', key: 'acqPOC', options: pocs.acquisition || [] },
+    { label: 'Service Acquisition', key: 'serviceAcqPOC', options: pocs.serviceAcquisition || [] },
+  ];
+
+  const salesFilters = [
+    ...commonFilters,
+    { label: 'Interest', key: 'interest', options: ['Hot', 'Warm', 'Cold'] },
     { label: 'Service Stage', key: 'stage', options: [
       'Document Received', 'eKYC Pending', 'eKYC Done', 
       'Ready to eSign', 'Application Submitted', 'Approved', 'Rejected'
@@ -29,13 +33,10 @@ const FilterBar = ({ activeFilters, onFilterChange, onReset, viewMode }) => {
   ];
 
   const serviceFilters = [
-    { label: 'Blocker POC', key: 'blockerPOC', options: ['Ahmed', 'Suresh', 'Manju'] },
-    { label: 'Service', key: 'service', options: ['E-Khata', 'Property Tax', 'Khata Transfer'] },
+    ...commonFilters,
+    { label: 'Service Type', key: 'service', options: ['Ekatha', 'Katha Transfer', 'Bescom', 'Others'] },
     { label: 'Stage', key: 'stage', options: ['Awaiting Docs', 'Filing', 'Correction', 'Escalated'] },
-    { label: 'Blocker Reason', key: 'blockerReason', options: ['Missing Documents', 'Owner Not Available', 'System Issue'] },
-    { label: 'BBMP Status', key: 'bbmpStatus', options: ['Not Started', 'In Progress', 'Completed'] },
-    { label: 'Service POC', key: 'servicePOC', options: ['Deepak', 'Kiran'] },
-    { label: 'Ward No', key: 'wardNo', options: ['12', '45', '89', '112'] },
+    { label: 'Blocker POC', key: 'blockerPOC', options: pocs.acquisition || [] },
   ];
 
   const filterSpecs = viewMode === 'services' ? serviceFilters : salesFilters;

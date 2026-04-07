@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, User, DollarSign, Clock, MessageSquare, AlertTriangle, CheckCircle, XCircle, Lock, RefreshCw, BadgeCheck } from 'lucide-react';
+import { Phone, User, DollarSign, Clock, MessageSquare, AlertTriangle, CheckCircle, XCircle, Lock, RefreshCw, BadgeCheck, FileText, Globe } from 'lucide-react';
 
 // Full lifecycle stages for a service
 const SERVICE_STAGES = [
@@ -18,7 +18,7 @@ const stageColors = {
   'eKYC Done':             'bg-blue-50 text-blue-700 border-blue-200',
   'Ready to eSign':        'bg-purple-50 text-purple-700 border-purple-200',
   'Application Submitted': 'bg-green-100 text-green-800 border-green-200',
-  'Rejected':              'bg-red-50 text-red-700 border-red-200',
+  'Blocked':               'bg-red-50 text-red-700 border-red-200',
 };
 
 const serviceOptions = [
@@ -38,15 +38,15 @@ const RejectionModal = ({ open, onConfirm, onCancel }) => {
             <AlertTriangle size={22} className="text-red-500" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-slate-900">Reject & Block Lead</h3>
-            <p className="text-xs text-slate-400 font-medium">A reason is required to move this lead to Blocked.</p>
+            <h3 className="text-lg font-black text-slate-900 text-red-500">Block & Tag Lead</h3>
+            <p className="text-xs text-slate-400 font-medium">A blocker reason is mandatory for reference.</p>
           </div>
         </div>
         <textarea
           autoFocus
           value={reason}
           onChange={e => setReason(e.target.value)}
-          placeholder="Enter reason for rejection (mandatory)..."
+          placeholder="Why is this lead blocked? (e.g. Doc mismatch, No response)..."
           className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-4 focus:ring-red-500/10 focus:border-red-400 outline-none transition-all text-sm font-medium min-h-[100px] resize-none"
         />
         <div className="flex gap-3">
@@ -72,6 +72,7 @@ const RejectionModal = ({ open, onConfirm, onCancel }) => {
 // ─── Stage Progress Bar ─────────────────────────────────────────────────────
 const StageProgress = ({ stage }) => {
   const idx = SERVICE_STAGES.indexOf(stage);
+  if (idx === -1) return null;
   return (
     <div className="flex items-center gap-1 mt-1">
       {SERVICE_STAGES.map((s, i) => (
@@ -85,34 +86,29 @@ const StageProgress = ({ stage }) => {
   );
 };
 
-// ─── Main Component ─────────────────────────────────────────────────────────
-const NestedServicesTable = ({ customer, onUpdate }) => {
+const NestedServicesTable = ({ customer, onUpdate, pocs = {} }) => {
   const [showRejectionModal, setShowRejectionModal] = useState(false);
-  const [pendingRejectStage, setPendingRejectStage] = useState(null);
   const userRole = localStorage.getItem('crm_role') || 'worker';
+  const isAdmin = userRole === 'admin';
 
-  const currentStage = customer.serviceStage || 'Document Received';
   const isBlocked = customer.serviceStatus === 'Blocked';
   const isClosed  = customer.serviceStatus === 'Closed';
+  const isApproved = customer.serviceStatus === 'Approved';
 
-  // Get the available stages: all SERVICE_STAGES + Rejected
-  const availableStages = [...SERVICE_STAGES, 'Rejected'];
+  // Available stages: all standard ones + terminal ones
+  const availableStages = [...SERVICE_STAGES, 'Blocked'];
 
   const handleStageChange = (newStage) => {
-    if (isBlocked || isClosed) return; // lock if already terminal
+    if (isBlocked || isClosed || isApproved) return;
 
-    if (newStage === 'Rejected') {
-      // Requires a reason — open modal
-      setPendingRejectStage(newStage);
+    if (newStage === 'Blocked') {
       setShowRejectionModal(true);
       return;
     }
 
-    if (!onUpdate) return;
     onUpdate('serviceStage', newStage);
 
     if (newStage === CLOSING_STAGE) {
-      // Auto-close the lead
       onUpdate('serviceStatus', 'Closed');
       onUpdate('closedDate', new Date().toISOString());
       alert('✅ Application Submitted! Lead has been moved to CLOSED.');
@@ -121,28 +117,19 @@ const NestedServicesTable = ({ customer, onUpdate }) => {
 
   const handleConfirmRejection = (reason) => {
     setShowRejectionModal(false);
-    if (!onUpdate) return;
-    onUpdate('serviceStage', 'Rejected');
+    onUpdate('serviceStage', 'Blocked');
     onUpdate('serviceStatus', 'Blocked');
-    onUpdate('rejectionReason', reason);
+    onUpdate('blockerReason', reason);
     onUpdate('blockedDate', new Date().toISOString());
   };
 
-  const handleDocsSubmit = () => {
-    if (!onUpdate) return;
-    const newVal = !customer.docsSubmitted;
-    onUpdate('docsSubmitted', newVal);
-    if (newVal) {
-      onUpdate('docsSubmittedDate', new Date().toISOString());
-      alert('✅ Docs Submitted! Lead is now moving to ACTIVE.');
-    }
-  };
-
   const calculateAge = (startDate) => {
-    if (!startDate) return 'Not started';
-    const diffTime = Math.abs(new Date() - new Date(startDate));
+    if (!startDate) return '0d';
+    const start = new Date(startDate);
+    if (isNaN(start.getTime())) return 'N/A';
+    const diffTime = Math.abs(new Date() - start);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return `${Math.max(0, diffDays - 1)}d`;
+    return `${Math.max(0, diffDays - 1)}d (${start.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' })})`;
   };
 
   return (
@@ -153,64 +140,57 @@ const NestedServicesTable = ({ customer, onUpdate }) => {
         onCancel={() => setShowRejectionModal(false)}
       />
 
-      <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
-        {/* Status Banner for terminal states */}
+      <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-xl ring-1 ring-slate-900/5">
+        
+        {/* Banner Section */}
         {isBlocked && (
-          <div className="px-6 py-3 text-xs font-black uppercase tracking-widest flex items-center gap-2 bg-red-50 text-red-600 border-b border-red-100">
-            <Lock size={12} />
-            BLOCKED — {customer.rejectionReason || 'No reason provided'}
-          </div>
-        )}
-
-        {customer.serviceStatus === 'Approved' && (
-          <div className="px-6 py-3 text-xs font-black uppercase tracking-widest flex items-center gap-2 bg-emerald-50 text-emerald-700 border-b border-emerald-100">
-            <BadgeCheck size={14} />
-            APPROVED — Moved to Invoice
-          </div>
-        )}
-
-        {customer.serviceStatus === 'Retry' && (
-          <div className="px-6 py-3 text-xs font-black uppercase tracking-widest flex items-center gap-2 bg-orange-50 text-orange-600 border-b border-orange-100">
-            <RefreshCw size={12} />
-            RETRY — Re-processing from Document Received
-          </div>
-        )}
-
-        {/* Closed decision banner — Approve or Retry */}
-        {isClosed && (
-          <div className="px-6 py-4 bg-blue-50 border-b border-blue-100 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-blue-700">
-              <CheckCircle size={16} />
+          <div className="px-8 py-4 bg-red-50 border-b border-red-100 flex items-center justify-between">
+            <div className="flex items-center gap-3 text-red-600">
+              <Lock size={16} />
               <div>
-                <p className="text-xs font-black uppercase tracking-widest">Application Submitted — Action Required</p>
-                <p className="text-[10px] font-medium text-blue-500">Choose next step for this lead</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.1em]">Lead Status: Blocked</p>
+                <p className="text-xs font-bold">{customer.blockerReason || 'Technical restriction'}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+               <div className="flex items-center gap-2">
+                 <span className="text-[10px] font-black text-slate-400 uppercase">Updated to Customer?</span>
+                 <input 
+                   type="checkbox" 
+                   checked={customer.updatedToCustomer || false}
+                   onChange={(e) => onUpdate('updatedToCustomer', e.target.checked)}
+                   className="w-4 h-4 rounded border-slate-300 text-red-500 focus:ring-red-500" 
+                 />
+               </div>
+               {isAdmin && (
+                 <button onClick={() => onUpdate('serviceStatus', 'Open')} className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline">Revive Lead</button>
+               )}
+            </div>
+          </div>
+        )}
+
+        {isClosed && !isApproved && (
+          <div className="px-8 py-5 bg-blue-50 border-b border-blue-100 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 text-blue-700">
+              <BadgeCheck size={20} className="animate-pulse" />
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.1em]">Verification Required</p>
+                <p className="text-sm font-bold">Standard closing reached — Admin must approve for invoice</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              {/* Retry — both Admin and Worker can trigger */}
-              <button
-                onClick={() => {
-                  if (!onUpdate) return;
-                  onUpdate('serviceStatus', 'Retry');
-                  onUpdate('serviceStage', 'Document Received');
-                  onUpdate('retryDate', new Date().toISOString());
-                }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-md shadow-orange-200"
+              <button 
+                onClick={() => { onUpdate('serviceStatus', 'Retry'); onUpdate('serviceStage', 'Document Received'); }}
+                className="px-6 py-2.5 rounded-2xl bg-white border border-blue-200 text-blue-600 text-[10px] font-black uppercase tracking-widest hover:bg-blue-50 transition-all font-mono"
               >
-                <RefreshCw size={12} /> Retry
+                <RefreshCw size={12} className="inline mr-2" /> Retry Step
               </button>
-              {/* Approve — Admin only */}
-              {userRole === 'admin' && (
-                <button
-                  onClick={() => {
-                    if (!onUpdate) return;
-                    onUpdate('serviceStatus', 'Approved');
-                    onUpdate('approvedDate', new Date().toISOString());
-                    alert('✅ Lead Approved! Moving to Invoice.');
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-md shadow-emerald-200"
+              {isAdmin && (
+                <button 
+                  onClick={() => { onUpdate('serviceStatus', 'Approved'); onUpdate('approvedDate', new Date().toISOString()); }}
+                  className="px-8 py-2.5 rounded-2xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/20"
                 >
-                  <BadgeCheck size={12} /> Approve → Invoice
+                  Confirm Approve
                 </button>
               )}
             </div>
@@ -218,178 +198,228 @@ const NestedServicesTable = ({ customer, onUpdate }) => {
         )}
 
         <div className="overflow-x-auto no-scrollbar">
-          <table className="w-full text-left border-collapse min-w-[1300px]">
+          <table className="w-full text-left border-collapse min-w-[1700px]">
             <thead>
-              <tr className="bg-slate-50/50 text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-100">
-                <th className="px-6 py-4">Name & Phone</th>
-                <th className="px-6 py-4">Service</th>
-                <th className="px-6 py-4">Society</th>
-                <th className="px-6 py-4">Acq. POC</th>
-                <th className="px-6 py-4 min-w-[220px]">Service Stage</th>
-                <th className="px-6 py-4">Age</th>
-                <th className="px-6 py-4">Amount</th>
-                <th className="px-6 py-4 text-center">Priority</th>
-                <th className="px-6 py-4 text-center">Docs Submitted</th>
-                <th className="px-6 py-4">Call Status</th>
+              <tr className="bg-slate-50/70 text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-slate-200/50">
+                <th className="px-8 py-5">Core Registry</th>
+                <th className="px-8 py-5">Product/Service</th>
+                <th className="px-8 py-5">Apartment/Site</th>
+                <th className="px-8 py-5">Acq. POC</th>
+                <th className="px-8 py-5">S-Acq. POC</th>
+                <th className="px-8 py-5">Assigned Service Team</th>
+                <th className="px-8 py-5 min-w-[240px]">Live Lifecycle Stage</th>
+                <th className="px-8 py-5">Age (S-Date)</th>
+                <th className="px-8 py-5 text-center">ePID (Mandatory)</th>
+                <th className="px-8 py-5 text-center">Priority</th>
+                <th className="px-8 py-5 text-center">Amount</th>
+                <th className="px-8 py-5 text-center">Docs Status</th>
               </tr>
             </thead>
-            <tbody>
-              <tr className="hover:bg-slate-50/20 transition-colors">
-
-                {/* Name & Phone */}
-                <td className="px-6 py-5">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5 font-black text-slate-900 text-xs">
-                      <User size={10} className="text-primary shrink-0" />
-                      {customer.customerName}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
-                      <Phone size={10} className="shrink-0" />
-                      {customer.phone}
-                    </div>
+            <tbody className="divide-y divide-slate-100">
+              <tr className="group hover:bg-slate-50/50 transition-all">
+                
+                {/* Core Registry: Name & Phone */}
+                <td className="px-8 py-6">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 font-black text-slate-900 text-sm">{customer.customerName}</div>
+                    <div className="text-xs font-bold text-slate-400 font-mono tracking-tighter">{customer.phone}</div>
                   </div>
                 </td>
 
-                {/* Service */}
-                <td className="px-6 py-5">
+                {/* Product/Service */}
+                <td className="px-8 py-6">
                   <select
                     value={customer.serviceRequested || customer.service || ''}
-                    onChange={e => onUpdate && onUpdate('serviceRequested', e.target.value)}
-                    disabled={isClosed || isBlocked}
-                    className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 text-[10px] font-black text-primary outline-none cursor-pointer hover:bg-blue-100 transition-all appearance-none disabled:opacity-50"
+                    onChange={e => onUpdate('serviceRequested', e.target.value)}
+                    className="bg-blue-50 border-none rounded-xl px-4 py-2.5 text-[10px] font-black text-blue-600 outline-none cursor-pointer hover:bg-blue-100 transition-all appearance-none uppercase"
                   >
-                    <option value="">Select Service</option>
+                    <option value="">N/A</option>
                     {serviceOptions.map(opt => <option key={opt}>{opt}</option>)}
                   </select>
                 </td>
 
-                {/* Society */}
-                <td className="px-6 py-5 text-[11px] font-bold text-slate-600 italic">
-                  {customer.society || 'N/A'}
+                {/* Apartment/Site */}
+                <td className="px-8 py-6">
+                   <div className="flex items-center gap-2 text-xs font-black text-slate-700 uppercase tracking-widest">
+                      <Globe size={12} className="text-slate-300" />
+                      {customer.apartment || customer.society || 'Direct'}
+                   </div>
                 </td>
 
-                {/* Acq POC */}
-                <td className="px-6 py-5">
-                  <select
-                    value={customer.acqPOC || ''}
-                    onChange={e => onUpdate && onUpdate('acqPOC', e.target.value)}
-                    className="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[10px] font-bold text-slate-600 outline-none cursor-pointer appearance-none"
-                  >
-                    <option value="">Select POC</option>
-                    <option>Rakshith</option>
-                    <option>Ajay</option>
-                  </select>
+                {/* Acq. POC: Admin only editable */}
+                <td className="px-8 py-6">
+                   <select
+                     disabled={!isAdmin}
+                     value={customer.acqPOC || ''}
+                     onChange={e => onUpdate('acqPOC', e.target.value)}
+                     className="bg-slate-100 font-bold border-none rounded-xl px-4 py-2.5 text-[10px] text-slate-600 outline-none disabled:opacity-60 cursor-pointer appearance-none"
+                   >
+                     <option value="">Unassigned</option>
+                     {pocs.acquisition?.map(name => <option key={name}>{name}</option>)}
+                   </select>
                 </td>
 
-                {/* Service Stage — the key column */}
-                <td className="px-6 py-5">
-                  <div className="space-y-2 min-w-[200px]">
-                    {/* Stage Dropdown */}
-                    <div className="flex items-center gap-2">
-                      <select
-                        value={currentStage}
-                        onChange={e => handleStageChange(e.target.value)}
-                        disabled={isClosed || isBlocked}
-                        className={`flex-1 px-3 py-2 rounded-xl border text-[10px] font-black outline-none cursor-pointer appearance-none transition-all disabled:opacity-60 disabled:cursor-not-allowed ${stageColors[currentStage] || 'bg-slate-50 border-slate-200 text-slate-700'}`}
-                      >
-                        {availableStages.map(s => (
-                          <option key={s} value={s}
-                            disabled={s === 'Rejected' && (isClosed || isBlocked)}
-                          >
-                            {s}
-                          </option>
-                        ))}
-                      </select>
-                      {isClosed && <CheckCircle size={14} className="text-green-500 shrink-0" />}
-                      {isBlocked && <XCircle size={14} className="text-red-500 shrink-0" />}
-                    </div>
-                    {/* Progress bar (only for non-terminal states) */}
-                    {!isClosed && !isBlocked && <StageProgress stage={currentStage} />}
-                  </div>
+                {/* S-Acq. POC */}
+                <td className="px-8 py-6">
+                   <select
+                     disabled={!isAdmin}
+                     value={customer.serviceAcqPOC || ''}
+                     onChange={e => onUpdate('serviceAcqPOC', e.target.value)}
+                     className="bg-indigo-50 font-bold border-none rounded-xl px-4 py-2.5 text-[10px] text-indigo-500 outline-none disabled:opacity-60 cursor-pointer appearance-none"
+                   >
+                     <option value="">Unassigned</option>
+                     {pocs.serviceAcquisition?.map(name => <option key={name}>{name}</option>)}
+                   </select>
+                </td>
+
+                {/* Service POC (NEW): Admin only editable */}
+                <td className="px-8 py-6">
+                   <select
+                     disabled={!isAdmin}
+                     value={customer.servicePOC || ''}
+                     onChange={e => onUpdate('servicePOC', e.target.value)}
+                     className="bg-purple-50 font-black border-none rounded-xl px-4 py-2.5 text-[10px] text-purple-600 outline-none disabled:opacity-60 cursor-pointer appearance-none shadow-sm"
+                   >
+                     <option value="">AWAITING ASSIGNMENT</option>
+                     {pocs.service?.map(name => <option key={name}>{name}</option>)}
+                   </select>
+                </td>
+
+                {/* Lifecycle Stage */}
+                <td className="px-8 py-6">
+                   <div className="space-y-3">
+                     <select
+                       value={customer.serviceStatus === 'Blocked' ? 'Blocked' : (customer.serviceStage || 'Document Received')}
+                       onChange={e => handleStageChange(e.target.value)}
+                       disabled={isClosed || isApproved}
+                       className={`w-full px-5 py-3 rounded-2xl border-none text-[10px] font-black uppercase tracking-widest outline-none shadow-sm transition-all cursor-pointer ${stageColors[isBlocked ? 'Blocked' : (customer.serviceStage || 'Document Received')] || 'bg-slate-100'}`}
+                     >
+                        {availableStages.map(s => <option key={s} value={s}>{s}</option>)}
+                     </select>
+                     {!isBlocked && !isClosed && <StageProgress stage={customer.serviceStage || 'Document Received'} />}
+                   </div>
                 </td>
 
                 {/* Age */}
-                <td className="px-6 py-5">
-                  <div className="flex items-center gap-1 text-[10px] font-black text-slate-700">
-                    <Clock size={10} />
-                    {calculateAge(customer.docsSubmittedDate || customer.createdAt)}
-                  </div>
-                  {customer.closedDate && (
-                    <div className="text-[9px] text-slate-400 font-bold mt-0.5">
-                      Closed: {new Date(customer.closedDate).toLocaleDateString('en-GB')}
-                    </div>
-                  )}
+                <td className="px-8 py-6">
+                   <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-900 bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
+                      <Clock size={12} className="text-slate-300" />
+                      {calculateAge(customer.docsSubmittedDate || customer.createdAt)}
+                   </div>
                 </td>
 
-                {/* Amount — Admin Only */}
-                <td className="px-6 py-5">
-                  {userRole === 'admin' ? (
-                    <div className="flex items-center gap-1 bg-green-50/50 border border-green-100 rounded-xl px-3 py-2">
-                      <DollarSign size={10} className="text-green-600 shrink-0" />
-                      <input
+                {/* ePID: 10 Digits, POC adds once, Admin edits */}
+                <td className="px-8 py-6 text-center">
+                   <div className="relative inline-block w-40">
+                      <input 
                         type="text"
-                        placeholder="0.00"
-                        value={customer.amount || ''}
-                        onChange={e => onUpdate && onUpdate('amount', e.target.value)}
-                        className="bg-transparent text-[10px] font-black text-green-700 w-16 outline-none"
+                        placeholder="N/A"
+                        value={customer.ePID || ''}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '').substring(0, 10);
+                          if (!isAdmin && customer.ePID) return; // Add-once logic
+                          onUpdate('ePID', val);
+                        }}
+                        className={`w-full px-4 py-2.5 rounded-xl border font-mono text-[11px] font-black text-center outline-none transition-all ${
+                          customer.ePID?.length === 10 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-400 focus:border-primary'
+                        }`}
                       />
-                    </div>
-                  ) : (
-                    <span className="text-[10px] font-bold text-slate-300 italic">–</span>
-                  )}
+                      {(!isAdmin && customer.ePID) && <Lock size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300" />}
+                   </div>
                 </td>
 
-                {/* Priority */}
-                <td className="px-6 py-5">
-                  <div className="flex justify-center">
-                    <div
-                      onClick={() => onUpdate && onUpdate('priority', customer.priority === 'High' ? 'Low' : 'High')}
-                      className={`w-10 h-5 rounded-full relative cursor-pointer transition-all ${customer.priority === 'High' ? 'bg-orange-500' : 'bg-slate-200'}`}
-                    >
-                      <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow transition-all ${customer.priority === 'High' ? 'left-6' : 'left-1'}`} />
-                    </div>
-                  </div>
+                {/* Priority: Admin only */}
+                <td className="px-8 py-6 text-center">
+                   <button 
+                     disabled={!isAdmin}
+                     onClick={() => onUpdate('priority', customer.priority === 'High' ? 'Medium' : (customer.priority === 'Medium' ? 'Low' : 'High'))}
+                     className={`px-4 py-2 rounded-3xl text-[9px] font-black uppercase tracking-[0.2em] shadow-sm disabled:opacity-50 ${
+                        customer.priority === 'High' ? 'bg-red-500 text-white shadow-red-200' :
+                        customer.priority === 'Medium' ? 'bg-yellow-500 text-white shadow-yellow-200' :
+                        'bg-slate-200 text-slate-500'
+                     }`}
+                   >
+                     {customer.priority || 'Low'}
+                   </button>
                 </td>
 
-                {/* Docs Submitted — only interactive in Pre-active */}
-                <td className="px-6 py-5">
-                  <div className="flex justify-center">
-                    <div
-                      onClick={handleDocsSubmit}
-                      title={customer.docsSubmitted ? 'Docs already submitted' : 'Toggle to submit docs & move to Active'}
-                      className={`w-10 h-5 rounded-full relative cursor-pointer transition-all ${customer.docsSubmitted ? 'bg-green-500' : 'bg-slate-200'}`}
-                    >
-                      <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow transition-all ${customer.docsSubmitted ? 'left-6' : 'left-1'}`} />
-                    </div>
-                  </div>
-                </td>
-
-                {/* Call Status */}
-                <td className="px-6 py-5">
-                  <div className="flex flex-col gap-2 min-w-[130px]">
-                    <select
-                      value={customer.callStatus || 'Not Connected'}
-                      onChange={e => onUpdate && onUpdate('callStatus', e.target.value)}
-                      className="bg-slate-50 border border-slate-100 rounded-xl px-3 py-2 text-[9px] font-bold text-slate-600 outline-none cursor-pointer appearance-none"
-                    >
-                      <option>Connected</option>
-                      <option>Not Connected</option>
-                    </select>
-                    {customer.callStatus === 'Connected' && (
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="Add note..."
-                          value={customer.callNote || ''}
-                          onChange={e => onUpdate && onUpdate('callNote', e.target.value)}
-                          className="w-full text-[9px] bg-white border border-slate-100 rounded-lg px-2 py-1 pr-6 outline-none font-medium italic focus:border-primary transition-all"
-                        />
-                        <MessageSquare size={9} className="absolute right-2 top-1.5 text-slate-300" />
+                {/* Amount: Admin Only */}
+                <td className="px-8 py-6 text-center">
+                   {isAdmin ? (
+                      <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-2.5">
+                         <DollarSign size={12} className="text-emerald-500" />
+                         <input 
+                           type="text"
+                           value={customer.amount || ''}
+                           onChange={e => onUpdate('amount', e.target.value)}
+                           className="bg-transparent text-[12px] font-black text-emerald-700 w-16 outline-none"
+                         />
                       </div>
-                    )}
-                  </div>
+                   ) : <span className="text-[10px] font-bold text-slate-300 italic ring-1 ring-slate-100 px-3 py-1 rounded-full">PRIVATE</span>}
                 </td>
 
+                {/* Docs Status */}
+                <td className="px-8 py-6 text-center">
+                   <button 
+                     onClick={() => {
+                       const val = !customer.docsSubmitted;
+                       onUpdate('docsSubmitted', val);
+                       if(val) onUpdate('docsSubmittedDate', new Date().toISOString());
+                     }}
+                     className={`w-12 h-6 rounded-full relative transition-all ${customer.docsSubmitted ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                   >
+                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all ${customer.docsSubmitted ? 'left-7' : 'left-1'}`} />
+                   </button>
+                </td>
+
+              </tr>
+
+              {/* SECONDARY ROW: Notes & Special Challenges */}
+              <tr>
+                <td colSpan={12} className="px-8 py-4 bg-slate-50/30">
+                   <div className="flex gap-10">
+                      {/* Internal Notes / Call Log */}
+                      <div className="flex-1 space-y-3">
+                         <div className="flex items-center gap-2">
+                            <MessageSquare size={12} className="text-slate-400" />
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Call Registry & Notes</span>
+                         </div>
+                         <div className="flex gap-4 items-center">
+                            <select 
+                              value={customer.callStatus || 'Not Connected'}
+                              onChange={e => onUpdate('callStatus', e.target.value)}
+                              className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-[10px] font-bold text-slate-700 outline-none cursor-pointer"
+                            >
+                               <option>Connected</option>
+                               <option>Not Connected</option>
+                               <option>Busy</option>
+                               <option>Follow Up</option>
+                            </select>
+                            <input 
+                              type="text"
+                              value={customer.notes || ''}
+                              onChange={e => onUpdate('notes', e.target.value)}
+                              placeholder="Record lead details here..."
+                              className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-600 outline-none focus:ring-4 focus:ring-primary/10 tracking-tight"
+                            />
+                         </div>
+                      </div>
+
+                      {/* Special Notes / Challenges */}
+                      <div className="flex-1 space-y-3">
+                         <div className="flex items-center gap-2">
+                            <AlertTriangle size={12} className="text-amber-500" />
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Special Notes / Challenges</span>
+                         </div>
+                         <textarea 
+                           value={customer.specialNotes || ''}
+                           onChange={e => onUpdate('specialNotes', e.target.value)}
+                           placeholder="Add technical blockers or specific challenges..."
+                           className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-600 outline-none focus:ring-4 focus:ring-primary/10 tracking-tight h-10 resize-none no-scrollbar"
+                         />
+                      </div>
+                   </div>
+                </td>
               </tr>
             </tbody>
           </table>
