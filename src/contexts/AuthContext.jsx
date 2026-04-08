@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth, db } from '../firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 
 const AuthContext = createContext();
@@ -15,18 +15,22 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       if (firebaseUser) {
         setUser(firebaseUser);
-        // Fetch role from Firestore if it exists
-        // For now, let's use a mock check or look for a 'users' collection
+        // Fetch role from Firestore
         const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
         if (userDoc.exists()) {
-          setRole(userDoc.data().role);
+          const fetchedRole = userDoc.data().role;
+          setRole(fetchedRole);
+          localStorage.setItem('crm_role', fetchedRole);
         } else {
-          // Default role if not found (can be admin for first user or worker)
-          setRole('worker'); 
+          // Fallback: infer role from email
+          const defaultRole = firebaseUser.email?.includes('admin') ? 'admin' : 'worker';
+          setRole(defaultRole);
+          localStorage.setItem('crm_role', defaultRole);
         }
       } else {
         setUser(null);
         setRole(null);
+        localStorage.removeItem('crm_role');
       }
       setLoading(false);
     });
@@ -34,8 +38,13 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
+  const logout = async () => {
+    await signOut(auth);
+    // onAuthStateChanged will fire and clear state + localStorage automatically
+  };
+
   return (
-    <AuthContext.Provider value={{ user, role, setRole, loading }}>
+    <AuthContext.Provider value={{ user, role, setRole, loading, logout }}>
       {!loading && children}
     </AuthContext.Provider>
   );

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, onSnapshot, query, where, updateDoc, doc, arrayUnion } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { Phone, MessageCircle, Copy, Check, FileText, Search, User, ChevronDown, MessageSquare } from 'lucide-react';
 
 import Sidebar from './crm/Sidebar';
@@ -25,6 +26,7 @@ const WorkerDashboard = () => {
   const [servicesSubMode, setServicesSubMode] = useState('active');
   const [visibleFilters, setVisibleFilters] = useState(['priority', 'acqPOC', 'serviceAcqPOC', 'stage', 'service']);
   
+  const { logout } = useAuth();
   const userRole = localStorage.getItem('crm_role') || 'worker';
   const isAdmin = userRole === 'admin'; // Should be false here but keeping logic consistent
   
@@ -60,8 +62,8 @@ const WorkerDashboard = () => {
     return unsubscribe;
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('crm_role');
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 
