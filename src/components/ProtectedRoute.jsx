@@ -18,10 +18,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Authenticated but wrong role → redirect to their own dashboard
+  // Authenticated but accessing wrong role's route → always back to login
   if (allowedRoles && !allowedRoles.includes(role)) {
-    if (role === 'admin') return <Navigate to="/admin" replace />;
-    if (role === 'worker') return <Navigate to="/worker" replace />;
     return <Navigate to="/login" replace />;
   }
 
