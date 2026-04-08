@@ -9,55 +9,104 @@ import ServiceRequestForm from './ServiceRequestForm';
 import { servicesData } from '../data/servicesData';
 
 // Sample documents popup component
-const SampleDocsModal = ({ isOpen, onClose }) => {
+const SampleDocsModal = ({ isOpen, onClose, sampleDocsList }) => {
     if (!isOpen) return null;
-
-    const sampleDocsList = [
-        { name: 'Aadhaar Card', desc: 'Clear photocopy of the front and back of all owners\' Aadhaar cards.' },
-        { name: 'Sale Deed', desc: 'Registered sale deed document of the property.' },
-        { name: 'BESCOM Bill', desc: 'Latest electricity bill from BESCOM in the current owner\'s name.' },
-        { name: 'Property Tax Receipt', desc: 'Latest property tax paid receipt from BBMP/local authority.' },
-        { name: 'Khata Certificate', desc: 'Existing Khata certificate (A-Khata or B-Khata) of the property.' },
-        { name: 'Mutation Fee Receipt (Optional)', desc: 'Receipt of mutation fee payment, if applicable.' }
-    ];
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
-            <div className="relative bg-white rounded-3xl max-w-lg w-full p-8 shadow-2xl max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-500">
-                <button 
-                    onClick={onClose}
-                    className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-                >
-                    <X size={20} className="text-gray-600" />
-                </button>
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                        <Eye size={20} className="text-primary" />
-                    </div>
-                    <h3 className="text-xl font-black text-gray-900">Sample Documents Required</h3>
-                </div>
-                <p className="text-sm text-gray-500 mb-6 font-medium">
-                    Below are samples of the documents you'll need. Ensure all documents are clear and legible.
-                </p>
-                <div className="space-y-4">
-                    {sampleDocsList.map((doc, idx) => (
-                        <div key={idx} className="flex items-start gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                            <CheckCircle2 size={18} className="text-primary mt-0.5 shrink-0" />
-                            <div>
-                                <p className="font-bold text-gray-800 text-sm">{doc.name}</p>
-                                <p className="text-xs text-gray-500 mt-1">{doc.desc}</p>
-                            </div>
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-md" onClick={onClose}></div>
+            <div className="relative bg-[#fcfdfd] rounded-[2.5rem] max-w-4xl w-full shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-8 duration-500 border border-white/20">
+                {/* Header */}
+                <div className="p-8 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shadow-inner">
+                            <Eye size={24} className="text-primary" />
                         </div>
-                    ))}
+                        <div>
+                            <h3 className="text-2xl font-black text-gray-900 tracking-tight">Sample Documents</h3>
+                            <p className="text-sm text-gray-500 font-bold">Review real samples of required documents</p>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={onClose}
+                        className="p-3 rounded-2xl bg-gray-50 hover:bg-red-50 hover:text-red-500 text-gray-400 transition-all border border-gray-100 shadow-sm"
+                    >
+                        <X size={24} />
+                    </button>
                 </div>
-                <button 
-                    onClick={onClose}
-                    className="mt-6 w-full py-3 bg-primary text-white font-bold rounded-2xl hover:bg-green-800 transition-colors"
-                >
-                    Got it!
-                </button>
+
+                {/* Content */}
+                <div className="p-8 overflow-y-auto custom-scrollbar flex-grow bg-gray-50/50">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {sampleDocsList && sampleDocsList.length > 0 ? (
+                            sampleDocsList.map((doc, idx) => (
+                                <div key={idx} className="group bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-primary/20 transition-all duration-500 overflow-hidden flex flex-col">
+                                    {/* Document Image Preview */}
+                                    <div className="aspect-[4/5] bg-gray-100 relative overflow-hidden flex items-center justify-center">
+                                        {doc.image ? (
+                                            <img 
+                                                src={doc.image} 
+                                                alt={doc.name}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                            />
+                                        ) : (
+                                            <div className="flex flex-col items-center gap-3 text-gray-400">
+                                                <FileSearch size={48} />
+                                                <span className="text-xs font-black uppercase tracking-widest leading-none">Photo placeholder</span>
+                                            </div>
+                                        )}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
+                                            <span className="text-white text-xs font-black uppercase tracking-widest bg-primary px-3 py-1 rounded-full">Sample View</span>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Details */}
+                                    <div className="p-6">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <CheckCircle2 size={18} className="text-primary shrink-0" />
+                                            <h4 className="font-black text-gray-900 leading-tight">{doc.name}</h4>
+                                        </div>
+                                        <p className="text-sm text-gray-500 leading-relaxed font-bold">
+                                            {doc.desc}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="col-span-full py-20 text-center">
+                                <FileSearch size={48} className="mx-auto text-gray-300 mb-4" />
+                                <p className="text-lg font-bold text-gray-500 italic">No visual samples available for this service yet.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="p-8 border-t border-gray-100 bg-white shrink-0">
+                    <button 
+                        onClick={onClose}
+                        className="w-full py-4 bg-primary text-white text-lg font-black rounded-2xl hover:bg-green-800 transition-all shadow-lg shadow-green-900/10 active:scale-[0.98]"
+                    >
+                        I understand, close preview
+                    </button>
+                </div>
             </div>
+            
+            <style dangerouslySetInnerHTML={{ __html: `
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #e2e8f0;
+                    border-radius: 10px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: #cbd5e1;
+                }
+            `}} />
         </div>
     );
 };
@@ -104,7 +153,11 @@ const ServiceDetail = () => {
 
     return (
         <div className="min-h-screen bg-[#fcfdfd] pt-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <SampleDocsModal isOpen={isSampleDocsOpen} onClose={() => setIsSampleDocsOpen(false)} />
+            <SampleDocsModal 
+                isOpen={isSampleDocsOpen} 
+                onClose={() => setIsSampleDocsOpen(false)} 
+                sampleDocsList={service.sampleDocsList} 
+            />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Navigation */}
@@ -208,7 +261,7 @@ const ServiceDetail = () => {
                         <section className="space-y-12">
                             <div className="flex items-center justify-between ml-4 mr-4">
                                 <h2 className="text-2xl font-black text-gray-900">Documents Required & Process</h2>
-                                {service.sampleDocs && (
+                                {service.sampleDocsList && service.sampleDocsList.length > 0 && (
                                     <button
                                         onClick={() => setIsSampleDocsOpen(true)}
                                         className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary font-bold text-sm rounded-full hover:bg-primary/20 transition-colors"

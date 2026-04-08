@@ -14,7 +14,13 @@ export const servicesData = [
         overview: 'E-Khata is the digital form of a Khata certificate in Karnataka. It proves property ownership, enables easy tax payments, and simplifies approvals for property transactions. Our experts ensure your E-Khata process is smooth, accurate, and stress-free.',
         useCases: ['Buy Property', 'Sell Property', 'Loan/Mortgage', 'Property Tax'],
         documents: ['Aadhaar card of the owners', 'Sale deed', 'Bescom Bill', 'Property Tax Receipt', 'Khata Certificate', 'Mutation Fee Receipt (Optional)'],
-        sampleDocs: true,
+        sampleDocsList: [
+            { name: 'Aadhaar Card', desc: 'Clear photocopy of the front and back of all owners\' Aadhaar cards.', image: '/samples/aadhaar.png' },
+            { name: 'Sale Deed', desc: 'Registered sale deed document of the property.', image: '/samples/sale-deed.png' },
+            { name: 'BESCOM Bill', desc: 'Latest electricity bill from BESCOM in the current owner\'s name.', image: '/samples/bescom-bill.png' },
+            { name: 'Property Tax Receipt', desc: 'Latest property tax paid receipt from BBMP/local authority.', image: '/samples/property-tax.png' },
+            { name: 'Khata Certificate', desc: 'Existing Khata certificate (A-Khata or B-Khata) of the property.', image: '/samples/ekhata.png' }
+        ],
         price: '2,799',
         originalPrice: '4,999'
     },
@@ -35,6 +41,12 @@ export const servicesData = [
             'Ekhata',
             'Property Tax Receipt of current financial year'
         ],
+        sampleDocsList: [
+            { name: 'Sale Deed', desc: 'Registered sale deed document of the property.', image: '/samples/sale-deed.png' },
+            { name: 'Aadhaar Card', desc: 'Aadhaar cards of the owners with bank seal.', image: '/samples/aadhaar.png' },
+            { name: 'E-Khata', desc: 'Form 9/11A E-Khata document.', image: '/samples/ekhata.png' },
+            { name: 'Property Tax Receipt', desc: 'Current financial year tax receipt.', image: '/samples/property-tax.png' }
+        ],
         price: '7,999',
         originalPrice: '15,000'
     },
@@ -47,6 +59,12 @@ export const servicesData = [
         overview: 'Khata Transfer is the process of updating the owner\'s name on the Khata after a sale, inheritance, or gift. It is crucial for tax assessment and legal proof of ownership in municipal records.',
         useCases: ['Post-purchase updates', 'Tax assessment', 'Property sales', 'Loans/mortgages'],
         documents: ['Sale Deed', 'Aadhaar Card', 'Tax Paid Receipt', 'BESCOM Bill'],
+        sampleDocsList: [
+            { name: 'Sale Deed', desc: 'Absolute Sale Deed registered at Sub-registrar office.', image: '/samples/absolute-sale-deed.png' },
+            { name: 'Aadhaar Card', desc: 'Owner\'s Aadhaar card.', image: '/samples/aadhaar.png' },
+            { name: 'Tax Paid Receipt', desc: 'Latest property tax receipt.', image: '/samples/property-tax.png' },
+            { name: 'BESCOM Bill', desc: 'Latest electricity bill.', image: '/samples/bescom-bill.png' }
+        ],
         whatAllIncluded: ['Khata Transfer', 'Ekhata', 'Encumbrance Certificate', 'GBA Property Tax Portal Name Change'],
         price: '8,499',
         originalPrice: '15,000'
@@ -69,6 +87,13 @@ export const servicesData = [
             'Property Tax Receipt',
             'No Objection Certificate (NOC)'
         ],
+        sampleDocsList: [
+            { name: 'Aadhaar Card', desc: 'Owner\'s Aadhaar card.', image: '/samples/aadhaar.png' },
+            { name: 'BESCOM Bill', desc: 'Latest BESCOM bill.', image: '/samples/bescom-bill.png' },
+            { name: 'Sale Deed', desc: 'Registered Sale Deed.', image: '/samples/sale-deed.png' },
+            { name: 'E-Khata', desc: 'Form 9/11A E-Khata.', image: '/samples/ekhata.png' },
+            { name: 'Property Tax Receipt', desc: 'Latest tax receipt.', image: '/samples/property-tax.png' }
+        ],
         price: '4,999',
         originalPrice: '7,500'
     },
@@ -81,6 +106,10 @@ export const servicesData = [
         overview: 'A legally binding contract between a property owner and a tenant defining terms and conditions for property usage. Our experts help in drafting and registering these agreements to protect your interests.',
         useCases: ['Renting property', 'Proof of residence', 'Regulatory compliance', 'Legal protection'],
         documents: ['Aadhaar Card', 'BESCOM Bill', 'BWSSB Bill', 'Security Deposit details'],
+        sampleDocsList: [
+            { name: 'Aadhaar Card', desc: 'Tenant/Owner Aadhaar card.', image: '/samples/aadhaar.png' },
+            { name: 'BESCOM Bill', desc: 'Latest BESCOM bill for address proof.', image: '/samples/bescom-bill.png' }
+        ],
         price: '1,500',
         originalPrice: '3,000'
     },
@@ -93,6 +122,9 @@ export const servicesData = [
         overview: 'Updating municipal property tax records to reflect a new owner\'s name for compliance and proof of ownership. This is essential for tax payment proof and legal verification.',
         useCases: ['Tax payment proof', 'Home loans', 'Property sales', 'Legal verification'],
         documents: ['Previous Property Tax Paid Receipt'],
+        sampleDocsList: [
+            { name: 'Previous Tax Receipt', desc: 'Previous year\'s property tax paid receipt.', image: '/samples/property-tax.png' }
+        ],
         price: '299',
         originalPrice: '1,000'
     },
@@ -105,6 +137,12 @@ export const servicesData = [
         overview: 'The official process of documenting and storing property ownership and transactions at a government office. We provide full assistance in registration, gift deeds, and sale deeds.',
         useCases: ['Ownership verification', 'Legal compliance', 'Mortgage/loan processing'],
         documents: ['Sale Deed', 'Khata Certificate', 'Encumbrance Certificate (EC)', 'Property Tax Paid Receipts', 'Aadhaar Card'],
+        sampleDocsList: [
+            { name: 'Sale Deed', desc: 'Registered Sale Deed.', image: '/samples/sale-deed.png' },
+            { name: 'Khata Certificate', desc: 'Khata document.', image: '/samples/ekhata.png' },
+            { name: 'Property Tax Receipt', desc: 'Latest tax paid receipt.', image: '/samples/property-tax.png' },
+            { name: 'Aadhaar Card', desc: 'Owner Aadhaar card.', image: '/samples/aadhaar.png' }
+        ],
         startsFrom: true,
         price: '20,000',
         originalPrice: null
@@ -118,6 +156,9 @@ export const servicesData = [
         overview: 'A formal, non-binding agreement outlining a shared plan of action or intention to collaborate or proceed with a sale. We help in drafting these with strict legal compliance.',
         useCases: ['Business collaboration', 'Partnership agreements', 'Joint ventures', 'Pre-sale agreements'],
         documents: ['Aadhaar Card', 'PAN Card', 'Witness Signatures'],
+        sampleDocsList: [
+            { name: 'Aadhaar Card', desc: 'Party Aadhaar card.', image: '/samples/aadhaar.png' }
+        ],
         startsFrom: true,
         price: '4,999',
         originalPrice: null
@@ -131,6 +172,9 @@ export const servicesData = [
         overview: 'A document used to settle inheritance claims, resolve legal disputes, and facilitate property transfer to legal heirs. We assist in verification and procurement of these certificates.',
         useCases: ['Inheritance claims', 'Legal heirship', 'Property transfer', 'Ownership disputes'],
         documents: ['Affidavit', 'Aadhaar Card', 'PAN Card', 'Death Certificate of the deceased'],
+        sampleDocsList: [
+            { name: 'Aadhaar Card', desc: 'Heir Aadhaar card.', image: '/samples/aadhaar.png' }
+        ],
         startsFrom: true,
         price: '8,999',
         originalPrice: null
@@ -144,6 +188,7 @@ export const servicesData = [
         overview: 'Expert guidance on property-related matters including ownership, transfers, disputes, and compliance. Professional advice to ensure your property transactions are secure.',
         useCases: ['Ownership guidance', 'Navigating disputes', 'Compliance checks', 'Document verification'],
         documents: ['Variable (Usually relevant property documents needed for review)'],
+        sampleDocsList: [],
         startsFrom: true,
         price: '999',
         originalPrice: null

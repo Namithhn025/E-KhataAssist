@@ -15,6 +15,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import Login from './components/Login';
 import AdminDashboard from './components/AdminDashboard';
 import WorkerDashboard from './components/WorkerDashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   const location = useLocation();
@@ -60,8 +61,16 @@ function App() {
         <main>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/worker" element={<WorkerDashboard />} />
+            <Route path="/admin" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/worker" element={
+              <ProtectedRoute allowedRoles={['worker', 'admin']}>
+                <WorkerDashboard />
+              </ProtectedRoute>
+            } />
             
             {/* Landing Page Route */}
             <Route path="/" element={
