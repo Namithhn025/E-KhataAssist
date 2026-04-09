@@ -11,15 +11,17 @@ const DashboardHeader = ({ title, onSearch, onNewLead, viewMode }) => {
 
       <div className="flex items-center gap-6">
         {/* Search Input */}
-        <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
-          <input 
-            type="text" 
-            placeholder="Search by user id, name or phone..."
-            onChange={(e) => onSearch(e.target.value)}
-            className="pl-12 pr-6 py-3 w-80 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium"
-          />
-        </div>
+        {viewMode !== 'nexus' && (
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
+            <input 
+              type="text" 
+              placeholder="Search by user id, name or phone..."
+              onChange={(e) => onSearch(e.target.value)}
+              className="pl-12 pr-6 py-3 w-80 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm font-medium"
+            />
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">

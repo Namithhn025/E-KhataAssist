@@ -27,7 +27,7 @@ const FilterSelect = ({ label, options, value, onChange, onRemove, isRemovable }
   );
 };
 
-const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterChange, onReset, viewMode, pocs = {} }) => {
+const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterChange, onReset, viewMode, pocs = {}, sortBy, onSortChange }) => {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const menuRef = useRef(null);
 
@@ -44,7 +44,7 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
   const allFilterSpecs = {
     priority: { label: 'Priority', options: ['High', 'Medium', 'Low'] },
     acqPOC: { label: 'Acquisit. POC', options: pocs.acquisition || [] },
-    serviceAcqPOC: { label: 'S-Acquisit. POC', options: pocs.serviceAcquisition || [] },
+    serviceAcqPOC: { label: 'Service POC', options: pocs.serviceAcquisition || [] },
     service: { label: 'Service Type', options: [
       'Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)', 
       'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration', 'Others'
@@ -53,8 +53,7 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
       'Document Received', 'eKYC Pending', 'eKYC Done', 
       'Ready to eSign', 'Application Submitted', 'Approved', 'Rejected'
     ]},
-    apartment: { label: 'Apartment', options: pocs.apartments || [] },
-    source: { label: 'Lead Source', options: ['Direct', 'Referral', 'Marketing', 'Partner'] }
+    apartment: { label: 'Apartment', options: pocs.apartments || [] }
   };
 
   const commonKeys = ['priority', 'acqPOC', 'serviceAcqPOC', 'stage', 'service'];
@@ -139,10 +138,14 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
 
       <div className="ml-auto flex items-center gap-2 text-xs font-bold text-slate-500 whitespace-nowrap bg-slate-100/50 px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
         <span className="text-slate-400">Sort:</span> 
-        <select className="bg-transparent border-none outline-none text-slate-900 cursor-pointer font-black uppercase text-[10px] tracking-widest">
-          <option>Date Added</option>
-          <option>Recently Updated</option>
-          <option>Priority (High to Low)</option>
+        <select 
+          value={sortBy}
+          onChange={(e) => onSortChange(e.target.value)}
+          className="bg-transparent border-none outline-none text-slate-900 cursor-pointer font-black uppercase text-[10px] tracking-widest"
+        >
+          <option value="Date Added">Date Added</option>
+          <option value="Recently Updated">Recently Updated</option>
+          <option value="Priority (High to Low)">Priority (High to Low)</option>
         </select>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { db } from '../../firebase';
 import { collection, addDoc, onSnapshot, query, updateDoc, doc, deleteDoc, orderBy } from 'firebase/firestore';
 import { Plus, Compass, Calendar, DollarSign, Users, Hash, Phone, User, X } from 'lucide-react';
 
-const CampSection = ({ isAdmin, pocs }) => {
+const CampSection = ({ isAdmin, pocs, customers = [] }) => {
   const [campaigns, setCampaigns] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -150,7 +150,13 @@ const CampSection = ({ isAdmin, pocs }) => {
                       {(camp.acquisitionTeam || []).join(', ') || 'N/A'}
                     </td>
                         <td className="px-6 py-6 text-center">
-                          <span className="font-mono text-sm font-black text-slate-900 bg-slate-100 px-3 py-1 rounded-full">{camp.leadsCount || 0}</span>
+                          <span className="font-mono text-sm font-black text-slate-900 bg-slate-100 px-3 py-1 rounded-full">
+                            {customers.filter(c => 
+                              ((c.apartment?.toLowerCase().trim() === camp.apartmentName?.toLowerCase().trim()) || 
+                               (c.society?.toLowerCase().trim() === camp.apartmentName?.toLowerCase().trim())) &&
+                              (!c.sourceVault || c.sourceVault === 'sales')
+                            ).length}
+                          </span>
                         </td>
                         {isAdmin && (
                           <>

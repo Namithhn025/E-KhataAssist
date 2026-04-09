@@ -22,6 +22,7 @@ const AdminDashboard = () => {
   const [campaigns, setCampaigns] = useState([]);
   const [activeFilters, setActiveFilters] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('Date Added');
   const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
   const [isAdminSettingsOpen, setIsAdminSettingsOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
@@ -164,6 +165,7 @@ const AdminDashboard = () => {
       c.phone?.includes(searchQuery) ||
       c.ePID?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.srId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.apartment?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.id?.toLowerCase().includes(searchQuery.toLowerCase());
     
     // View Filtering
@@ -197,14 +199,25 @@ const AdminDashboard = () => {
     }
     
     const matchesInterest = !activeFilters.interest || c.interest === activeFilters.interest;
-    const matchesAcqPOC = !activeFilters.acqPOC || c.acqPOC === activeFilters.acqPOC;
     const matchesServiceAcqPOC = !activeFilters.serviceAcqPOC || c.serviceAcqPOC === activeFilters.serviceAcqPOC;
-    const matchesServicePOC = !activeFilters.servicePOC || c.servicePOC === activeFilters.servicePOC;
     const matchesPriority = !activeFilters.priority || c.priority === activeFilters.priority;
     const matchesStage = !activeFilters.stage || (c.status === activeFilters.stage || c.serviceStage === activeFilters.stage);
     const matchesService = !activeFilters.service || (c.serviceRequested === activeFilters.service || c.serviceType === activeFilters.service || c.service === activeFilters.service);
+    const matchesApartment = !activeFilters.apartment || (c.apartment === activeFilters.apartment || c.society === activeFilters.apartment);
+    const matchesSource = !activeFilters.source || c.sourceVault === activeFilters.source;
+    const matchesAcqPOC = !activeFilters.acqPOC || c.acqPOC === activeFilters.acqPOC;
     
-    return matchesSearch && matchesInterest && matchesAcqPOC && matchesServiceAcqPOC && matchesServicePOC && matchesPriority && matchesStage && matchesService;
+    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesApartment && matchesSource && matchesAcqPOC && matchesServiceAcqPOC;
+  }).sort((a, b) => {
+    if (sortBy === 'Priority (High to Low)') {
+      const priorityWeights = { 'High': 3, 'Medium': 2, 'Low': 1 };
+      return (priorityWeights[b.priority] || 0) - (priorityWeights[a.priority] || 0);
+    }
+    if (sortBy === 'Recently Updated') {
+      return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0);
+    }
+    // Default: Date Added (Descending)
+    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
   });
 
   const serviceOptions = [
@@ -248,18 +261,23 @@ const AdminDashboard = () => {
           />
   
           {/* Filter Bar */}
-          <FilterBar 
-            activeFilters={activeFilters}
-            visibleFilters={visibleFilters}
-            setVisibleFilters={setVisibleFilters}
-            viewMode={selectedSource}
-            onFilterChange={(key, val) => setActiveFilters({...activeFilters, [key]: val})}
-            onReset={() => setActiveFilters({})}
-            pocs={pocs}
-          />
-  
-          {/* Metric Summary Dashboard */}
-          <MetricSummary metrics={metrics} viewMode={selectedSource} />
+          {selectedSource !== 'nexus' && (
+            <FilterBar 
+              activeFilters={activeFilters}
+              visibleFilters={visibleFilters}
+              setVisibleFilters={setVisibleFilters}
+              viewMode={selectedSource}
+              onFilterChange={(key, val) => setActiveFilters({...activeFilters, [key]: val})}
+              onReset={() => setActiveFilters({})}
+              pocs={pocs}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+            />
+          )}
+
+          {selectedSource !== 'nexus' && (
+            <MetricSummary metrics={metrics} viewMode={selectedSource} />
+          )}
 
           {/* ── OVERVIEW (NEXUS) VIEW ────────────────────────────────── */}
           {selectedSource === 'nexus' && (() => {
@@ -347,22 +365,60 @@ const AdminDashboard = () => {
                   </div>
                 </div>
 
-                {/* Sales-specific breakdown */}
-                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
-                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-5">Sales Pipeline Breakdown</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[
-                      { label: 'Total Sales Leads', count: salesOnly.length,   color: 'text-slate-900' },
-                      { label: 'Follow Up',          count: metrics.followUp,   color: 'text-purple-600' },
-                      { label: 'Missed Follow Up',   count: metrics.missed,     color: 'text-red-600'   },
-                      { label: 'Advance Pending',    count: metrics.advance,    color: 'text-amber-600' },
-                    ].map(({ label, count, color }) => (
-                      <div key={label} className="rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
-                        <p className={`text-3xl font-black mt-1 ${color}`}>{count || 0}</p>
-                      </div>
+                {/* Apartment-specific breakdown */}
+                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 overflow-hidden">
+                  <div className="flex items-center justify-between mb-6">
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Leads by Apartment</p>
+                    <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-3 py-1 rounded-full uppercase tracking-widest">
+                       {Object.keys(customers.reduce((acc, c) => ({...acc, [c.apartment||'Unknown']: 1}), {})).length} Apartments
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[300px] overflow-y-auto no-scrollbar pr-2">
+                    {Object.entries(customers.reduce((acc, c) => {
+                      const apt = c.apartment || 'Unknown';
+                      acc[apt] = (acc[apt] || 0) + 1;
+                      return acc;
+                    }, {})).sort((a, b) => b[1] - a[1]).map(([apt, count]) => (
+                      <button 
+                         key={apt} 
+                         onClick={() => {
+                            setSearchQuery(apt === 'Unknown' ? '' : apt);
+                            setSelectedSource('sales');
+                         }}
+                         className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-primary/30 hover:bg-white hover:shadow-md transition-all group"
+                      >
+                        <span className="text-xs font-bold text-slate-600 truncate mr-2 group-hover:text-primary transition-colors">{apt}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                           <span className="text-xs font-black text-slate-900">{count}</span>
+                           <ChevronRight size={14} className="text-slate-300 group-hover:text-primary" />
+                        </div>
+                      </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Service-specific breakdown */}
+                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 overflow-hidden">
+                   <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Leads by Service Type</p>
+                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                     {Object.entries(customers.reduce((acc, c) => {
+                       const service = c.serviceRequested || c.serviceType || c.service || 'No Service';
+                       acc[service] = (acc[service] || 0) + 1;
+                       return acc;
+                     }, {})).sort((a,b) => b[1] - a[1]).map(([service, count]) => (
+                       <button 
+                         key={service} 
+                         onClick={() => {
+                           setSearchQuery(service === 'No Service' ? '' : service);
+                           setSelectedSource('services');
+                         }}
+                         className="p-5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-500/30 hover:bg-white hover:shadow-lg transition-all text-left flex flex-col gap-1 group"
+                       >
+                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-blue-500 transition-colors truncate">{service}</p>
+                         <p className="text-2xl font-black text-slate-900">{count}</p>
+                       </button>
+                     ))}
+                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -403,20 +459,32 @@ const AdminDashboard = () => {
                       <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-5">Financial Overview</p>
                       
                       <div className="flex-1 flex flex-col justify-center gap-2">
-                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">Total Earned (Approved & Invoiced)</p>
+                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">Total Earned (Payment Done)</p>
                         <div className="flex items-end gap-2">
                           <span className="text-2xl font-black text-slate-400 mb-1">₹</span>
                           <span className="text-6xl font-black text-emerald-500 tracking-tighter">
                             {customers
-                              .filter(c => c.serviceStatus === 'Approved')
+                              .filter(c => c.serviceStatus === 'Approved' && c.paymentStatus === 'Done')
                               .reduce((sum, c) => sum + (Number(c.amount) || 0), 0)
                               .toLocaleString('en-IN')
                             }
                           </span>
                         </div>
-                        <p className="text-xs font-bold text-slate-500 mt-2">
-                          From {metrics.approved} approved service requests ready to invoice.
-                        </p>
+                        
+                        <div className="grid grid-cols-2 gap-4 mt-6">
+                           <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-4 text-center">
+                              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Invoices Done</p>
+                              <p className="text-3xl font-black text-emerald-700">
+                                {customers.filter(c => c.serviceStatus === 'Approved' && c.paymentStatus === 'Done').length}
+                              </p>
+                           </div>
+                           <div className="rounded-2xl bg-amber-50 border border-amber-100 p-4 text-center">
+                              <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Invoices Pending</p>
+                              <p className="text-3xl font-black text-amber-700">
+                                {customers.filter(c => c.serviceStatus === 'Approved' && (c.paymentStatus === 'Pending' || !c.paymentStatus)).length}
+                              </p>
+                           </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -442,15 +510,15 @@ const AdminDashboard = () => {
                       <p className="text-xs font-bold text-emerald-500 uppercase tracking-widest">Total Invoices</p>
                     </div>
                   </div>
-                  <div className="flex-1 bg-blue-50 border border-blue-100 rounded-2xl px-6 py-4 flex items-center gap-4">
+                    <div className="flex-1 bg-blue-50 border border-blue-100 rounded-2xl px-6 py-4 flex items-center gap-4">
                     <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                      <Plus size={22} className="text-blue-600" />
+                      <DollarSign size={22} className="text-blue-600" />
                     </div>
                     <div>
                       <p className="text-2xl font-black text-blue-700">
-                        ₹{approvedLeads.reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0).toLocaleString('en-IN')}
+                        ₹{approvedLeads.filter(c => c.paymentStatus === 'Done').reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0).toLocaleString('en-IN')}
                       </p>
-                      <p className="text-xs font-bold text-blue-500 uppercase tracking-widest">Total Revenue</p>
+                      <p className="text-xs font-bold text-blue-500 uppercase tracking-widest">Total Revenue (Done)</p>
                     </div>
                   </div>
                 </div>
@@ -481,6 +549,18 @@ const AdminDashboard = () => {
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
+                            <select 
+                              value={customer.paymentStatus || 'Pending'}
+                              onChange={(e) => handlePOCUpdate(customer.id, 'paymentStatus', e.target.value)}
+                              className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full border transition-all outline-none cursor-pointer ${
+                                customer.paymentStatus === 'Done' 
+                                  ? 'bg-emerald-500 text-white border-emerald-600' 
+                                  : 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200'
+                              }`}
+                            >
+                               <option value="Pending">Payment Pending</option>
+                               <option value="Done">Payment Done</option>
+                            </select>
                             <span className="px-3 py-1.5 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-200">
                               ✓ Approved
                             </span>
@@ -537,11 +617,11 @@ const AdminDashboard = () => {
 
           {/* ── CAMP SECTION ─────────────────────────────────────────── */}
           {selectedSource === 'camp' && (
-             <CampSection isAdmin={isAdmin} pocs={pocs} />
+             <CampSection isAdmin={isAdmin} pocs={pocs} customers={customers} />
           )}
 
           {/* ── MAIN TABLE (Sales / Services) ─────────────────────────── */}
-          {selectedSource !== 'invoices' && selectedSource !== 'camp' && (
+          {selectedSource !== 'invoices' && selectedSource !== 'camp' && selectedSource !== 'nexus' && (
         <div className="px-8 pb-20">
           <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
             <div className="overflow-x-auto no-scrollbar">
@@ -563,7 +643,7 @@ const AdminDashboard = () => {
                         <th className="px-6 py-5">Phone Number</th>
                         <th className="px-6 py-5 text-center">Priority</th>
                         <th className="px-6 py-5">Acq. POC</th>
-                        <th className="px-6 py-5">S-Acq. POC</th>
+                        <th className="px-6 py-5">Service POC</th>
                       </>
                     )}
                   </tr>
@@ -673,7 +753,7 @@ const AdminDashboard = () => {
                                  onChange={(e) => handlePOCUpdate(customer.id, 'serviceAcqPOC', e.target.value)}
                                  className="bg-indigo-50 border border-indigo-100 font-bold hover:border-indigo-300 rounded-xl px-4 py-2 text-[10px] text-indigo-500 outline-none focus:ring-4 focus:ring-indigo-100 min-w-[120px] transition-all cursor-pointer disabled:opacity-60"
                               >
-                                 <option value="">Select S-Acq...</option>
+                                 <option value="">Select Service POC...</option>
                                  {pocs.serviceAcquisition?.map(name => (
                                     <option key={name} value={name}>{name}</option>
                                  ))}

@@ -17,8 +17,10 @@ const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode,
   ];
 
   const menuItems = [
-    ...(userRole === 'admin' ? [{ id: 'nexus', name: 'Overview', icon: BarChart2 }] : []),
-    { id: 'camp',  name: 'Camp',     icon: Compass   },
+    ...(userRole === 'admin' ? [
+        { id: 'nexus', name: 'Overview', icon: BarChart2 },
+        { id: 'camp',  name: 'Camp',     icon: Compass   }
+    ] : []),
     { id: 'sales', name: 'Sales',    icon: ShoppingBag },
     { 
       id: 'services', 

@@ -19,6 +19,7 @@ const WorkerDashboard = () => {
   const [customers, setCustomers] = useState([]);
   const [activeFilters, setActiveFilters] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('Date Added');
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(null);
@@ -130,6 +131,7 @@ const WorkerDashboard = () => {
       c.phone?.includes(searchQuery) ||
       c.ePID?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.srId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.apartment?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.id?.toLowerCase().includes(searchQuery.toLowerCase());
     
     if (selectedSource === 'services') {
@@ -160,8 +162,19 @@ const WorkerDashboard = () => {
     const matchesService = !activeFilters.service || (c.serviceRequested === activeFilters.service || c.serviceType === activeFilters.service || c.service === activeFilters.service);
     const matchesAcqPOC = !activeFilters.acqPOC || c.acqPOC === activeFilters.acqPOC;
     const matchesServiceAcqPOC = !activeFilters.serviceAcqPOC || c.serviceAcqPOC === activeFilters.serviceAcqPOC;
+    const matchesApartment = !activeFilters.apartment || (c.apartment === activeFilters.apartment || c.society === activeFilters.apartment);
+    const matchesSource = !activeFilters.source || c.sourceVault === activeFilters.source;
     
-    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesAcqPOC && matchesServiceAcqPOC;
+    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesAcqPOC && matchesServiceAcqPOC && matchesApartment && matchesSource;
+  }).sort((a, b) => {
+    if (sortBy === 'Priority (High to Low)') {
+      const priorityWeights = { 'High': 3, 'Medium': 2, 'Low': 1 };
+      return (priorityWeights[b.priority] || 0) - (priorityWeights[a.priority] || 0);
+    }
+    if (sortBy === 'Recently Updated') {
+      return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0);
+    }
+    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
   });
 
   return (
@@ -191,12 +204,14 @@ const WorkerDashboard = () => {
             onFilterChange={(key, val) => setActiveFilters({...activeFilters, [key]: val})}
             onReset={() => setActiveFilters({})}
             pocs={pocs}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
           />
   
           <MetricSummary metrics={metrics} viewMode={selectedSource} />
 
           {selectedSource === 'camp' && (
-             <CampSection isAdmin={isAdmin} pocs={pocs} />
+             <CampSection isAdmin={isAdmin} pocs={pocs} customers={customers} />
           )}
 
           {selectedSource !== 'camp' && (
