@@ -11,6 +11,7 @@ import MetricSummary from './crm/MetricSummary';
 import FilterBar from './crm/FilterBar';
 import NestedServicesTable from './crm/NestedServicesTable';
 import AddLeadModal from './crm/AddLeadModal';
+import CampSection from './crm/CampSection';
 import { addDoc } from 'firebase/firestore';
 
 const WorkerDashboard = () => {
@@ -45,6 +46,7 @@ const WorkerDashboard = () => {
     const unsubscribe = onSnapshot(doc(db, 'settings', 'crm_config'), (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.data().pocs || { acquisition: [], serviceAcquisition: [], service: [], apartments: [], pricing: {} };
+        if (!data.pricing) data.pricing = {};
         setPocs(data);
       }
     });
@@ -193,6 +195,11 @@ const WorkerDashboard = () => {
   
           <MetricSummary metrics={metrics} viewMode={selectedSource} />
 
+          {selectedSource === 'camp' && (
+             <CampSection isAdmin={isAdmin} pocs={pocs} />
+          )}
+
+          {selectedSource !== 'camp' && (
           <div className="px-8 pb-20">
             <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
               <div className="overflow-x-auto no-scrollbar">
@@ -345,6 +352,7 @@ const WorkerDashboard = () => {
               </div>
             </div>
           </div>
+          )}
         </div>
         
         {/* Add Lead Modal */}
@@ -358,8 +366,13 @@ const WorkerDashboard = () => {
                    updatedAt: new Date().toISOString(),
                    sourceVault: selectedSource === 'nexus' ? 'direct' : (selectedSource || 'sales')
                 };
+                
+                // Set default amount
+                const defaultAmount = pocs.pricing && data.serviceRequested ? (pocs.pricing[data.serviceRequested] || '') : '';
+                
                 await addDoc(collection(db, 'customers'), {
                    ...customerData,
+                   amount: defaultAmount,
                    createdAt: new Date().toISOString(),
                    docsSubmitted: false,
                    serviceStatus: 'Open',

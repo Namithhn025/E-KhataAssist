@@ -28,9 +28,8 @@ const AddLeadModal = ({ isOpen, onClose, onAdd, pocs = {} }) => {
     society: '',
     serviceRequested: '',
     acqPOC: '',
-    serviceAcqPOC: '',
-    notes: '',
     docsSubmitted: false,
+    notes: '',
     acquisitionDate: new Date().toISOString().split('T')[0],
     priority: 'Low'
   });
@@ -52,7 +51,11 @@ const AddLeadModal = ({ isOpen, onClose, onAdd, pocs = {} }) => {
   };
 
   const handlePhoneChange = (e) => {
-    setFormData(prev => ({ ...prev, phone: e.target.value }));
+    let value = e.target.value.replace(/\D/g, '');
+    if (formData.countryCode === '+91') {
+      value = value.slice(0, 10);
+    }
+    setFormData(prev => ({ ...prev, phone: value }));
   };
 
   const filteredApartments = (pocs.apartments || []).filter(opt => 
@@ -266,18 +269,7 @@ const AddLeadModal = ({ isOpen, onClose, onAdd, pocs = {} }) => {
                    </div>
                 </div>
 
-                <div className="space-y-2">
-                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Service Acquisition POC</label>
-                   <div className="relative">
-                      <select name="serviceAcqPOC" value={formData.serviceAcqPOC} onChange={handleChange} className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none transition-all font-bold text-slate-900 appearance-none cursor-pointer">
-                         <option value="">Select service acq POC</option>
-                         {pocs.serviceAcquisition?.map(name => (
-                            <option key={name} value={name}>{name}</option>
-                         ))}
-                      </select>
-                      <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                   </div>
-                </div>
+                {/* Removed Service Acquisition POC as per request */}
 
                 <div className="space-y-2">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Date of Acquisition</label>

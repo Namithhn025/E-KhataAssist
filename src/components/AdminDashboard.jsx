@@ -12,12 +12,14 @@ import FilterBar from './crm/FilterBar';
 import AddLeadModal from './crm/AddLeadModal';
 import AdminSettingsModal from './crm/AdminSettingsModal';
 import NestedServicesTable from './crm/NestedServicesTable';
+import CampSection from './crm/CampSection';
 import { setDoc, arrayUnion } from 'firebase/firestore';
-import { ChevronDown, MessageSquare } from 'lucide-react';
+import { ChevronDown, MessageSquare, DollarSign } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [selectedSource, setSelectedSource] = useState('sales');
   const [customers, setCustomers] = useState([]);
+  const [campaigns, setCampaigns] = useState([]);
   const [activeFilters, setActiveFilters] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
@@ -40,13 +42,15 @@ const AdminDashboard = () => {
     acquisition: ['Rasika', 'Ahmed', 'Suresh'], 
     serviceAcquisition: [], 
     service: ['Deepak', 'Manju', 'Kiran'],
-    apartments: [] 
+    apartments: [],
+    pricing: {}
   });
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(db, 'settings', 'crm_config'), (snapshot) => {
       if (snapshot.exists()) {
-        const data = snapshot.data().pocs || { acquisition: [], serviceAcquisition: [], service: [], apartments: [] };
+        const data = snapshot.data().pocs || { acquisition: [], serviceAcquisition: [], service: [], apartments: [], pricing: {} };
         if (!data.apartments) data.apartments = [];
+        if (!data.pricing) data.pricing = {};
         setPocs(data);
       }
     });
@@ -65,6 +69,17 @@ const AdminDashboard = () => {
        } else if (error.code === 'not-found' || error.message.includes('not been initialized')) {
           alert("Firebase Error: Cloud Firestore is not enabled for this project. Please create the database in the Firebase Console.");
        }
+    });
+    return unsubscribe;
+  }, []);
+
+  // Load Campaigns for Overview
+  useEffect(() => {
+    let q = query(collection(db, 'campaigns'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setCampaigns(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+       console.error("Admin campaigns fetch failed:", error);
     });
     return unsubscribe;
   }, []);
@@ -229,7 +244,6 @@ const AdminDashboard = () => {
             }
             viewMode={selectedSource}
             onSearch={setSearchQuery}
-            onBulkUpload={() => alert('Bulk Upload clicked')}
             onNewLead={() => setIsAddCustomerOpen(true)}
           />
   
@@ -263,14 +277,17 @@ const AdminDashboard = () => {
             ];
 
             // Build conic-gradient stops
-            const pieTotal = slices.reduce((s, sl) => s + sl.count, 0) || 1;
+            const rawTotal = slices.reduce((s, sl) => s + sl.count, 0);
+            const pieTotal = rawTotal || 1;
             let cumDeg = 0;
-            const conicStops = slices.map(sl => {
-              const deg = (sl.count / pieTotal) * 360;
-              const stop = `${sl.color} ${cumDeg.toFixed(1)}deg ${(cumDeg + deg).toFixed(1)}deg`;
-              cumDeg += deg;
-              return stop;
-            }).join(', ');
+            const conicStops = rawTotal === 0 
+              ? '#f1f5f9 0deg 360deg' // Gray circle if empty
+              : slices.map(sl => {
+                  const deg = (sl.count / pieTotal) * 360;
+                  const stop = `${sl.color} ${cumDeg.toFixed(1)}deg ${(cumDeg + deg).toFixed(1)}deg`;
+                  cumDeg += deg;
+                  return stop;
+                }).join(', ');
 
             return (
               <div className="px-8 pb-20 pt-2 space-y-8">
@@ -307,7 +324,7 @@ const AdminDashboard = () => {
                       className="absolute bg-white rounded-full flex flex-col items-center justify-center"
                       style={{ width: 110, height: 110, top: 55, left: 55 }}
                     >
-                      <span className="text-3xl font-black text-slate-900">{pieTotal}</span>
+                      <span className="text-3xl font-black text-slate-900">{rawTotal}</span>
                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">SRs Total</span>
                     </div>
                   </div>
@@ -315,7 +332,7 @@ const AdminDashboard = () => {
                   {/* Legend + stats */}
                   <div className="flex-1 grid grid-cols-2 gap-4">
                     {slices.map(sl => {
-                      const pct = pieTotal > 0 ? ((sl.count / pieTotal) * 100).toFixed(1) : '0.0';
+                      const pct = rawTotal > 0 ? ((sl.count / rawTotal) * 100).toFixed(1) : '0.0';
                       return (
                         <div key={sl.label} className="flex items-center gap-4 bg-slate-50 rounded-2xl px-5 py-4 border border-slate-100">
                           <div className={`w-3 h-3 rounded-full ${sl.bg} shrink-0`} />
@@ -345,6 +362,63 @@ const AdminDashboard = () => {
                         <p className={`text-3xl font-black mt-1 ${color}`}>{count || 0}</p>
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Camp Summary */}
+                  <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-5">Camp Summary</p>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-6 py-5">
+                        <div>
+                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Expenses</p>
+                           <p className="text-3xl font-black mt-1 text-red-600">
+                             ₹{campaigns.reduce((sum, c) => sum + (Number(c.expenses) || 0), 0).toLocaleString('en-IN')}
+                           </p>
+                        </div>
+                        <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
+                          <DollarSign className="text-red-600" size={20} />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Camps Conducted</p>
+                          <p className="text-2xl font-black mt-1 text-slate-900">{campaigns.length}</p>
+                        </div>
+                        <div className="rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Camp Leads</p>
+                          <p className="text-2xl font-black mt-1 text-blue-600">{campaigns.reduce((sum, c) => sum + (Number(c.leadsCount) || 0), 0)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Financials / Invoices Overview */}
+                  <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 relative overflow-hidden">
+                    <div className="absolute -right-10 -bottom-10 opacity-5">
+                      <FileText size={200} />
+                    </div>
+                    <div className="relative z-10 h-full flex flex-col justify-between">
+                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-5">Financial Overview</p>
+                      
+                      <div className="flex-1 flex flex-col justify-center gap-2">
+                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">Total Earned (Approved & Invoiced)</p>
+                        <div className="flex items-end gap-2">
+                          <span className="text-2xl font-black text-slate-400 mb-1">₹</span>
+                          <span className="text-6xl font-black text-emerald-500 tracking-tighter">
+                            {customers
+                              .filter(c => c.serviceStatus === 'Approved')
+                              .reduce((sum, c) => sum + (Number(c.amount) || 0), 0)
+                              .toLocaleString('en-IN')
+                            }
+                          </span>
+                        </div>
+                        <p className="text-xs font-bold text-slate-500 mt-2">
+                          From {metrics.approved} approved service requests ready to invoice.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -461,8 +535,13 @@ const AdminDashboard = () => {
             );
           })()}
 
+          {/* ── CAMP SECTION ─────────────────────────────────────────── */}
+          {selectedSource === 'camp' && (
+             <CampSection isAdmin={isAdmin} pocs={pocs} />
+          )}
+
           {/* ── MAIN TABLE (Sales / Services) ─────────────────────────── */}
-          {selectedSource !== 'invoices' && (
+          {selectedSource !== 'invoices' && selectedSource !== 'camp' && (
         <div className="px-8 pb-20">
           <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
             <div className="overflow-x-auto no-scrollbar">
@@ -739,8 +818,13 @@ const AdminDashboard = () => {
                    updatedAt: new Date().toISOString(),
                    sourceVault: selectedSource === 'nexus' ? 'direct' : selectedSource
                 };
+                
+                // Set default amount
+                const defaultAmount = pocs.pricing && data.serviceRequested ? (pocs.pricing[data.serviceRequested] || '') : '';
+                
                 await addDoc(collection(db, 'customers'), {
                    ...customerData,
+                   amount: defaultAmount,
                    createdAt: new Date().toISOString(),
                    docsSubmitted: false,
                    serviceStatus: 'Open',

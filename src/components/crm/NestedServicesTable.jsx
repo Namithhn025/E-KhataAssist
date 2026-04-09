@@ -532,14 +532,14 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                       onChange={(e) => {
                         const val = e.target.value.replace(/\D/g, '').substring(0, 10);
                         if (isLocked) return;
-                        if (!isAdmin && customer.ePID) return; // Add-once logic
+                        if (!isAdmin && customer.ePID?.length === 10) return; // Lock if 10 digits reached
                         onUpdate('ePID', val);
                       }}
-                      disabled={isLocked}
+                      disabled={isLocked || (!isAdmin && customer.ePID?.length === 10)}
                       className={`w-full px-4 py-2.5 rounded-xl border font-mono text-[11px] font-black text-center outline-none transition-all ${customer.ePID?.length === 10 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-400 focus:border-primary'
                         }`}
                     />
-                    {(!isAdmin && customer.ePID) && <Lock size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300" />}
+                    {(!isAdmin && customer.ePID?.length === 10) && <Lock size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300" />}
                   </div>
                 </td>
 
