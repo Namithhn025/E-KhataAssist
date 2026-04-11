@@ -26,7 +26,7 @@ const Login = () => {
         navigate(role === 'admin' ? '/admin' : '/worker');
       } else {
         // Fallback or setup first user
-        const defaultRole = email.includes('admin') ? 'admin' : 'worker';
+        const defaultRole = (email.toLowerCase().includes('admin') || email.toLowerCase() === 'namaproptech2026@gmail.com') ? 'admin' : 'worker';
         localStorage.setItem('crm_role', defaultRole);
         navigate(defaultRole === 'admin' ? '/admin' : '/worker');
       }
@@ -94,8 +94,8 @@ const Login = () => {
           <div className="bg-green-50 rounded-2xl p-4">
             <p className="text-xs font-bold text-primary mb-2 uppercase tracking-wider">Demo Access</p>
             <div className="grid grid-cols-1 gap-2 text-xs text-gray-600">
-              <p><span className="font-bold text-gray-900">Admin:</span> admin@ekhata.com / admin123</p>
-              <p><span className="font-bold text-gray-900">Worker:</span> worker@ekhata.com / worker123</p>
+              <p><span className="font-bold text-gray-900">Admin:</span> Namaproptech2026@gmail.com / 2026@janekhata</p>
+              <p><span className="font-bold text-gray-900">Worker:</span> Worker@Ekhataassist / Worker@ready123</p>
             </div>
           </div>
         </div>

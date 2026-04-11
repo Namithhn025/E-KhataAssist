@@ -27,12 +27,19 @@ const WorkerDashboard = () => {
   const [noteText, setNoteText] = useState('');
   const [servicesSubMode, setServicesSubMode] = useState('active');
   const [visibleFilters, setVisibleFilters] = useState(['priority', 'acqPOC', 'serviceAcqPOC', 'stage', 'service']);
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 20;
   
   const { logout } = useAuth();
   const userRole = localStorage.getItem('crm_role') || 'worker';
   const isAdmin = userRole === 'admin'; // Should be false here but keeping logic consistent
   
   const navigate = useNavigate();
+  
+  // Reset page to 1 on filter/search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeFilters, selectedSource, servicesSubMode]);
 
   // Load Settings (POCs & Apartments)
   const [pocs, setPocs] = useState({ 
@@ -160,8 +167,8 @@ const WorkerDashboard = () => {
     const matchesPriority = !activeFilters.priority || c.priority === activeFilters.priority;
     const matchesStage = !activeFilters.stage || (c.status === activeFilters.stage || c.serviceStage === activeFilters.stage);
     const matchesService = !activeFilters.service || (c.serviceRequested === activeFilters.service || c.serviceType === activeFilters.service || c.service === activeFilters.service);
-    const matchesAcqPOC = !activeFilters.acqPOC || c.acqPOC === activeFilters.acqPOC;
-    const matchesServiceAcqPOC = !activeFilters.serviceAcqPOC || c.serviceAcqPOC === activeFilters.serviceAcqPOC;
+    const matchesAcqPOC = !activeFilters.acqPOC || (activeFilters.acqPOC === 'Unassigned' ? !c.acqPOC : c.acqPOC === activeFilters.acqPOC);
+    const matchesServiceAcqPOC = !activeFilters.serviceAcqPOC || (activeFilters.serviceAcqPOC === 'Unassigned' ? !c.serviceAcqPOC : c.serviceAcqPOC === activeFilters.serviceAcqPOC);
     const matchesApartment = !activeFilters.apartment || (c.apartment === activeFilters.apartment || c.society === activeFilters.apartment);
     const matchesSource = !activeFilters.source || c.sourceVault === activeFilters.source;
     
@@ -176,6 +183,12 @@ const WorkerDashboard = () => {
     }
     return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
   });
+
+  const totalPages = Math.ceil(filteredCustomers.length / rowsPerPage);
+  const paginatedCustomers = filteredCustomers.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
@@ -192,7 +205,7 @@ const WorkerDashboard = () => {
           <DashboardHeader 
             title={`Worker Portal / ${selectedSource.charAt(0).toUpperCase() + selectedSource.slice(1)}`}
             viewMode={selectedSource}
-            onSearch={setSearchQuery}
+            onSearch={(val) => { setSearchQuery(val); setCurrentPage(1); }}
             onNewLead={() => setIsAddCustomerOpen(true)}
           />
   
@@ -201,8 +214,8 @@ const WorkerDashboard = () => {
             visibleFilters={visibleFilters}
             setVisibleFilters={setVisibleFilters}
             viewMode={selectedSource}
-            onFilterChange={(key, val) => setActiveFilters({...activeFilters, [key]: val})}
-            onReset={() => setActiveFilters({})}
+            onFilterChange={(key, val) => { setActiveFilters({...activeFilters, [key]: val}); setCurrentPage(1); }}
+            onReset={() => { setActiveFilters({}); setCurrentPage(1); }}
             pocs={pocs}
             sortBy={sortBy}
             onSortChange={setSortBy}
@@ -242,7 +255,7 @@ const WorkerDashboard = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100/50">
-                    {filteredCustomers.map((customer) => (
+                    {paginatedCustomers.map((customer) => (
                       <React.Fragment key={customer.id}>
                         <tr className={`group transition-all duration-300 cursor-default ${expandedRows.has(customer.id) ? 'bg-[#f1f5f9]' : 'hover:bg-slate-50/50'}`}>
                           <td className="px-6 py-6 ring-inset">
@@ -364,6 +377,45 @@ const WorkerDashboard = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+              
+              <div className="px-10 py-8 bg-slate-50/50 border-t border-slate-100/50 flex items-center justify-between">
+                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Showing <span className="text-slate-900">{paginatedCustomers.length}</span> of <span className="text-slate-900">{filteredCustomers.length}</span> entries
+                 </div>
+                 <div className="flex items-center gap-1.5">
+                    <button 
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-all shadow-sm"
+                    >
+                      Prev
+                    </button>
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) pageNum = i + 1;
+                      else if (currentPage <= 3) pageNum = i + 1;
+                      else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+                      else pageNum = currentPage - 2 + i;
+
+                      return (
+                        <button 
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`w-10 h-10 rounded-xl text-xs font-bold transition-all ${currentPage === pageNum ? 'bg-slate-900 text-white shadow-xl shadow-slate-200' : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'}`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                    <button 
+                      disabled={currentPage === totalPages || totalPages === 0}
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 transition-all shadow-sm"
+                    >
+                      Next
+                    </button>
+                 </div>
               </div>
             </div>
           </div>

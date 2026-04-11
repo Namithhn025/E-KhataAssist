@@ -43,8 +43,8 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
 
   const allFilterSpecs = {
     priority: { label: 'Priority', options: ['High', 'Medium', 'Low'] },
-    acqPOC: { label: 'Acquisit. POC', options: pocs.acquisition || [] },
-    serviceAcqPOC: { label: 'Service POC', options: pocs.serviceAcquisition || [] },
+    acqPOC: { label: 'Acquisit. POC', options: ['Unassigned', ...(pocs.acquisition || [])] },
+    serviceAcqPOC: { label: 'Service POC', options: ['Unassigned', ...(pocs.serviceAcquisition || [])] },
     service: { label: 'Service Type', options: [
       'Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)', 
       'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration', 'Others'

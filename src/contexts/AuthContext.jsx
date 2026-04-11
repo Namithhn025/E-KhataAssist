@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('crm_role', fetchedRole);
         } else {
           // Fallback: infer role from email
-          const defaultRole = firebaseUser.email?.includes('admin') ? 'admin' : 'worker';
+          const defaultRole = (firebaseUser.email?.toLowerCase().includes('admin') || firebaseUser.email?.toLowerCase() === 'namaproptech2026@gmail.com') ? 'admin' : 'worker';
           setRole(defaultRole);
           localStorage.setItem('crm_role', defaultRole);
         }
