@@ -90,15 +90,6 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="mt-8 pt-8 border-t border-gray-100">
-          <div className="bg-green-50 rounded-2xl p-4">
-            <p className="text-xs font-bold text-primary mb-2 uppercase tracking-wider">Demo Access</p>
-            <div className="grid grid-cols-1 gap-2 text-xs text-gray-600">
-              <p><span className="font-bold text-gray-900">Admin:</span> Namaproptech2026@gmail.com / 2026@janekhata</p>
-              <p><span className="font-bold text-gray-900">Worker:</span> Worker@Ekhataassist / Worker@ready123</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
