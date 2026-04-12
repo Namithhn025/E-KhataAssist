@@ -26,7 +26,9 @@ const Login = () => {
         navigate(role === 'admin' ? '/admin' : '/worker');
       } else {
         // Fallback or setup first user
-        const defaultRole = (email.toLowerCase().includes('admin') || email.toLowerCase() === 'namaproptech2026@gmail.com') ? 'admin' : 'worker';
+        const defaultRole = (email.toLowerCase().includes('admin') || 
+                             email.toLowerCase() === 'namaproptech2026@gmail.com' ||
+                             email.toLowerCase() === 'namaproptech2026@ekhataassist.com') ? 'admin' : 'worker';
         localStorage.setItem('crm_role', defaultRole);
         navigate(defaultRole === 'admin' ? '/admin' : '/worker');
       }
