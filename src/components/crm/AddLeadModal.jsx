@@ -26,13 +26,39 @@ const AddLeadModal = ({ isOpen, onClose, onAdd, pocs = {} }) => {
     source: '',
     apartment: '',
     society: '',
-    serviceRequested: '',
+    services: [], // Changed from serviceRequested to services array
+    otherService: '',
+    ec: '', // Added EC field
     acqPOC: '',
     docsSubmitted: false,
     notes: '',
     acquisitionDate: new Date().toISOString().split('T')[0],
     priority: 'Low'
   });
+
+  // Reset form when modal opens to prevent accidental data persistence or auto-saving issues
+  React.useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        phone: '',
+        countryCode: '+91',
+        customerName: '',
+        email: '',
+        source: '',
+        apartment: '',
+        society: '',
+        services: [],
+        otherService: '',
+        ec: '',
+        acqPOC: '',
+        docsSubmitted: false,
+        notes: '',
+        acquisitionDate: new Date().toISOString().split('T')[0],
+        priority: 'Low'
+      });
+      setApartmentSearch('');
+    }
+  }, [isOpen]);
 
   const [apartmentSearch, setApartmentSearch] = useState('');
   const [showApartmentList, setShowApartmentList] = useState(false);
@@ -41,8 +67,20 @@ const AddLeadModal = ({ isOpen, onClose, onAdd, pocs = {} }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // For backward compatibility, also set society
-    onAdd({ ...formData, society: formData.apartment || formData.society });
+    if (formData.services.length === 0) {
+      alert('Please select at least one service.');
+      return;
+    }
+    // For backward compatibility and multiple services support
+    const serviceRequested = formData.services.includes('Others') 
+      ? [...formData.services.filter(s => s !== 'Others'), formData.otherService].filter(Boolean).join(', ')
+      : formData.services.join(', ');
+
+    onAdd({ 
+      ...formData, 
+      society: formData.apartment || formData.society,
+      serviceRequested: serviceRequested // Keep string format for DB compatibility
+    });
   };
 
   const handleChange = (e) => {
@@ -229,21 +267,62 @@ const AddLeadModal = ({ isOpen, onClose, onAdd, pocs = {} }) => {
                    </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-4">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                     <Briefcase size={10} /> Service
+                     <FileText size={10} /> EC Number
                    </label>
-                   <select name="serviceRequested" value={formData.serviceRequested} onChange={handleChange} required className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-slate-900 appearance-none cursor-pointer">
-                      <option value="">Choose service type</option>
-                      <option value="Ekatha">Ekatha</option>
-                      <option value="Katha Transfer (Combo)">Katha Transfer (Combo)</option>
-                      <option value="New Katha (Combo)">New Katha (Combo)</option>
-                      <option value="Bescom">Bescom</option>
-                      <option value="MOU">MOU</option>
-                      <option value="MODT Cancellation">MODT Cancellation</option>
-                      <option value="Property Registration">Property Registration</option>
-                      <option value="Others">Others</option>
-                   </select>
+                   <input 
+                     name="ec"
+                     value={formData.ec}
+                     onChange={handleChange}
+                     className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-slate-900 text-sm"
+                     placeholder="Enter EC Number (if available)..."
+                   />
+                </div>
+
+                <div className="space-y-4 lg:col-span-2">
+                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                     <Briefcase size={10} /> Services Required (Select Multiple) <span className="text-red-500">*</span>
+                   </label>
+                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {[
+                        'Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)',
+                        'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration', 'Others'
+                      ].map(service => (
+                        <button
+                          key={service}
+                          type="button"
+                          onClick={() => {
+                            setFormData(prev => ({
+                              ...prev,
+                              services: prev.services.includes(service)
+                                ? prev.services.filter(s => s !== service)
+                                : [...prev.services, service]
+                            }));
+                          }}
+                          className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
+                            formData.services.includes(service)
+                              ? 'bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-200'
+                              : 'bg-slate-50 text-slate-500 border-slate-100 hover:bg-slate-100'
+                          }`}
+                        >
+                          {service}
+                        </button>
+                      ))}
+                   </div>
+
+                   {formData.services.includes('Others') && (
+                     <div className="animate-in slide-in-from-top-2 duration-300">
+                        <input 
+                           name="otherService"
+                           value={formData.otherService}
+                           onChange={handleChange}
+                           required={formData.services.includes('Others')}
+                           className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-blue-100 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold text-slate-900 text-sm"
+                           placeholder="Please specify other service..."
+                        />
+                     </div>
+                   )}
                 </div>
               </div>
           </div>
@@ -305,7 +384,23 @@ const AddLeadModal = ({ isOpen, onClose, onAdd, pocs = {} }) => {
           <div className="flex gap-4 pt-10 border-t border-slate-100">
              <button 
                 type="button" 
-                onClick={() => setFormData({})}
+                onClick={() => setFormData({
+                  phone: '',
+                  countryCode: '+91',
+                  customerName: '',
+                  email: '',
+                  source: '',
+                  apartment: '',
+                  society: '',
+                  services: [],
+                  otherService: '',
+                  ec: '',
+                  acqPOC: '',
+                  docsSubmitted: false,
+                  notes: '',
+                  acquisitionDate: new Date().toISOString().split('T')[0],
+                  priority: 'Low'
+                })}
                 className="px-12 py-5 text-slate-400 font-black text-xs uppercase tracking-widest hover:bg-slate-50 rounded-[1.5rem] transition-all flex items-center gap-2"
              >
                 <RefreshCw size={14} /> Clear

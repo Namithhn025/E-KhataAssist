@@ -13,6 +13,7 @@ import AddLeadModal from './crm/AddLeadModal';
 import AdminSettingsModal from './crm/AdminSettingsModal';
 import NestedServicesTable from './crm/NestedServicesTable';
 import CampSection from './crm/CampSection';
+import ExpensesSection from './crm/ExpensesSection';
 import { setDoc, arrayUnion } from 'firebase/firestore';
 import { ChevronDown, MessageSquare, DollarSign } from 'lucide-react';
 
@@ -20,6 +21,7 @@ const AdminDashboard = () => {
   const [selectedSource, setSelectedSource] = useState('sales');
   const [customers, setCustomers] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
+  const [expenses, setExpenses] = useState([]);
   const [activeFilters, setActiveFilters] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('Date Added');
@@ -88,6 +90,17 @@ const AdminDashboard = () => {
       setCampaigns(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (error) => {
        console.error("Admin campaigns fetch failed:", error);
+    });
+    return unsubscribe;
+  }, []);
+
+  // Load Expenses for Overview
+  useEffect(() => {
+    let q = query(collection(db, 'expenses'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setExpenses(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+       console.error("Admin expenses fetch failed:", error);
     });
     return unsubscribe;
   }, []);
@@ -264,6 +277,7 @@ const AdminDashboard = () => {
             title={
               selectedSource === 'nexus' ? 'Overview' :
               selectedSource === 'camp' ? 'Camp' :
+              selectedSource === 'expenses' ? 'Expenses' :
               selectedSource === 'invoices' ? 'Invoices' :
               selectedSource === 'services' ? `Services / ${servicesSubMode.charAt(0).toUpperCase() + servicesSubMode.slice(1)}` : 
               'Sales'
@@ -415,8 +429,10 @@ const AdminDashboard = () => {
                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Leads by Service Type</p>
                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                      {Object.entries(customers.reduce((acc, c) => {
-                       const service = c.serviceRequested || c.serviceType || c.service || 'No Service';
-                       acc[service] = (acc[service] || 0) + 1;
+                       const servicesList = c.services || (c.serviceRequested ? [c.serviceRequested] : (c.serviceType ? [c.serviceType] : (c.service ? [c.service] : ['No Service'])));
+                       servicesList.forEach(service => {
+                         acc[service] = (acc[service] || 0) + 1;
+                       });
                        return acc;
                      }, {})).sort((a,b) => b[1] - a[1]).map(([service, count]) => (
                        <button 
@@ -435,15 +451,18 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Camp Summary */}
+                  {/* Expenses Summary */}
                   <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-5">Camp Summary</p>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-5">Expenses Summary</p>
                     <div className="flex flex-col gap-4">
                       <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-6 py-5">
                         <div>
-                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Expenses</p>
+                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Expenses (All)</p>
                            <p className="text-3xl font-black mt-1 text-red-600">
-                             ₹{campaigns.reduce((sum, c) => sum + (Number(c.expenses) || 0), 0).toLocaleString('en-IN')}
+                             ₹{(
+                               campaigns.reduce((sum, c) => sum + (Number(c.expenses) || 0), 0) + 
+                               expenses.reduce((sum, e) => sum + (Number(e.cost) || 0), 0)
+                             ).toLocaleString('en-IN')}
                            </p>
                         </div>
                         <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
@@ -452,12 +471,12 @@ const AdminDashboard = () => {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4">
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Camps Conducted</p>
-                          <p className="text-2xl font-black mt-1 text-slate-900">{campaigns.length}</p>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Company Ops</p>
+                          <p className="text-2xl font-black mt-1 text-slate-900">₹{expenses.reduce((sum, e) => sum + (Number(e.cost) || 0), 0).toLocaleString('en-IN')}</p>
                         </div>
                         <div className="rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4">
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Camp Leads</p>
-                          <p className="text-2xl font-black mt-1 text-blue-600">{campaigns.reduce((sum, c) => sum + (Number(c.leadsCount) || 0), 0)}</p>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Camp Costs</p>
+                          <p className="text-2xl font-black mt-1 text-blue-600">₹{campaigns.reduce((sum, c) => sum + (Number(c.expenses) || 0), 0).toLocaleString('en-IN')}</p>
                         </div>
                       </div>
                     </div>
@@ -630,11 +649,27 @@ const AdminDashboard = () => {
 
           {/* ── CAMP SECTION ─────────────────────────────────────────── */}
           {selectedSource === 'camp' && (
-             <CampSection isAdmin={isAdmin} pocs={pocs} customers={customers} />
+             <CampSection 
+               isAdmin={isAdmin} 
+               pocs={pocs} 
+               customers={customers} 
+               activeFilters={activeFilters}
+               searchQuery={searchQuery}
+               sortBy={sortBy}
+             />
+          )}
+
+          {/* ── EXPENSES SECTION ─────────────────────────────────────── */}
+          {selectedSource === 'expenses' && (
+             <ExpensesSection 
+               isAdmin={isAdmin} 
+               sortBy={sortBy}
+               searchQuery={searchQuery}
+             />
           )}
 
           {/* ── MAIN TABLE (Sales / Services) ─────────────────────────── */}
-          {selectedSource !== 'invoices' && selectedSource !== 'camp' && selectedSource !== 'nexus' && (
+          {selectedSource !== 'invoices' && selectedSource !== 'camp' && selectedSource !== 'nexus' && selectedSource !== 'expenses' && (
         <div className="px-8 pb-20">
           <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
             <div className="overflow-x-auto no-scrollbar">
@@ -706,11 +741,11 @@ const AdminDashboard = () => {
                                  </button>
                                </div>
                             </td>
-                            <td className="px-6 py-6">
+                            <td className="px-4 py-3">
                                <span className="text-xs font-bold text-slate-700">{customer.serviceType || 'E-Khata'}</span>
                             </td>
                             {servicesSubMode === 'blocked' && (
-                              <td className="px-6 py-6">
+                              <td className="px-4 py-3">
                                  <span className="text-xs font-bold text-slate-500 text-center block w-full">-</span>
                               </td>
                             )}
@@ -718,11 +753,11 @@ const AdminDashboard = () => {
                           </>
                         ) : (
                           <>
-                            <td className="px-6 py-6">
+                            <td className="px-4 py-3">
                               <div className="font-bold text-slate-900 group-hover:text-primary transition-colors">{customer.customerName}</div>
                               <div className="text-[10px] font-black text-slate-400 tracking-widest mt-0.5">UIDE{customer.id.substring(0, 4).toUpperCase()}</div>
                             </td>
-                            <td className="px-6 py-6">
+                            <td className="px-4 py-3">
                                <div className="flex items-center gap-2 font-bold text-slate-700">
                                  {customer.phone}
                                  <button 
@@ -733,7 +768,7 @@ const AdminDashboard = () => {
                                  </button>
                                </div>
                             </td>
-                            <td className="px-6 py-6 text-center">
+                            <td className="px-4 py-3 text-center">
                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
                                  customer.priority === 'High' ? 'bg-red-50 text-red-600 border-red-100' :
                                  customer.priority === 'Medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
@@ -745,7 +780,7 @@ const AdminDashboard = () => {
                                  {customer.priority || 'Low'}
                                </span>
                             </td>
-                            <td className="px-6 py-6">
+                            <td className="px-4 py-3">
                               <select 
                                  disabled={!isAdmin}
                                  value={customer.acqPOC || ''}
@@ -778,7 +813,7 @@ const AdminDashboard = () => {
                       </tr>
                       {expandedRows.has(customer.id) && (
                         <tr className="bg-[#f8fafc]">
-                          <td colSpan={selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 6 : 5) : 6} className="px-10 py-12">
+                          <td colSpan={selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 6 : 5) : 6} className="px-6 py-8">
                             <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-top-2 duration-500">
                                
                                {/* Redundant Row Removed per User Request */}
@@ -931,18 +966,25 @@ const AdminDashboard = () => {
           onClose={() => setIsAddCustomerOpen(false)}
           onAdd={async (data) => {
              try {
+                // Calculate sum of prices for all selected services
+                let totalAmount = 0;
+                if (pocs.pricing && data.services && data.services.length > 0) {
+                  data.services.forEach(service => {
+                    if (pocs.pricing[service]) {
+                      totalAmount += parseFloat(pocs.pricing[service]);
+                    }
+                  });
+                }
+                
                 const customerData = {
                    ...data,
                    updatedAt: new Date().toISOString(),
-                   sourceVault: selectedSource === 'nexus' ? 'direct' : selectedSource
+                   sourceVault: selectedSource === 'nexus' ? 'direct' : selectedSource,
+                   amount: totalAmount || ''
                 };
-                
-                // Set default amount
-                const defaultAmount = pocs.pricing && data.serviceRequested ? (pocs.pricing[data.serviceRequested] || '') : '';
                 
                 await addDoc(collection(db, 'customers'), {
                    ...customerData,
-                   amount: defaultAmount,
                    createdAt: new Date().toISOString(),
                    docsSubmitted: false,
                    serviceStatus: 'Open',

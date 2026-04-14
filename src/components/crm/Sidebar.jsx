@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   BarChart2, Compass, ShoppingBag, Briefcase, FileText, 
   Settings, LogOut, ChevronDown,
-  Clock, PlayCircle, XCircle, CheckCircle, RefreshCw
+  Clock, PlayCircle, XCircle, CheckCircle, RefreshCw,
+  DollarSign
 } from 'lucide-react';
 
 const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode, setServicesSubMode, userRole }) => {
@@ -30,6 +31,7 @@ const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode,
       subItems: allSubItems,
     },
     ...(userRole === 'admin' ? [
+        { id: 'expenses', name: 'Expenses', icon: DollarSign },
         { id: 'invoices', name: 'Invoices', icon: FileText },
         { id: 'admin',    name: 'Admin',    icon: Settings }
     ] : []),

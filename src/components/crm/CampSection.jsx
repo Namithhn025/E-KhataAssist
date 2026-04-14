@@ -3,7 +3,7 @@ import { db } from '../../firebase';
 import { collection, addDoc, onSnapshot, query, updateDoc, doc, deleteDoc, orderBy } from 'firebase/firestore';
 import { Plus, Compass, Calendar, DollarSign, Users, Hash, Phone, User, X } from 'lucide-react';
 
-const CampSection = ({ isAdmin, pocs, customers = [] }) => {
+const CampSection = ({ isAdmin, pocs, customers = [], activeFilters = {}, searchQuery = '', sortBy = 'Date Added' }) => {
   const [campaigns, setCampaigns] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -87,6 +87,24 @@ const CampSection = ({ isAdmin, pocs, customers = [] }) => {
     }
   };
 
+  const filteredCampaigns = campaigns.filter(camp => {
+    // Search by Apartment Name
+    const matchesSearch = !searchQuery || 
+      camp.apartmentName?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Filter by Acquisition Team Member
+    const matchesAcq = !activeFilters.acqPOC || 
+      (camp.acquisitionTeam || []).includes(activeFilters.acqPOC);
+
+    return matchesSearch && matchesAcq;
+  }).sort((a, b) => {
+    if (sortBy === 'Date Added' || sortBy === 'Recently Updated') {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    }
+    // Default sort by campaignDate
+    return new Date(b.campaignDate) - new Date(a.campaignDate);
+  });
+
   return (
     <div className="px-8 pb-20 overflow-x-hidden pt-4">
       {/* Header section with add button */}
@@ -122,14 +140,14 @@ const CampSection = ({ isAdmin, pocs, customers = [] }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100/50">
-              {campaigns.length === 0 ? (
+              {filteredCampaigns.length === 0 ? (
                 <tr>
                   <td colSpan={isAdmin ? 7 : 4} className="py-24 text-center text-slate-400 text-xs font-bold uppercase tracking-widest">
                     No campaigns recorded yet
                   </td>
                 </tr>
               ) : (
-                campaigns.map((camp) => (
+                filteredCampaigns.map((camp) => (
                   <tr key={camp.id} className="hover:bg-slate-50/50 transition-all">
                     <td className="px-6 py-6">
                       <div className="font-bold text-slate-900">{camp.apartmentName}</div>
@@ -150,13 +168,27 @@ const CampSection = ({ isAdmin, pocs, customers = [] }) => {
                       {(camp.acquisitionTeam || []).join(', ') || 'N/A'}
                     </td>
                         <td className="px-6 py-6 text-center">
-                          <span className="font-mono text-sm font-black text-slate-900 bg-slate-100 px-3 py-1 rounded-full">
-                            {customers.filter(c => 
-                              ((c.apartment?.toLowerCase().trim() === camp.apartmentName?.toLowerCase().trim()) || 
-                               (c.society?.toLowerCase().trim() === camp.apartmentName?.toLowerCase().trim())) &&
-                              (!c.sourceVault || c.sourceVault === 'sales')
-                            ).length}
-                          </span>
+                          {isAdmin ? (
+                            <input 
+                              type="number"
+                              min="0"
+                              max="300"
+                              value={camp.leadsCount || 0}
+                              onChange={(e) => updateCampaign(camp.id, 'leadsCount', e.target.value)}
+                              className="w-16 bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 text-center font-mono text-xs font-black text-slate-900 outline-none focus:ring-2 focus:ring-primary/20"
+                            />
+                          ) : (
+                            <span className="font-mono text-sm font-black text-slate-900 bg-slate-100 px-3 py-1 rounded-full">
+                              {camp.leadsCount || 0}
+                            </span>
+                          )}
+                          <div className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-tighter shrink-0 whitespace-nowrap bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                             In CRM: {customers.filter(c => 
+                               ((c.apartment?.toLowerCase().trim() === camp.apartmentName?.toLowerCase().trim()) || 
+                                (c.society?.toLowerCase().trim() === camp.apartmentName?.toLowerCase().trim())) &&
+                               (!c.sourceVault || c.sourceVault === 'sales')
+                             ).length}
+                          </div>
                         </td>
                         {isAdmin && (
                           <>
@@ -241,8 +273,8 @@ const CampSection = ({ isAdmin, pocs, customers = [] }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No. of Leads Returns *</label>
-                  <input type="number" required min="0" name="leadsCount" value={formData.leadsCount} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-sm focus:ring-4 focus:ring-primary/10 outline-none" />
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No. of Leads Returns * (Max 300)</label>
+                  <input type="number" required min="0" max="300" name="leadsCount" value={formData.leadsCount} onChange={handleChange} className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 font-bold text-sm focus:ring-4 focus:ring-primary/10 outline-none" />
                 </div>
 
                 <div className="col-span-2 space-y-2">

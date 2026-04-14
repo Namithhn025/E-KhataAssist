@@ -258,7 +258,7 @@ const WorkerDashboard = () => {
                     {paginatedCustomers.map((customer) => (
                       <React.Fragment key={customer.id}>
                         <tr className={`group transition-all duration-300 cursor-default ${expandedRows.has(customer.id) ? 'bg-[#f1f5f9]' : 'hover:bg-slate-50/50'}`}>
-                          <td className="px-6 py-6 ring-inset">
+                          <td className="px-4 py-3 ring-inset">
                              <div className="flex items-center gap-3">
                                <div 
                                  onClick={() => toggleRow(customer.id)}
@@ -272,22 +272,22 @@ const WorkerDashboard = () => {
                           
                           {selectedSource === 'services' ? (
                             <>
-                              <td className="px-6 py-6 font-bold text-slate-900">
+                              <td className="px-4 py-3 font-bold text-slate-900">
                                  {customer.srId || `SRF${customer.id.substring(0,4).toUpperCase()}`}
                               </td>
-                              <td className="px-6 py-6 font-bold text-slate-700">{customer.customerName}</td>
-                              <td className="px-6 py-6 font-bold text-slate-700">{customer.phone}</td>
-                              <td className="px-6 py-6 text-xs font-bold text-slate-500">{customer.serviceType || 'E-Khata'}</td>
-                              {servicesSubMode === 'blocked' && <td className="px-6 py-6 text-center text-slate-400">-</td>}
+                              <td className="px-4 py-3 font-bold text-slate-700">{customer.customerName}</td>
+                              <td className="px-4 py-3 font-bold text-slate-700">{customer.phone}</td>
+                              <td className="px-4 py-3 text-xs font-bold text-slate-500">{customer.serviceType || 'E-Khata'}</td>
+                              {servicesSubMode === 'blocked' && <td className="px-4 py-3 text-center text-slate-400">-</td>}
                             </>
                           ) : (
                             <>
-                              <td className="px-6 py-6">
+                              <td className="px-4 py-3">
                                 <div className="font-bold text-slate-900">{customer.customerName}</div>
                                 <div className="text-[10px] font-black text-slate-400 tracking-widest mt-0.5">UIDE{customer.id.substring(0, 4).toUpperCase()}</div>
                               </td>
-                              <td className="px-6 py-6 font-bold text-slate-700">{customer.phone}</td>
-                              <td className="px-6 py-6 text-center">
+                              <td className="px-4 py-3 font-bold text-slate-700">{customer.phone}</td>
+                              <td className="px-4 py-3 text-center">
                                  <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${
                                    customer.priority === 'High' ? 'bg-red-50 text-red-600 border-red-100' :
                                    customer.priority === 'Medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
@@ -296,14 +296,14 @@ const WorkerDashboard = () => {
                                    {customer.priority || 'Low'}
                                  </span>
                               </td>
-                              <td className="px-6 py-6 text-xs font-black text-slate-500 uppercase">{customer.acqPOC || 'Unassigned'}</td>
-                              <td className="px-6 py-6 text-xs font-black text-indigo-500 uppercase">{customer.serviceAcqPOC || 'Unassigned'}</td>
+                              <td className="px-4 py-3 text-xs font-black text-slate-500 uppercase">{customer.acqPOC || 'Unassigned'}</td>
+                              <td className="px-4 py-3 text-xs font-black text-indigo-500 uppercase">{customer.serviceAcqPOC || 'Unassigned'}</td>
                             </>
                           )}
                         </tr>
                         {expandedRows.has(customer.id) && (
                           <tr className="bg-[#f8fafc]">
-                            <td colSpan={10} className="px-10 py-12">
+                            <td colSpan={10} className="px-6 py-8">
                               <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-top-2 duration-500">
                                  {/* Redundant Row Removed per User Request */}
                                  <div className="h-0.5 w-full bg-slate-50/50" />
@@ -428,18 +428,25 @@ const WorkerDashboard = () => {
           onClose={() => setIsAddCustomerOpen(false)}
           onAdd={async (data) => {
              try {
+                // Calculate sum of prices for all selected services
+                let totalAmount = 0;
+                if (pocs.pricing && data.services && data.services.length > 0) {
+                  data.services.forEach(service => {
+                    if (pocs.pricing[service]) {
+                      totalAmount += parseFloat(pocs.pricing[service]);
+                    }
+                  });
+                }
+
                 const customerData = {
                    ...data,
                    updatedAt: new Date().toISOString(),
-                   sourceVault: selectedSource === 'nexus' ? 'direct' : (selectedSource || 'sales')
+                   sourceVault: selectedSource === 'nexus' ? 'direct' : (selectedSource || 'sales'),
+                   amount: totalAmount || ''
                 };
-                
-                // Set default amount
-                const defaultAmount = pocs.pricing && data.serviceRequested ? (pocs.pricing[data.serviceRequested] || '') : '';
                 
                 await addDoc(collection(db, 'customers'), {
                    ...customerData,
-                   amount: defaultAmount,
                    createdAt: new Date().toISOString(),
                    docsSubmitted: false,
                    serviceStatus: 'Open',
