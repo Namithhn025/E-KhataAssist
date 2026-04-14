@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   Plus, X, Search, Phone, User, Mail, Globe, 
-  MapPin, Briefcase, Calendar, Users, ChevronDown, RefreshCw, ShoppingBag, Activity, MessageSquare
+  MapPin, Briefcase, Calendar, Users, ChevronDown, RefreshCw, ShoppingBag, Activity, MessageSquare,
+  FileText
 } from 'lucide-react';
 
 const COUNTRY_CODES = [
