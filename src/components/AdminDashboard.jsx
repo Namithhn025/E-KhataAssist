@@ -3,7 +3,7 @@ import { db } from '../firebase';
 import { collection, addDoc, onSnapshot, query, where, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ChevronRight, Phone, MessageCircle, BookOpen, Copy, Check, Filter, FileText, Plus, Search, User } from 'lucide-react';
+import { ChevronRight, Phone, MessageCircle, BookOpen, Copy, Check, Filter, FileText, Plus, Search, User, Trash2, AlertTriangle } from 'lucide-react';
 
 import Sidebar from './crm/Sidebar';
 import DashboardHeader from './crm/DashboardHeader';
@@ -32,6 +32,7 @@ const AdminDashboard = () => {
   const [copyFeedback, setCopyFeedback] = useState(null);
   const [noteInputId, setNoteInputId] = useState(null);
   const [noteText, setNoteText] = useState('');
+  const [customerToDelete, setCustomerToDelete] = useState(null);
   const [servicesSubMode, setServicesSubMode] = useState('active');
   const [visibleFilters, setVisibleFilters] = useState(['priority', 'acqPOC', 'serviceAcqPOC', 'stage', 'service']);
   const [currentPage, setCurrentPage] = useState(1);
@@ -147,6 +148,66 @@ const AdminDashboard = () => {
 
     setNoteText('');
     setNoteInputId(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!customerToDelete) return;
+    try {
+      await deleteDoc(doc(db, 'customers', customerToDelete.id));
+      setCustomerToDelete(null);
+    } catch (error) {
+      console.error("Deletion Error:", error);
+      alert("Failed to delete record. Please try again.");
+    }
+  };
+
+  // ─── Delete Confirm Modal ───────────────────────────────────────────────────
+  const DeleteConfirmModal = ({ customer, onConfirm, onCancel }) => {
+    if (!customer) return null;
+    return (
+      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+        <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md p-10 space-y-8 animate-in zoom-in-95 duration-300 border border-slate-100">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center text-red-500 shadow-inner">
+              <AlertTriangle size={40} strokeWidth={2.5} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-black text-slate-900 tracking-tight">Delete record?</h3>
+              <p className="text-sm font-medium text-slate-500 max-w-[280px]">
+                You are about to delete <span className="font-black text-slate-900">{customer.customerName}</span>. This action cannot be undone.
+              </p>
+            </div>
+          </div>
+          
+          <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100 flex flex-col gap-3">
+             <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <span>Customer ID</span>
+                <span className="text-slate-600">UIDE{customer.id.substring(0, 8).toUpperCase()}</span>
+             </div>
+             <div className="h-px bg-slate-200/50" />
+             <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <span>Phone Number</span>
+                <span className="text-slate-600">{customer.phone}</span>
+             </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={onConfirm}
+              className="w-full py-4 bg-red-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-red-500/20 hover:bg-red-600 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            >
+              Yes, Delete Permanently
+            </button>
+            <button
+              onClick={onCancel}
+              className="w-full py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all border border-slate-200/50"
+            >
+              Keep Record
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // ─── Master metrics computed from real Firestore data ─────────────────────
@@ -684,6 +745,7 @@ const AdminDashboard = () => {
                         <th className="px-6 py-5">Phone number</th>
                         <th className="px-6 py-5">Service</th>
                         {servicesSubMode === 'blocked' && <th className="px-6 py-5">Blocker POC</th>}
+                        {isAdmin && <th className="px-6 py-5 text-center">Actions</th>}
                       </>
                     ) : (
                       <>
@@ -692,6 +754,7 @@ const AdminDashboard = () => {
                         <th className="px-6 py-5 text-center">Priority</th>
                         <th className="px-6 py-5">Acq. POC</th>
                         <th className="px-6 py-5">Service POC</th>
+                        {isAdmin && <th className="px-6 py-5 text-center">Actions</th>}
                       </>
                     )}
                   </tr>
@@ -744,12 +807,26 @@ const AdminDashboard = () => {
                             <td className="px-4 py-3">
                                <span className="text-xs font-bold text-slate-700">{customer.serviceType || 'E-Khata'}</span>
                             </td>
-                            {servicesSubMode === 'blocked' && (
+                             {servicesSubMode === 'blocked' && (
                               <td className="px-4 py-3">
                                  <span className="text-xs font-bold text-slate-500 text-center block w-full">-</span>
                               </td>
                             )}
 
+                            {isAdmin && (
+                              <td className="px-6 py-6 text-center">
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCustomerToDelete(customer);
+                                  }}
+                                  className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                  title="Delete Lead"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </td>
+                            )}
                           </>
                         ) : (
                           <>
@@ -794,7 +871,7 @@ const AdminDashboard = () => {
                               </select>
                             </td>
 
-                            <td className="px-6 py-6">
+                             <td className="px-6 py-6">
                               <select 
                                  disabled={!isAdmin}
                                  value={customer.serviceAcqPOC || ''}
@@ -808,12 +885,26 @@ const AdminDashboard = () => {
                               </select>
                             </td>
 
+                            {isAdmin && (
+                              <td className="px-6 py-6 text-center">
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCustomerToDelete(customer);
+                                  }}
+                                  className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                  title="Delete Lead"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </td>
+                            )}
                           </>
                         )}
                       </tr>
                       {expandedRows.has(customer.id) && (
                         <tr className="bg-[#f8fafc]">
-                          <td colSpan={selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 6 : 5) : 6} className="px-6 py-8">
+                          <td colSpan={isAdmin ? (selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 7 : 6) : 7) : (selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 6 : 5) : 6)} className="px-6 py-8">
                             <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-top-2 duration-500">
                                
                                {/* Redundant Row Removed per User Request */}
@@ -899,7 +990,7 @@ const AdminDashboard = () => {
                   ))}
                   {filteredCustomers.length === 0 && (
                     <tr>
-                       <td colSpan={selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 7 : 6) : 7} className="py-24 text-center">
+                       <td colSpan={isAdmin ? (selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 8 : 7) : 8) : (selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 7 : 6) : 7)} className="py-24 text-center">
                           <div className="flex flex-col items-center justify-center space-y-4">
                              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100 text-slate-300">
                                 <Search size={24} />
@@ -1009,6 +1100,13 @@ const AdminDashboard = () => {
              await setDoc(doc(db, 'settings', 'crm_config'), { pocs: newPocs });
              setPocs(newPocs);
           }}
+        />
+
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmModal 
+          customer={customerToDelete}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setCustomerToDelete(null)}
         />
       </div>
     </div>
