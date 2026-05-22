@@ -11,15 +11,15 @@ const Stats = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
                     <div className="p-8 group">
-                        <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">2,000+</div>
+                        <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">7,000+</div>
                         <div className="inline-block px-4 py-1.5 rounded-full glass-pill text-green-300 text-xs font-black uppercase tracking-widest border border-white/10">Documents Delivered</div>
                     </div>
                     <div className="p-8 md:border-l border-white/10 group">
-                        <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">1,500+</div>
+                        <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">6,500+</div>
                         <div className="inline-block px-4 py-1.5 rounded-full glass-pill text-green-300 text-xs font-black uppercase tracking-widest border border-white/10">Properties Served</div>
                     </div>
                     <div className="p-8 md:border-l border-white/10 group">
-                        <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">1,500+</div>
+                        <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">6,500+</div>
                         <div className="inline-block px-4 py-1.5 rounded-full glass-pill text-green-300 text-xs font-black uppercase tracking-widest border border-white/10">Trusted Customers</div>
                     </div>
                 </div>

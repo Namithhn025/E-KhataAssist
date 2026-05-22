@@ -117,7 +117,7 @@ const About = () => {
                         <div className="relative z-10 pt-12 border-t border-white/20">
                             <div className="grid grid-cols-2 gap-10">
                                 <div>
-                                    <div className="text-4xl font-black tracking-tighter mb-1">2k+</div>
+                                    <div className="text-4xl font-black tracking-tighter mb-1">7k+</div>
                                     <div className="text-green-300 text-xs font-black uppercase tracking-widest opacity-80">Documents</div>
                                 </div>
                                 <div>
@@ -125,7 +125,7 @@ const About = () => {
                                     <div className="text-green-300 text-xs font-black uppercase tracking-widest opacity-80">Happy NRIs</div>
                                 </div>
                                 <div>
-                                    <div className="text-4xl font-black tracking-tighter mb-1">1.5k+</div>
+                                    <div className="text-4xl font-black tracking-tighter mb-1">6.5k+</div>
                                     <div className="text-green-300 text-xs font-black uppercase tracking-widest opacity-80">Properties</div>
                                 </div>
                                 <div>
