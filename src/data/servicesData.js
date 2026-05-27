@@ -19,7 +19,10 @@ export const servicesData = [
             { name: 'Sale Deed', desc: 'Registered sale deed document of the property.', image: '/samples/sale-deed.png' },
             { name: 'BESCOM Bill', desc: 'Latest electricity bill from BESCOM in the current owner\'s name.', image: '/samples/bescom-bill.png' },
             { name: 'Property Tax Receipt', desc: 'Latest property tax paid receipt from BBMP/local authority.', image: '/samples/property-tax.png' },
-            { name: 'Khata Certificate', desc: 'Existing Khata certificate (A-Khata or B-Khata) of the property.', image: '/samples/ekhata.png' }
+            { name: 'Khata Certificate', desc: 'Existing Khata certificate (A-Khata) of the property.', image: '/samples/ekhata.png' },
+            { name: 'Form-B Property Register Extract (B-Khata)', desc: 'Form-B register extract page showing property details.', image: '/samples/b-khata.png' },
+            { name: 'Form 9 / 11 E-Khata', desc: 'Official digital E-Khata Form 11 certificate issued by BBMP.', image: '/samples/form-11.png' },
+            { name: 'Bangalore One Receipt', desc: 'Bangalore One citizen services payment receipt.', image: '/samples/bangalore-one.png' }
         ],
         price: '2,799',
         originalPrice: '4,999'

@@ -58,10 +58,10 @@ const ContactFooter = () => {
                                 Select a service and reach out to us instantly via WhatsApp or fill a simple form.
                             </p>
                             <div className="mt-6 flex flex-col gap-3 text-sm text-gray-700">
-                                <a href="tel:9019786255" className="flex items-center gap-2 hover:text-primary transition-all font-bold">
-                                    <Phone size={16} className="text-primary shrink-0" /> +91 90197 86255
+                                <a href="tel:9019786255" className="flex items-center gap-2 hover:text-primary transition-all font-medium text-gray-500">
+                                    <Phone size={16} className="text-gray-400 shrink-0" /> +91 90197 86255
                                 </a>
-                                <a href="tel:8088917577" className="flex items-center gap-2 hover:text-primary transition-all font-bold">
+                                <a href="tel:8088917577" className="flex items-center gap-2 hover:text-primary transition-all font-bold text-gray-900">
                                     <Phone size={16} className="text-primary shrink-0" /> +91 80889 17577
                                 </a>
                                 <a href="mailto:info@ekhataassist.in" className="flex items-center gap-2 hover:text-primary transition-all font-bold">
@@ -160,8 +160,8 @@ const ContactFooter = () => {
                         <ul className="space-y-2.5 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
                             <li className="flex items-center gap-2"><Mail size={13} className="text-green-400" /> info@ekhataassist.in</li>
                             <li className="flex items-center gap-2"><Mail size={13} className="text-green-400" /> services@ekhataassist.com</li>
-                            <li className="flex items-center gap-2 font-bold text-white"><Phone size={13} className="text-green-400" /> +91 90197 86255</li>
-                            <li className="flex items-center gap-2"><Phone size={13} /> +91 80889 17577</li>
+                            <li className="flex items-center gap-2" style={{ color: 'rgba(255,255,255,0.55)' }}><Phone size={13} /> +91 90197 86255</li>
+                            <li className="flex items-center gap-2 font-bold text-white"><Phone size={13} className="text-green-400" /> +91 80889 17577</li>
                             <li className="flex items-start gap-2">
                                 <MapPin size={13} className="text-green-400 shrink-0 mt-0.5" />
                                 <span>2 nd floor, No 8, Siddedahalli Main Road, Opp Government School, Siddedahalli, Near Nagasandra Metro station, Bengaluru -560073</span>
