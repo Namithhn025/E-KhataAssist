@@ -149,7 +149,7 @@ const ServiceDetail = () => {
     const whatsappUrl = `https://wa.me/918088917577?text=${encodeURIComponent(shareMessage)}`;
     const emailSubject = `${service.title} - Document Submission | E-KhataAssist`;
     const emailBody = `Hi E-KhataAssist Team,\n\nI would like to avail the ${service.title} service.\n\nDocuments Required:\n• ${docsList}\n\nPlease guide me further.\n\nThank you.`;
-    const mailtoUrl = `mailto:info@ekhataassist.in?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    const mailtoUrl = `mailto:info@ekhataassist.in,services@ekhataassist.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
 
     return (
         <div className="min-h-screen bg-[#fcfdfd] pt-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">

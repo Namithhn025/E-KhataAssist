@@ -67,6 +67,13 @@ const ContactFooter = () => {
                                 <a href="mailto:info@ekhataassist.in" className="flex items-center gap-2 hover:text-primary transition-all font-bold">
                                     <Mail size={16} className="text-primary shrink-0" /> info@ekhataassist.in
                                 </a>
+                                <a href="mailto:services@ekhataassist.com" className="flex items-center gap-2 hover:text-primary transition-all font-bold">
+                                    <Mail size={16} className="text-primary shrink-0" /> services@ekhataassist.com
+                                </a>
+                                <div className="flex items-start gap-2 text-gray-500 font-medium">
+                                    <MapPin size={16} className="text-primary shrink-0 mt-0.5" />
+                                    <span>2 nd floor, No 8, Siddedahalli Main Road, Opp Government School, Siddedahalli, Near Nagasandra Metro station, Bengaluru -560073</span>
+                                </div>
                             </div>
                         </div>
 
@@ -152,8 +159,13 @@ const ContactFooter = () => {
                         <h5 className="font-black text-sm uppercase tracking-widest mb-4 text-green-400">Contact</h5>
                         <ul className="space-y-2.5 text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
                             <li className="flex items-center gap-2"><Mail size={13} className="text-green-400" /> info@ekhataassist.in</li>
+                            <li className="flex items-center gap-2"><Mail size={13} className="text-green-400" /> services@ekhataassist.com</li>
                             <li className="flex items-center gap-2 font-bold text-white"><Phone size={13} className="text-green-400" /> +91 90197 86255</li>
                             <li className="flex items-center gap-2"><Phone size={13} /> +91 80889 17577</li>
+                            <li className="flex items-start gap-2">
+                                <MapPin size={13} className="text-green-400 shrink-0 mt-0.5" />
+                                <span>2 nd floor, No 8, Siddedahalli Main Road, Opp Government School, Siddedahalli, Near Nagasandra Metro station, Bengaluru -560073</span>
+                            </li>
                             <li className="flex gap-4 mt-5">
                                 <a href="https://www.linkedin.com/company/ekhataassist/" target="_blank" rel="noopener noreferrer"
                                     className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:bg-white/10 border"
