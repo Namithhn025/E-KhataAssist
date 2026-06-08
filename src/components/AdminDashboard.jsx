@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, onSnapshot, query, where, updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, where, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ChevronRight, Phone, MessageCircle, BookOpen, Copy, Check, Filter, FileText, Plus, Search, User, Trash2, AlertTriangle } from 'lucide-react';
@@ -13,9 +13,11 @@ import AddLeadModal from './crm/AddLeadModal';
 import AdminSettingsModal from './crm/AdminSettingsModal';
 import NestedServicesTable from './crm/NestedServicesTable';
 import CampSection from './crm/CampSection';
+import MassUploadModal from './crm/MassUploadModal';
 import ExpensesSection from './crm/ExpensesSection';
-import { setDoc, arrayUnion } from 'firebase/firestore';
-import { ChevronDown, MessageSquare, DollarSign } from 'lucide-react';
+import RemindersSection, { ReminderModal } from './crm/RemindersSection';
+import { setDoc, arrayUnion, Timestamp } from 'firebase/firestore';
+import { ChevronDown, MessageSquare, DollarSign, Bell } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [selectedSource, setSelectedSource] = useState('sales');
@@ -36,8 +38,27 @@ const AdminDashboard = () => {
   const [servicesSubMode, setServicesSubMode] = useState('active');
   const [visibleFilters, setVisibleFilters] = useState(['priority', 'acqPOC', 'serviceAcqPOC', 'stage', 'service']);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isMassUploadOpen, setIsMassUploadOpen] = useState(false);
   const rowsPerPage = 20;
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const [reminderCustomer, setReminderCustomer] = useState(null);
+
+  const handleSaveReminder = async (data) => {
+    try {
+      await addDoc(collection(db, 'reminders'), {
+        ...data,
+        status: 'pending',
+        createdBy: user?.uid || 'admin',
+        createdByName: user?.displayName || user?.email || 'Admin',
+        createdAt: Timestamp.now(),
+        resolvedAt: null,
+      });
+      setReminderCustomer(null);
+    } catch (e) {
+      console.error('Create reminder error from dashboard:', e);
+      alert('Failed to create reminder: ' + e.message);
+    }
+  };
   const userRole = localStorage.getItem('crm_role') || 'worker';
   const isAdmin = userRole === 'admin';
   
@@ -159,6 +180,38 @@ const AdminDashboard = () => {
       console.error("Deletion Error:", error);
       alert("Failed to delete record. Please try again.");
     }
+  };
+
+  const handleBulkAdd = async (leads) => {
+    const batch = writeBatch(db);
+    
+    leads.forEach(leadData => {
+      let totalAmount = 0;
+      if (pocs.pricing && leadData.services && leadData.services.length > 0) {
+        leadData.services.forEach(service => {
+          if (pocs.pricing[service]) {
+            totalAmount += parseFloat(pocs.pricing[service]);
+          }
+        });
+      }
+
+      const customerData = {
+         ...leadData,
+         updatedAt: new Date().toISOString(),
+         sourceVault: selectedSource === 'nexus' ? 'direct' : (selectedSource || 'sales'),
+         amount: totalAmount || '',
+         createdAt: new Date().toISOString(),
+         docsSubmitted: false,
+         serviceStatus: 'Open',
+         serviceStage: 'Document Received',
+         status: 'Document Received'
+      };
+
+      const newDocRef = doc(collection(db, 'customers'));
+      batch.set(newDocRef, customerData);
+    });
+
+    await batch.commit();
   };
 
   // ─── Delete Confirm Modal ───────────────────────────────────────────────────
@@ -340,16 +393,19 @@ const AdminDashboard = () => {
               selectedSource === 'camp' ? 'Camp' :
               selectedSource === 'expenses' ? 'Expenses' :
               selectedSource === 'invoices' ? 'Invoices' :
+              selectedSource === 'reminders' ? 'Reminders' :
               selectedSource === 'services' ? `Services / ${servicesSubMode.charAt(0).toUpperCase() + servicesSubMode.slice(1)}` : 
               'Sales'
             }
             viewMode={selectedSource}
             onSearch={(val) => { setSearchQuery(val); setCurrentPage(1); }}
             onNewLead={() => setIsAddCustomerOpen(true)}
+            isAdmin={isAdmin}
+            onExcelUpload={() => setIsMassUploadOpen(true)}
           />
   
           {/* Filter Bar */}
-          {selectedSource !== 'nexus' && (
+          {selectedSource !== 'nexus' && selectedSource !== 'reminders' && (
             <FilterBar 
               activeFilters={activeFilters}
               visibleFilters={visibleFilters}
@@ -363,7 +419,7 @@ const AdminDashboard = () => {
             />
           )}
 
-          {selectedSource !== 'nexus' && (
+          {selectedSource !== 'nexus' && selectedSource !== 'reminders' && (
             <MetricSummary metrics={metrics} viewMode={selectedSource} />
           )}
 
@@ -729,8 +785,17 @@ const AdminDashboard = () => {
              />
           )}
 
+          {/* ── REMINDERS SECTION ───────────────────────────────────────── */}
+          {selectedSource === 'reminders' && (
+            <RemindersSection
+              isAdmin={isAdmin}
+              currentUser={null}
+              customers={customers}
+            />
+          )}
+
           {/* ── MAIN TABLE (Sales / Services) ─────────────────────────── */}
-          {selectedSource !== 'invoices' && selectedSource !== 'camp' && selectedSource !== 'nexus' && selectedSource !== 'expenses' && (
+          {selectedSource !== 'invoices' && selectedSource !== 'camp' && selectedSource !== 'nexus' && selectedSource !== 'expenses' && selectedSource !== 'reminders' && (
         <div className="px-8 pb-20">
           <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
             <div className="overflow-x-auto no-scrollbar">
@@ -815,16 +880,28 @@ const AdminDashboard = () => {
 
                             {isAdmin && (
                               <td className="px-6 py-6 text-center">
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setCustomerToDelete(customer);
-                                  }}
-                                  className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                  title="Delete Lead"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setReminderCustomer(customer);
+                                    }}
+                                    className="p-2 text-slate-300 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
+                                    title="Add Reminder"
+                                  >
+                                    <Bell size={16} />
+                                  </button>
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setCustomerToDelete(customer);
+                                    }}
+                                    className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                    title="Delete Lead"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
                               </td>
                             )}
                           </>
@@ -887,16 +964,28 @@ const AdminDashboard = () => {
 
                             {isAdmin && (
                               <td className="px-6 py-6 text-center">
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setCustomerToDelete(customer);
-                                  }}
-                                  className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                                  title="Delete Lead"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setReminderCustomer(customer);
+                                    }}
+                                    className="p-2 text-slate-300 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
+                                    title="Add Reminder"
+                                  >
+                                    <Bell size={16} />
+                                  </button>
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setCustomerToDelete(customer);
+                                    }}
+                                    className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                    title="Delete Lead"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
                               </td>
                             )}
                           </>
@@ -907,7 +996,6 @@ const AdminDashboard = () => {
                           <td colSpan={isAdmin ? (selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 7 : 6) : 7) : (selectedSource === 'services' ? (servicesSubMode === 'blocked' ? 6 : 5) : 6)} className="px-6 py-8">
                             <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-top-2 duration-500">
                                
-                               {/* Redundant Row Removed per User Request */}
                                <div className="h-0.5 w-full bg-slate-50/50" />
 
                                {/* Advanced Services Table */}
@@ -1021,7 +1109,6 @@ const AdminDashboard = () => {
                     Prev
                   </button>
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    // Show pages around current page
                     let pageNum;
                     if (totalPages <= 5) pageNum = i + 1;
                     else if (currentPage <= 3) pageNum = i + 1;
@@ -1057,7 +1144,6 @@ const AdminDashboard = () => {
           onClose={() => setIsAddCustomerOpen(false)}
           onAdd={async (data) => {
              try {
-                // Calculate sum of prices for all selected services
                 let totalAmount = 0;
                 if (pocs.pricing && data.services && data.services.length > 0) {
                   data.services.forEach(service => {
@@ -1107,6 +1193,24 @@ const AdminDashboard = () => {
           customer={customerToDelete}
           onConfirm={handleConfirmDelete}
           onCancel={() => setCustomerToDelete(null)}
+        />
+
+        {/* Mass Upload Modal */}
+        <MassUploadModal 
+          isOpen={isMassUploadOpen}
+          onClose={() => setIsMassUploadOpen(false)}
+          onUpload={handleBulkAdd}
+          pocs={pocs}
+          existingCustomers={customers}
+        />
+
+        {/* Quick Add Reminder Modal */}
+        <ReminderModal
+          isOpen={!!reminderCustomer}
+          onClose={() => setReminderCustomer(null)}
+          onSave={handleSaveReminder}
+          customers={customers}
+          prefilledCustomer={reminderCustomer}
         />
       </div>
     </div>

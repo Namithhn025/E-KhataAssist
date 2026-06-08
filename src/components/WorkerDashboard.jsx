@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, onSnapshot, query, where, updateDoc, doc, arrayUnion } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, updateDoc, doc, arrayUnion, Timestamp } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Phone, MessageCircle, Copy, Check, FileText, Search, User, ChevronDown, MessageSquare } from 'lucide-react';
+import { Phone, MessageCircle, Copy, Check, FileText, Search, User, ChevronDown, MessageSquare, Bell } from 'lucide-react';
 
 import Sidebar from './crm/Sidebar';
 import DashboardHeader from './crm/DashboardHeader';
@@ -12,6 +12,7 @@ import FilterBar from './crm/FilterBar';
 import NestedServicesTable from './crm/NestedServicesTable';
 import AddLeadModal from './crm/AddLeadModal';
 import CampSection from './crm/CampSection';
+import RemindersSection, { ReminderModal } from './crm/RemindersSection';
 import { addDoc } from 'firebase/firestore';
 
 const WorkerDashboard = () => {
@@ -30,7 +31,26 @@ const WorkerDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 20;
   
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const [reminderCustomer, setReminderCustomer] = useState(null);
+
+  const handleSaveReminder = async (data) => {
+    try {
+      await addDoc(collection(db, 'reminders'), {
+        ...data,
+        status: 'pending',
+        createdBy: user?.uid || 'worker',
+        createdByName: user?.displayName || user?.email || 'Worker',
+        createdAt: Timestamp.now(),
+        resolvedAt: null,
+      });
+      setReminderCustomer(null);
+    } catch (e) {
+      console.error('Create reminder error from worker dashboard:', e);
+      alert('Failed to create reminder: ' + e.message);
+    }
+  };
+
   const userRole = localStorage.getItem('crm_role') || 'worker';
   const isAdmin = userRole === 'admin'; // Should be false here but keeping logic consistent
   
@@ -203,31 +223,47 @@ const WorkerDashboard = () => {
   
         <div className="flex-1 ml-64 flex flex-col h-screen overflow-y-auto no-scrollbar">
           <DashboardHeader 
-            title={`Worker Portal / ${selectedSource.charAt(0).toUpperCase() + selectedSource.slice(1)}`}
+            title={
+              selectedSource === 'reminders' ? 'Reminders' :
+              `Worker Portal / ${selectedSource.charAt(0).toUpperCase() + selectedSource.slice(1)}`
+            }
             viewMode={selectedSource}
             onSearch={(val) => { setSearchQuery(val); setCurrentPage(1); }}
             onNewLead={() => setIsAddCustomerOpen(true)}
           />
   
-          <FilterBar 
-            activeFilters={activeFilters}
-            visibleFilters={visibleFilters}
-            setVisibleFilters={setVisibleFilters}
-            viewMode={selectedSource}
-            onFilterChange={(key, val) => { setActiveFilters({...activeFilters, [key]: val}); setCurrentPage(1); }}
-            onReset={() => { setActiveFilters({}); setCurrentPage(1); }}
-            pocs={pocs}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-          />
+          {selectedSource !== 'reminders' && (
+            <FilterBar 
+              activeFilters={activeFilters}
+              visibleFilters={visibleFilters}
+              setVisibleFilters={setVisibleFilters}
+              viewMode={selectedSource}
+              onFilterChange={(key, val) => { setActiveFilters({...activeFilters, [key]: val}); setCurrentPage(1); }}
+              onReset={() => { setActiveFilters({}); setCurrentPage(1); }}
+              pocs={pocs}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+            />
+          )}
   
-          <MetricSummary metrics={metrics} viewMode={selectedSource} />
+          {selectedSource !== 'reminders' && (
+            <MetricSummary metrics={metrics} viewMode={selectedSource} />
+          )}
 
           {selectedSource === 'camp' && (
              <CampSection isAdmin={isAdmin} pocs={pocs} customers={customers} />
           )}
 
-          {selectedSource !== 'camp' && (
+          {/* ── REMINDERS SECTION ─── */}
+          {selectedSource === 'reminders' && (
+            <RemindersSection
+              isAdmin={false}
+              currentUser={null}
+              customers={customers}
+            />
+          )}
+
+          {selectedSource !== 'camp' && selectedSource !== 'reminders' && (
           <div className="px-8 pb-20">
             <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
               <div className="overflow-x-auto no-scrollbar">
@@ -242,6 +278,7 @@ const WorkerDashboard = () => {
                           <th className="px-6 py-5">Phone number</th>
                           <th className="px-6 py-5">Service</th>
                           {servicesSubMode === 'blocked' && <th className="px-6 py-5">Blocker POC</th>}
+                          <th className="px-6 py-5 text-center">Actions</th>
                         </>
                       ) : (
                         <>
@@ -250,6 +287,7 @@ const WorkerDashboard = () => {
                           <th className="px-6 py-5 text-center">Priority</th>
                           <th className="px-6 py-5">Acq. POC</th>
                           <th className="px-6 py-5">S-Acq. POC</th>
+                          <th className="px-6 py-5 text-center">Actions</th>
                         </>
                       )}
                     </tr>
@@ -279,6 +317,18 @@ const WorkerDashboard = () => {
                               <td className="px-4 py-3 font-bold text-slate-700">{customer.phone}</td>
                               <td className="px-4 py-3 text-xs font-bold text-slate-500">{customer.serviceType || 'E-Khata'}</td>
                               {servicesSubMode === 'blocked' && <td className="px-4 py-3 text-center text-slate-400">-</td>}
+                              <td className="px-4 py-3 text-center">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setReminderCustomer(customer);
+                                  }}
+                                  className="p-2 text-slate-300 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
+                                  title="Add Reminder"
+                                >
+                                  <Bell size={16} />
+                                </button>
+                              </td>
                             </>
                           ) : (
                             <>
@@ -298,6 +348,18 @@ const WorkerDashboard = () => {
                               </td>
                               <td className="px-4 py-3 text-xs font-black text-slate-500 uppercase">{customer.acqPOC || 'Unassigned'}</td>
                               <td className="px-4 py-3 text-xs font-black text-indigo-500 uppercase">{customer.serviceAcqPOC || 'Unassigned'}</td>
+                              <td className="px-4 py-3 text-center">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setReminderCustomer(customer);
+                                  }}
+                                  className="p-2 text-slate-300 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-all"
+                                  title="Add Reminder"
+                                >
+                                  <Bell size={16} />
+                                </button>
+                              </td>
                             </>
                           )}
                         </tr>
@@ -428,7 +490,6 @@ const WorkerDashboard = () => {
           onClose={() => setIsAddCustomerOpen(false)}
           onAdd={async (data) => {
              try {
-                // Calculate sum of prices for all selected services
                 let totalAmount = 0;
                 if (pocs.pricing && data.services && data.services.length > 0) {
                   data.services.forEach(service => {
@@ -460,6 +521,15 @@ const WorkerDashboard = () => {
              }
           }}
           pocs={pocs}
+        />
+
+        {/* Quick Add Reminder Modal */}
+        <ReminderModal
+          isOpen={!!reminderCustomer}
+          onClose={() => setReminderCustomer(null)}
+          onSave={handleSaveReminder}
+          customers={customers}
+          prefilledCustomer={reminderCustomer}
         />
     </div>
   );

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, Upload, Plus } from 'lucide-react';
 
-const DashboardHeader = ({ title, onSearch, onNewLead, viewMode }) => {
+const DashboardHeader = ({ title, onSearch, onNewLead, viewMode, isAdmin = false, onExcelUpload }) => {
   return (
     <div className="flex justify-between items-center px-8 py-6 bg-white border-b border-slate-100 shadow-sm sticky top-0 z-40 backdrop-blur-md bg-opacity-70">
       <div>
@@ -25,7 +25,14 @@ const DashboardHeader = ({ title, onSearch, onNewLead, viewMode }) => {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
-
+          {(viewMode === 'sales' && isAdmin && onExcelUpload) && (
+            <button 
+              onClick={onExcelUpload}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-xl shadow-emerald-50 transition-all transform active:scale-[0.98]"
+            >
+              <Upload size={18} /> Mass Upload
+            </button>
+          )}
           
           {viewMode === 'sales' && (
             <button 
