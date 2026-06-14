@@ -336,7 +336,15 @@ const AdminDashboard = () => {
     const matchesServiceAcqPOC = !activeFilters.serviceAcqPOC || (activeFilters.serviceAcqPOC === 'Unassigned' ? !c.serviceAcqPOC : c.serviceAcqPOC === activeFilters.serviceAcqPOC);
     const matchesPriority = !activeFilters.priority || c.priority === activeFilters.priority;
     const matchesStage = !activeFilters.stage || (c.status === activeFilters.stage || c.serviceStage === activeFilters.stage);
-    const matchesService = !activeFilters.service || (c.serviceRequested === activeFilters.service || c.serviceType === activeFilters.service || c.service === activeFilters.service);
+    const matchesService = !activeFilters.service || (() => {
+      const standardServices = ['Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)', 'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration'];
+      const leadServices = c.serviceRequested ? c.serviceRequested.split(/,\s*/).map(s => s.trim()) : [];
+      if (activeFilters.service === 'Others') {
+        const hasCustomOrOthers = leadServices.some(s => s === 'Others' || !standardServices.includes(s));
+        return hasCustomOrOthers || c.serviceType === 'Others' || c.service === 'Others';
+      }
+      return leadServices.includes(activeFilters.service) || c.serviceType === activeFilters.service || c.service === activeFilters.service;
+    })();
     const matchesApartment = !activeFilters.apartment || (c.apartment === activeFilters.apartment || c.society === activeFilters.apartment);
     const matchesSource = !activeFilters.source || c.sourceVault === activeFilters.source;
     const matchesAcqPOC = !activeFilters.acqPOC || (activeFilters.acqPOC === 'Unassigned' ? !c.acqPOC : c.acqPOC === activeFilters.acqPOC);
