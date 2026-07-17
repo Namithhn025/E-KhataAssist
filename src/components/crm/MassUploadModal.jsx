@@ -9,7 +9,7 @@ const MassUploadModal = ({ isOpen, onClose, onUpload, pocs = {}, existingCustome
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState(null);
   const [parsedData, setParsedData] = useState([]);
-  const [uploadState, setUploadState] = useState('upload'); // 'upload', 'preview', 'submitting', 'success'
+  const [uploadState, setUploadState] = useState('upload'); // 'upload', 'parsing', 'preview', 'submitting', 'success'
   const [stats, setStats] = useState({ total: 0, valid: 0, invalid: 0 });
   const [errorMsg, setErrorMsg] = useState('');
   const [importedCount, setImportedCount] = useState(0);
@@ -130,32 +130,43 @@ const MassUploadModal = ({ isOpen, onClose, onUpload, pocs = {}, existingCustome
 
     setFile(selectedFile);
     setErrorMsg('');
+    // Show spinner immediately so the UI doesn't freeze
+    setUploadState('parsing');
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      try {
-        const data = e.target.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        
-        // Convert sheet to JSON array of objects
-        const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-        
-        if (rawRows.length === 0) {
-          setErrorMsg('The uploaded file contains no data.');
-          setFile(null);
-          return;
-        }
+      // Yield to the browser so the 'parsing' spinner can render before
+      // the heavy CPU work begins
+      setTimeout(() => {
+        try {
+          const data = e.target.result;
+          // ArrayBuffer is faster and uses less memory than BinaryString
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          
+          // Convert sheet to JSON array of objects
+          const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+          
+          if (rawRows.length === 0) {
+            setErrorMsg('The uploaded file contains no data.');
+            setFile(null);
+            setUploadState('upload');
+            return;
+          }
 
-        validateAndFormatRows(rawRows);
-      } catch (error) {
-        console.error("File parsing error:", error);
-        setErrorMsg('Failed to parse the file. Please check if the file format matches the template.');
-        setFile(null);
-      }
+          // Yield again before the O(n) validation loop
+          setTimeout(() => validateAndFormatRows(rawRows), 0);
+        } catch (error) {
+          console.error("File parsing error:", error);
+          setErrorMsg('Failed to parse the file. Please check if the file format matches the template.');
+          setFile(null);
+          setUploadState('upload');
+        }
+      }, 0);
     };
-    reader.readAsBinaryString(selectedFile);
+    // Read as ArrayBuffer — faster than BinaryString for large files
+    reader.readAsArrayBuffer(selectedFile);
   };
 
   // Validate and format rows into CRM structures
@@ -682,6 +693,32 @@ const MassUploadModal = ({ isOpen, onClose, onUpload, pocs = {}, existingCustome
             </div>
           )}
 
+          {/* PHASE 2.5: PARSING / PROCESSING STATE */}
+          {uploadState === 'parsing' && (
+            <div className="flex flex-col items-center justify-center py-20 gap-6 animate-in fade-in duration-300">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500">
+                  <Loader2 className="animate-spin" size={36} />
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-slate-100 shadow flex items-center justify-center">
+                  <FileText size={12} className="text-slate-400" />
+                </div>
+              </div>
+              <div className="text-center space-y-2">
+                <p className="text-base font-black text-slate-800">Analyzing File…</p>
+                <p className="text-xs font-bold text-slate-400 max-w-xs leading-relaxed">
+                  Reading rows, validating data and checking for duplicates.<br />
+                  This may take a moment for large files.
+                </p>
+              </div>
+              <div className="flex gap-1.5">
+                {[0, 1, 2].map(i => (
+                  <span key={i} className="w-2 h-2 rounded-full bg-blue-200 animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* PHASE 3: SUBMITTING / LOADING STATE */}
           {uploadState === 'submitting' && (
             <div className="flex flex-col items-center justify-center py-20 gap-4 animate-in fade-in duration-300">
@@ -750,10 +787,10 @@ const MassUploadModal = ({ isOpen, onClose, onUpload, pocs = {}, existingCustome
           ) : (
             <button 
               onClick={onClose}
-              disabled={uploadState === 'submitting'}
-              className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-500 font-black text-xs uppercase tracking-widest rounded-2xl transition-all disabled:opacity-40"
+              disabled={uploadState === 'submitting' || uploadState === 'parsing'}
+              className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-500 font-black text-xs uppercase tracking-widest rounded-2xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Close
+              {uploadState === 'parsing' ? 'Processing…' : 'Close'}
             </button>
           )}
         </div>

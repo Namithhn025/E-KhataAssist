@@ -56,10 +56,29 @@ const WorkerDashboard = () => {
   
   const navigate = useNavigate();
   
-  // Reset page to 1 on filter/search change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, activeFilters, selectedSource, servicesSubMode]);
+
+  // Sync docsSubmitted visibility and active filter state
+  useEffect(() => {
+    if (selectedSource === 'services' && servicesSubMode === 'pre-active') {
+      if (!visibleFilters.includes('docsSubmitted')) {
+        setVisibleFilters(prev => [...prev, 'docsSubmitted']);
+      }
+    } else {
+      if (visibleFilters.includes('docsSubmitted')) {
+        setVisibleFilters(prev => prev.filter(f => f !== 'docsSubmitted'));
+        if (activeFilters.hasOwnProperty('docsSubmitted')) {
+          setActiveFilters(prev => {
+            const next = { ...prev };
+            delete next.docsSubmitted;
+            return next;
+          });
+        }
+      }
+    }
+  }, [selectedSource, servicesSubMode]);
 
   // Load Settings (POCs & Apartments)
   const [pocs, setPocs] = useState({ 
@@ -144,8 +163,16 @@ const WorkerDashboard = () => {
     missed:    customers.filter(c => c.status === 'Missed').length,
     advance:   customers.filter(c => c.payment === 'Pending').length,
     totalSRs:  serviceLeads.length,
-    preActive: serviceLeads.filter(c => !c.docsSubmitted && c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' && c.serviceStatus !== 'Retry' && c.serviceStatus !== 'Approved').length,
-    active: serviceLeads.filter(c => c.docsSubmitted && c.serviceAcqPOC && c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' && c.serviceStatus !== 'Retry' && c.serviceStatus !== 'Approved').length,
+    preActive: serviceLeads.filter(c =>
+      (!c.docsSubmitted || !c.serviceAcqPOC) &&
+      c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
+      c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
+    ).length,
+    active: serviceLeads.filter(c =>
+      c.docsSubmitted && c.serviceAcqPOC &&
+      c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
+      c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
+    ).length,
     blocked:  serviceLeads.filter(c => c.serviceStatus === 'Blocked').length,
     closed:   serviceLeads.filter(c => c.serviceStatus === 'Closed').length,
     retry:    serviceLeads.filter(c => c.serviceStatus === 'Retry').length,
@@ -199,8 +226,13 @@ const WorkerDashboard = () => {
     const matchesServiceAcqPOC = !activeFilters.serviceAcqPOC || (activeFilters.serviceAcqPOC === 'Unassigned' ? !c.serviceAcqPOC : c.serviceAcqPOC === activeFilters.serviceAcqPOC);
     const matchesApartment = !activeFilters.apartment || (c.apartment === activeFilters.apartment || c.society === activeFilters.apartment);
     const matchesSource = !activeFilters.source || c.sourceVault === activeFilters.source;
+    const matchesDocsSubmitted = !activeFilters.docsSubmitted || (() => {
+      if (activeFilters.docsSubmitted === 'Submitted') return c.docsSubmitted === true;
+      if (activeFilters.docsSubmitted === 'Pending') return !c.docsSubmitted;
+      return true;
+    })();
     
-    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesAcqPOC && matchesServiceAcqPOC && matchesApartment && matchesSource;
+    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesAcqPOC && matchesServiceAcqPOC && matchesApartment && matchesSource && matchesDocsSubmitted;
   }).sort((a, b) => {
     if (sortBy === 'Priority (High to Low)') {
       const priorityWeights = { 'High': 3, 'Medium': 2, 'Low': 1 };

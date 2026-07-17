@@ -53,7 +53,8 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
       'Document Received', 'eKYC Pending', 'eKYC Done', 
       'Ready to eSign', 'Application Submitted', 'Approved', 'Rejected'
     ]},
-    apartment: { label: 'Apartment', options: pocs.apartments || [] }
+    apartment: { label: 'Apartment', options: pocs.apartments || [] },
+    docsSubmitted: { label: 'Docs Status', options: ['Submitted', 'Pending'] }
   };
 
   const commonKeys = ['priority', 'acqPOC', 'serviceAcqPOC', 'stage', 'service'];
@@ -71,7 +72,10 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
   };
 
   const handleReset = () => {
-    setVisibleFilters(commonKeys);
+    setVisibleFilters(prev => {
+      const hasDocsStatus = prev.includes('docsSubmitted');
+      return hasDocsStatus ? [...commonKeys, 'docsSubmitted'] : commonKeys;
+    });
     onReset();
   };
 

@@ -69,6 +69,26 @@ const AdminDashboard = () => {
     setCurrentPage(1);
   }, [searchQuery, activeFilters, selectedSource, servicesSubMode]);
 
+  // Sync docsSubmitted visibility and active filter state
+  useEffect(() => {
+    if (selectedSource === 'services' && servicesSubMode === 'pre-active') {
+      if (!visibleFilters.includes('docsSubmitted')) {
+        setVisibleFilters(prev => [...prev, 'docsSubmitted']);
+      }
+    } else {
+      if (visibleFilters.includes('docsSubmitted')) {
+        setVisibleFilters(prev => prev.filter(f => f !== 'docsSubmitted'));
+        if (activeFilters.hasOwnProperty('docsSubmitted')) {
+          setActiveFilters(prev => {
+            const next = { ...prev };
+            delete next.docsSubmitted;
+            return next;
+          });
+        }
+      }
+    }
+  }, [selectedSource, servicesSubMode]);
+
   // Load Settings (POCs & Apartments)
   const [pocs, setPocs] = useState({ 
     acquisition: ['Rasika', 'Ahmed', 'Suresh'], 
@@ -278,7 +298,7 @@ const AdminDashboard = () => {
     // Services metrics — match exactly the filter logic in filteredCustomers
     totalSRs:  serviceLeads.length,
     preActive: serviceLeads.filter(c =>
-      !c.docsSubmitted &&
+      (!c.docsSubmitted || !c.serviceAcqPOC) &&
       c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
@@ -307,6 +327,8 @@ const AdminDashboard = () => {
        // All leads are visible in Nexus
     } else if (selectedSource === 'sales') {
        if (c.sourceVault && c.sourceVault !== 'sales') return false;
+    } else if (selectedSource === 'invoices') {
+       if (c.serviceStatus !== 'Approved') return false;
     } else if (selectedSource === 'services') {
        const hasService = c.serviceType || c.serviceRequested || c.service;
        if (!hasService) return false;
@@ -348,8 +370,13 @@ const AdminDashboard = () => {
     const matchesApartment = !activeFilters.apartment || (c.apartment === activeFilters.apartment || c.society === activeFilters.apartment);
     const matchesSource = !activeFilters.source || c.sourceVault === activeFilters.source;
     const matchesAcqPOC = !activeFilters.acqPOC || (activeFilters.acqPOC === 'Unassigned' ? !c.acqPOC : c.acqPOC === activeFilters.acqPOC);
+    const matchesDocsSubmitted = !activeFilters.docsSubmitted || (() => {
+      if (activeFilters.docsSubmitted === 'Submitted') return c.docsSubmitted === true;
+      if (activeFilters.docsSubmitted === 'Pending') return !c.docsSubmitted;
+      return true;
+    })();
     
-    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesApartment && matchesSource && matchesAcqPOC && matchesServiceAcqPOC;
+    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesApartment && matchesSource && matchesAcqPOC && matchesServiceAcqPOC && matchesDocsSubmitted;
   }).sort((a, b) => {
     if (sortBy === 'Priority (High to Low)') {
       const priorityWeights = { 'High': 3, 'Medium': 2, 'Low': 1 };
@@ -653,7 +680,10 @@ const AdminDashboard = () => {
 
           {/* ── INVOICES VIEW ────────────────────────────────────────── */}
           {(selectedSource === 'invoices' && userRole === 'admin') && (() => {
-            const approvedLeads = customers.filter(c => c.serviceStatus === 'Approved');
+            const baseApprovedLeads = customers.filter(c => c.serviceStatus === 'Approved');
+            const allApprovedSorted = [...baseApprovedLeads].sort(
+              (a, b) => new Date(a.approvedDate || a.createdAt || 0) - new Date(b.approvedDate || b.createdAt || 0)
+            );
             return (
               <div className="px-8 pb-20 pt-4">
                 {/* Summary Banner */}
@@ -663,7 +693,7 @@ const AdminDashboard = () => {
                       <FileText size={22} className="text-emerald-600" />
                     </div>
                     <div>
-                      <p className="text-2xl font-black text-emerald-700">{approvedLeads.length}</p>
+                      <p className="text-2xl font-black text-emerald-700">{filteredCustomers.length}</p>
                       <p className="text-xs font-bold text-emerald-500 uppercase tracking-widest">Total Invoices</p>
                     </div>
                   </div>
@@ -673,14 +703,14 @@ const AdminDashboard = () => {
                     </div>
                     <div>
                       <p className="text-2xl font-black text-blue-700">
-                        ₹{approvedLeads.filter(c => c.paymentStatus === 'Done').reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0).toLocaleString('en-IN')}
+                        ₹{filteredCustomers.filter(c => c.paymentStatus === 'Done').reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0).toLocaleString('en-IN')}
                       </p>
                       <p className="text-xs font-bold text-blue-500 uppercase tracking-widest">Total Revenue (Done)</p>
                     </div>
                   </div>
                 </div>
 
-                {approvedLeads.length === 0 ? (
+                {baseApprovedLeads.length === 0 ? (
                   <div className="bg-white rounded-3xl border border-slate-100 shadow-sm py-24 flex flex-col items-center justify-center gap-4">
                     <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
                       <FileText size={28} className="text-slate-200" />
@@ -688,84 +718,97 @@ const AdminDashboard = () => {
                     <p className="text-sm font-bold text-slate-400">No approved leads yet</p>
                     <p className="text-xs text-slate-300">Approve leads from Services → Closed to generate invoices</p>
                   </div>
+                ) : filteredCustomers.length === 0 ? (
+                  <div className="bg-white rounded-3xl border border-slate-100 shadow-sm py-24 flex flex-col items-center justify-center gap-4">
+                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100 text-slate-300">
+                      <Search size={28} className="text-slate-300" />
+                    </div>
+                    <p className="text-sm font-bold text-slate-400">No invoices match the search or filter criteria</p>
+                    <p className="text-xs text-slate-500 font-medium text-center">Try adjusting your filters or search query</p>
+                    <button onClick={() => { setSearchQuery(''); setActiveFilters({}); }} className="mt-2 bg-slate-900 text-white px-6 py-2 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-slate-800 transition-all">Clear Search & Filters</button>
+                  </div>
                 ) : (
                   <div className="space-y-4">
-                    {approvedLeads.map((customer, idx) => (
-                      <div key={customer.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all overflow-hidden">
-                        {/* Invoice Header */}
-                        <div className="flex items-center justify-between px-8 py-5 border-b border-slate-50 bg-emerald-50/30">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                              <FileText size={18} className="text-emerald-600" />
+                    {filteredCustomers.map((customer, idx) => {
+                      const stableIndex = allApprovedSorted.findIndex(c => c.id === customer.id);
+                      const invoiceNum = stableIndex !== -1 ? stableIndex + 1 : idx + 1;
+                      return (
+                        <div key={customer.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all overflow-hidden">
+                          {/* Invoice Header */}
+                          <div className="flex items-center justify-between px-8 py-5 border-b border-slate-50 bg-emerald-50/30">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                                <FileText size={18} className="text-emerald-600" />
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Invoice #{String(invoiceNum).padStart(4, '0')}</p>
+                                <p className="text-xs font-bold text-slate-400">
+                                  Approved: {customer.approvedDate ? new Date(customer.approvedDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Invoice #{String(idx + 1).padStart(4, '0')}</p>
-                              <p className="text-xs font-bold text-slate-400">
-                                Approved: {customer.approvedDate ? new Date(customer.approvedDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
-                              </p>
+                            <div className="flex items-center gap-3">
+                              <select 
+                                value={customer.paymentStatus || 'Pending'}
+                                onChange={(e) => handlePOCUpdate(customer.id, 'paymentStatus', e.target.value)}
+                                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full border transition-all outline-none cursor-pointer ${
+                                  customer.paymentStatus === 'Done' 
+                                    ? 'bg-emerald-500 text-white border-emerald-600' 
+                                    : 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200'
+                                }`}
+                              >
+                                 <option value="Pending">Payment Pending</option>
+                                 <option value="Done">Payment Done</option>
+                              </select>
+                              <span className="px-3 py-1.5 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-200">
+                                ✓ Approved
+                              </span>
+                              <button
+                                onClick={() => window.print()}
+                                className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all"
+                              >
+                                <FileText size={12} /> Print
+                              </button>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <select 
-                              value={customer.paymentStatus || 'Pending'}
-                              onChange={(e) => handlePOCUpdate(customer.id, 'paymentStatus', e.target.value)}
-                              className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-full border transition-all outline-none cursor-pointer ${
-                                customer.paymentStatus === 'Done' 
-                                  ? 'bg-emerald-500 text-white border-emerald-600' 
-                                  : 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200'
-                              }`}
-                            >
-                               <option value="Pending">Payment Pending</option>
-                               <option value="Done">Payment Done</option>
-                            </select>
-                            <span className="px-3 py-1.5 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-200">
-                              ✓ Approved
-                            </span>
-                            <button
-                              onClick={() => window.print()}
-                              className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all"
-                            >
-                              <FileText size={12} /> Print
-                            </button>
-                          </div>
-                        </div>
 
-                        {/* Invoice Body */}
-                        <div className="px-8 py-6 grid grid-cols-2 md:grid-cols-5 gap-6">
-                          <div className="space-y-1">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Customer</p>
-                            <p className="text-sm font-black text-slate-900">{customer.customerName}</p>
-                            <p className="text-[10px] font-bold text-slate-500">{customer.phone}</p>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Service</p>
-                            <p className="text-sm font-bold text-slate-900">{customer.serviceRequested || customer.service || customer.serviceType || 'N/A'}</p>
-                            <p className="text-[10px] font-bold text-slate-500">{customer.apartment || customer.society || 'N/A'}</p>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Handled By</p>
-                            <p className="text-sm font-bold text-slate-900">{customer.acqPOC || 'N/A'}</p>
-                            <p className="text-[10px] font-bold text-slate-500">Acquisition POC</p>
-                          </div>
-                          <div className="space-y-1 md:col-span-1">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Special Notes</p>
-                            <p className="text-xs font-bold text-slate-600 line-clamp-2 italic">{customer.specialNotes || 'No specific challenges noted'}</p>
-                          </div>
-                           <div className="space-y-1">
-                             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Amount</p>
-                             <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-2">
-                                <span className="text-emerald-600 font-black">₹</span>
-                                <input 
-                                  type="text"
-                                  value={customer.amount || '0'}
-                                  onChange={(e) => handlePOCUpdate(customer.id, 'amount', e.target.value)}
-                                  className="bg-transparent text-2xl font-black text-emerald-600 outline-none w-24"
-                                />
+                          {/* Invoice Body */}
+                          <div className="px-8 py-6 grid grid-cols-2 md:grid-cols-5 gap-6">
+                            <div className="space-y-1">
+                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Customer</p>
+                              <p className="text-sm font-black text-slate-900">{customer.customerName}</p>
+                              <p className="text-[10px] font-bold text-slate-500">{customer.phone}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Service</p>
+                              <p className="text-sm font-bold text-slate-900">{customer.serviceRequested || customer.service || customer.serviceType || 'N/A'}</p>
+                              <p className="text-[10px] font-bold text-slate-500">{customer.apartment || customer.society || 'N/A'}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Handled By</p>
+                              <p className="text-sm font-bold text-slate-900">{customer.acqPOC || 'N/A'}</p>
+                              <p className="text-[10px] font-bold text-slate-500">Acquisition POC</p>
+                            </div>
+                            <div className="space-y-1 md:col-span-1">
+                              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Special Notes</p>
+                              <p className="text-xs font-bold text-slate-600 line-clamp-2 italic">{customer.specialNotes || 'No specific challenges noted'}</p>
+                            </div>
+                             <div className="space-y-1">
+                               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Amount</p>
+                               <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-2">
+                                  <span className="text-emerald-600 font-black">₹</span>
+                                  <input 
+                                    type="text"
+                                    value={customer.amount || '0'}
+                                    onChange={(e) => handlePOCUpdate(customer.id, 'amount', e.target.value)}
+                                    className="bg-transparent text-2xl font-black text-emerald-600 outline-none w-24"
+                                  />
+                               </div>
                              </div>
-                           </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
