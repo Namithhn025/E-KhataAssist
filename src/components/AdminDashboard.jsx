@@ -17,7 +17,7 @@ import MassUploadModal from './crm/MassUploadModal';
 import ExpensesSection from './crm/ExpensesSection';
 import RemindersSection, { ReminderModal } from './crm/RemindersSection';
 import { setDoc, arrayUnion, Timestamp } from 'firebase/firestore';
-import { ChevronDown, MessageSquare, DollarSign, Bell } from 'lucide-react';
+import { ChevronDown, MessageSquare, DollarSign, Bell, X, Edit2 } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [selectedSource, setSelectedSource] = useState('sales');
@@ -32,6 +32,8 @@ const AdminDashboard = () => {
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [copyFeedback, setCopyFeedback] = useState(null);
+  const [editingPhoneId, setEditingPhoneId] = useState(null);
+  const [editingPhoneValue, setEditingPhoneValue] = useState('');
   const [noteInputId, setNoteInputId] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [customerToDelete, setCustomerToDelete] = useState(null);
@@ -909,16 +911,63 @@ const AdminDashboard = () => {
                                 {customer.customerName}
                               </div>
                             </td>
-                            <td className="px-6 py-6">
-                               <div className="flex items-center gap-2 font-bold text-slate-700">
-                                 {customer.phone}
-                                 <button 
-                                   onClick={() => copyToClipboard(customer.phone, customer.id)}
-                                   className="text-slate-200 hover:text-primary transition-colors p-1"
-                                 >
-                                   {copyFeedback === customer.id ? <Check size={14} className="text-green-500" /> : <Copy size={12} />}
-                                 </button>
-                               </div>
+                            <td className="px-6 py-6" onClick={(e) => e.stopPropagation()}>
+                               {editingPhoneId === customer.id ? (
+                                 <div className="flex items-center gap-1">
+                                   <input
+                                     type="text"
+                                     value={editingPhoneValue}
+                                     onChange={(e) => setEditingPhoneValue(e.target.value)}
+                                     className="bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 w-32 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                                     autoFocus
+                                   />
+                                   <button
+                                     onClick={async (e) => {
+                                       e.stopPropagation();
+                                       if (!editingPhoneValue.trim()) return;
+                                       await handlePOCUpdate(customer.id, 'phone', editingPhoneValue.trim());
+                                       setEditingPhoneId(null);
+                                     }}
+                                     className="text-green-500 hover:text-green-600 p-1 transition-all hover:scale-110"
+                                     title="Save"
+                                   >
+                                     <Check size={14} />
+                                   </button>
+                                   <button
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       setEditingPhoneId(null);
+                                     }}
+                                     className="text-red-400 hover:text-red-500 p-1 transition-all hover:scale-110"
+                                     title="Cancel"
+                                   >
+                                     <X size={14} />
+                                   </button>
+                                 </div>
+                               ) : (
+                                 <div className="flex items-center gap-2 font-bold text-slate-700 group/phone">
+                                   <span>{customer.phone}</span>
+                                   <div className="flex items-center gap-0.5 opacity-0 group-hover/phone:opacity-100 transition-opacity">
+                                     <button 
+                                       onClick={() => copyToClipboard(customer.phone, customer.id)}
+                                       className="text-slate-400 hover:text-primary transition-colors p-1"
+                                       title="Copy Phone"
+                                     >
+                                       {copyFeedback === customer.id ? <Check size={14} className="text-green-500" /> : <Copy size={12} />}
+                                     </button>
+                                     <button
+                                       onClick={() => {
+                                         setEditingPhoneId(customer.id);
+                                         setEditingPhoneValue(customer.phone || '');
+                                       }}
+                                       className="text-slate-400 hover:text-primary transition-colors p-1"
+                                       title="Edit Phone"
+                                     >
+                                       <Edit2 size={12} />
+                                     </button>
+                                   </div>
+                                 </div>
+                               )}
                             </td>
                             <td className="px-4 py-3">
                                <span className="text-xs font-bold text-slate-700">{customer.serviceType || 'E-Khata'}</span>
@@ -962,16 +1011,63 @@ const AdminDashboard = () => {
                               <div className="font-bold text-slate-900 group-hover:text-primary transition-colors">{customer.customerName}</div>
                               <div className="text-[10px] font-black text-slate-400 tracking-widest mt-0.5">UIDE{customer.id.substring(0, 4).toUpperCase()}</div>
                             </td>
-                            <td className="px-4 py-3">
-                               <div className="flex items-center gap-2 font-bold text-slate-700">
-                                 {customer.phone}
-                                 <button 
-                                   onClick={() => copyToClipboard(customer.phone, customer.id)}
-                                   className="text-slate-200 hover:text-primary transition-colors p-1"
-                                 >
-                                   {copyFeedback === customer.id ? <Check size={14} className="text-green-500" /> : <Copy size={12} />}
-                                 </button>
-                               </div>
+                            <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                               {editingPhoneId === customer.id ? (
+                                 <div className="flex items-center gap-1">
+                                   <input
+                                     type="text"
+                                     value={editingPhoneValue}
+                                     onChange={(e) => setEditingPhoneValue(e.target.value)}
+                                     className="bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 w-32 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                                     autoFocus
+                                   />
+                                   <button
+                                     onClick={async (e) => {
+                                       e.stopPropagation();
+                                       if (!editingPhoneValue.trim()) return;
+                                       await handlePOCUpdate(customer.id, 'phone', editingPhoneValue.trim());
+                                       setEditingPhoneId(null);
+                                     }}
+                                     className="text-green-500 hover:text-green-600 p-1 transition-all hover:scale-110"
+                                     title="Save"
+                                   >
+                                     <Check size={14} />
+                                   </button>
+                                   <button
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       setEditingPhoneId(null);
+                                     }}
+                                     className="text-red-400 hover:text-red-500 p-1 transition-all hover:scale-110"
+                                     title="Cancel"
+                                   >
+                                     <X size={14} />
+                                   </button>
+                                 </div>
+                               ) : (
+                                 <div className="flex items-center gap-2 font-bold text-slate-700 group/phone">
+                                   <span>{customer.phone}</span>
+                                   <div className="flex items-center gap-0.5 opacity-0 group-hover/phone:opacity-100 transition-opacity">
+                                     <button 
+                                       onClick={() => copyToClipboard(customer.phone, customer.id)}
+                                       className="text-slate-400 hover:text-primary transition-colors p-1"
+                                       title="Copy Phone"
+                                     >
+                                       {copyFeedback === customer.id ? <Check size={14} className="text-green-500" /> : <Copy size={12} />}
+                                     </button>
+                                     <button
+                                       onClick={() => {
+                                         setEditingPhoneId(customer.id);
+                                         setEditingPhoneValue(customer.phone || '');
+                                       }}
+                                       className="text-slate-400 hover:text-primary transition-colors p-1"
+                                       title="Edit Phone"
+                                     >
+                                       <Edit2 size={12} />
+                                     </button>
+                                   </div>
+                                 </div>
+                               )}
                             </td>
                             <td className="px-4 py-3 text-center">
                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, User, DollarSign, Clock, MessageSquare, AlertTriangle, CheckCircle, XCircle, Lock, RefreshCw, BadgeCheck, FileText, Globe } from 'lucide-react';
+import { Phone, User, DollarSign, Clock, MessageSquare, AlertTriangle, CheckCircle, XCircle, Lock, RefreshCw, BadgeCheck, FileText, Globe, Edit2 } from 'lucide-react';
 
 // Full lifecycle stages for a service
 const SERVICE_STAGES = [
@@ -230,6 +230,8 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const [showRetryModal, setShowRetryModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [pendingPOC, setPendingPOC] = useState(null);
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+  const [editingPhoneValue, setEditingPhoneValue] = useState('');
   const userRole = localStorage.getItem('crm_role') || 'worker';
   const isAdmin = userRole === 'admin';
   const canApprove = isAdmin; // Restricted to admin as per flow request
@@ -404,10 +406,61 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
               <tr className="group hover:bg-slate-50/50 transition-all">
 
                 {/* Core Registry: Name & Phone */}
-                <td className="px-6 py-4">
+                <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2 font-black text-slate-900 text-[13px]">{customer.customerName}</div>
-                    <div className="text-[10px] font-bold text-slate-400 font-mono tracking-tighter">{customer.phone}</div>
+                    {isAdmin && !isLocked ? (
+                      isEditingPhone ? (
+                        <div className="flex items-center gap-1 mt-1">
+                          <input
+                            type="text"
+                            value={editingPhoneValue}
+                            onChange={(e) => setEditingPhoneValue(e.target.value)}
+                            className="bg-white border border-slate-300 rounded px-2 py-0.5 text-[10px] font-bold text-slate-700 w-28 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                            autoFocus
+                          />
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (!editingPhoneValue.trim()) return;
+                              await onUpdate('phone', editingPhoneValue.trim());
+                              setIsEditingPhone(false);
+                            }}
+                            className="text-green-500 hover:text-green-600 p-0.5"
+                            title="Save"
+                          >
+                            <CheckCircle size={12} />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsEditingPhone(false);
+                            }}
+                            className="text-red-400 hover:text-red-500 p-0.5"
+                            title="Cancel"
+                          >
+                            <XCircle size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 group/phone text-[10px] font-bold text-slate-400 font-mono tracking-tighter w-fit">
+                          <span>{customer.phone}</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setIsEditingPhone(true);
+                              setEditingPhoneValue(customer.phone || '');
+                            }}
+                            className="opacity-0 group-hover/phone:opacity-100 text-slate-400 hover:text-primary transition-all p-0.5"
+                            title="Edit Phone"
+                          >
+                            <Edit2 size={10} />
+                          </button>
+                        </div>
+                      )
+                    ) : (
+                      <div className="text-[10px] font-bold text-slate-400 font-mono tracking-tighter">{customer.phone}</div>
+                    )}
                   </div>
                 </td>
 
