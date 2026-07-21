@@ -284,6 +284,34 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const isClosed = customer.serviceStatus === 'Closed';
   const isApproved = customer.serviceStatus === 'Approved';
   const showAmount = viewMode === 'invoices';
+  const showDeadline = !(customer.serviceStage === 'Application Submitted' || customer.serviceStatus === 'Closed' || customer.serviceStatus === 'Approved' || subMode === 'closed' || subMode === 'approved');
+
+  // Deadline Info Calculation
+  const getDeadlineInfo = () => {
+    if (!customer.docsSubmitted) return null;
+    const serviceList = (customer.serviceRequested || customer.serviceType || customer.service || '').split(/,\s*/).filter(Boolean);
+    let totalDays = 15;
+    if (pocs.deadlines) {
+      for (const s of serviceList) {
+        if (pocs.deadlines[s]) { totalDays = parseInt(pocs.deadlines[s], 10) || 15; break; }
+      }
+    }
+    const startDateStr = customer.docsSubmittedDate || customer.createdAt;
+    const startDate = startDateStr ? new Date(startDateStr) : new Date();
+    const now = new Date();
+    const elapsedDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const remainingDays = totalDays - elapsedDays;
+    
+    return {
+      remainingDays,
+      elapsedDays,
+      totalDays,
+      isExceeded: remainingDays < 0,
+      isReaching: remainingDays >= 0 && remainingDays <= 1
+    };
+  };
+
+  const deadlineInfo = getDeadlineInfo();
 
   // Available stages: all standard ones + terminal ones
   // Available stages: standard progress stages + Blocked
@@ -441,6 +469,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                 <th className="px-6 py-4">EC</th>
                 <th className="px-6 py-4 min-w-[220px]">Live Lifecycle Stage</th>
                 <th className="px-6 py-4">Age (S-Date)</th>
+                {showDeadline && <th className="px-6 py-4">Deadline</th>}
                 <th className="px-6 py-4">ePID</th>
                 <th className="px-6 py-4">Priority</th>
                 {showAmount && <th className="px-6 py-4">Amount</th>}
@@ -666,6 +695,30 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                     {calculateAge(customer.docsSubmittedDate || customer.createdAt)}
                   </div>
                 </td>
+
+                {/* Deadline */}
+                {showDeadline && (
+                  <td className="px-6 py-4 text-center">
+                    {customer.docsSubmitted && deadlineInfo ? (
+                      <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider border shadow-sm ${
+                        deadlineInfo.isExceeded 
+                          ? 'bg-red-500 text-white border-red-600 shadow-red-500/20 animate-pulse' 
+                          : deadlineInfo.isReaching 
+                          ? 'bg-yellow-400 text-slate-900 border-yellow-500 shadow-yellow-400/20 font-black' 
+                          : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      }`}>
+                        <Clock size={10} className={deadlineInfo.isExceeded ? 'text-white' : deadlineInfo.isReaching ? 'text-slate-900' : 'text-emerald-600'} />
+                        {deadlineInfo.isExceeded 
+                          ? `${Math.abs(deadlineInfo.remainingDays)}d Exceeded` 
+                          : deadlineInfo.remainingDays === 0 
+                          ? 'Due Today' 
+                          : `${deadlineInfo.remainingDays}d Left`}
+                      </div>
+                    ) : (
+                      <span className="text-[9px] font-bold text-slate-300 italic">Pre-active</span>
+                    )}
+                  </td>
+                )}
 
                 {/* ePID */}
                 <td className="px-6 py-4 text-center">

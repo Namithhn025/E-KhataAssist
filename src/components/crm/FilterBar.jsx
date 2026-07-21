@@ -154,6 +154,8 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
           <option value="Date Added">Date Added</option>
           <option value="Recently Updated">Recently Updated</option>
           <option value="Priority (High to Low)">Priority (High to Low)</option>
+          <option value="Deadline (Ascending)">Deadline (Ascending)</option>
+          <option value="Deadline (Descending)">Deadline (Descending)</option>
         </select>
       </div>
     </div>

@@ -173,6 +173,11 @@ const WorkerDashboard = () => {
       c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
+    deadlines: serviceLeads.filter(c =>
+      c.docsSubmitted && c.serviceStage !== 'Application Submitted' &&
+      c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
+      c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
+    ).length,
     blocked:  serviceLeads.filter(c => c.serviceStatus === 'Blocked').length,
     closed:   serviceLeads.filter(c => c.serviceStatus === 'Closed').length,
     retry:    serviceLeads.filter(c => c.serviceStatus === 'Retry').length,
@@ -198,13 +203,24 @@ const WorkerDashboard = () => {
         const isApproved = c.serviceStatus === 'Approved';
         const isPreActive = (!c.docsSubmitted || !c.serviceAcqPOC) && !isBlocked && !isClosed && !isRetry && !isApproved;
         const isActive = c.docsSubmitted && c.serviceAcqPOC && !isBlocked && !isClosed && !isRetry && !isApproved;
+        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isRetry && !isApproved;
 
         if (servicesSubMode === 'pre-active' && !isPreActive) return false;
         if (servicesSubMode === 'active'     && !isActive)    return false;
+        if (servicesSubMode === 'deadlines'  && !isDeadlines) return false;
         if (servicesSubMode === 'blocked'    && !isBlocked)   return false;
         if (servicesSubMode === 'closed'     && !isClosed)    return false;
         if (servicesSubMode === 'retry'      && !isRetry)     return false;
         if (servicesSubMode === 'approved'   && !isApproved)  return false;
+    } else if (selectedSource === 'deadlines') {
+        const hasService = c.serviceType || c.serviceRequested || c.service;
+        if (!hasService) return false;
+        const isBlocked  = c.serviceStatus === 'Blocked';
+        const isClosed   = c.serviceStatus === 'Closed';
+        const isRetry    = c.serviceStatus === 'Retry';
+        const isApproved = c.serviceStatus === 'Approved';
+        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isRetry && !isApproved;
+        if (!isDeadlines) return false;
     } else if (selectedSource === 'sales') {
         if (c.sourceVault && c.sourceVault !== 'sales') return false;
     } else {
@@ -234,6 +250,23 @@ const WorkerDashboard = () => {
     
     return matchesSearch && matchesPriority && matchesStage && matchesService && matchesAcqPOC && matchesServiceAcqPOC && matchesApartment && matchesSource && matchesDocsSubmitted;
   }).sort((a, b) => {
+    if (sortBy === 'Deadline (Ascending)' || sortBy === 'Deadline (Descending)') {
+      const getDaysLeft = (c) => {
+        if (!c.docsSubmitted) return sortBy === 'Deadline (Ascending)' ? 99999 : -99999;
+        const sList = (c.serviceRequested || c.serviceType || c.service || '').split(/,\s*/).filter(Boolean);
+        let totalDays = 15;
+        if (pocs.deadlines) {
+          for (const s of sList) {
+            if (pocs.deadlines[s]) { totalDays = parseInt(pocs.deadlines[s], 10) || 15; break; }
+          }
+        }
+        const startDate = new Date(c.docsSubmittedDate || c.createdAt || Date.now());
+        const elapsed = Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        return totalDays - elapsed;
+      };
+      const diff = getDaysLeft(a) - getDaysLeft(b);
+      return sortBy === 'Deadline (Ascending)' ? diff : -diff;
+    }
     if (sortBy === 'Priority (High to Low)') {
       const priorityWeights = { 'High': 3, 'Medium': 2, 'Low': 1 };
       return (priorityWeights[b.priority] || 0) - (priorityWeights[a.priority] || 0);
@@ -311,7 +344,7 @@ const WorkerDashboard = () => {
                   <thead>
                     <tr className="bg-slate-50/80 text-slate-400 text-[10px] font-black uppercase tracking-[0.15em] border-b border-slate-100/50">
                       <td className="w-14 px-6 py-5 align-middle"><input type="checkbox" disabled className="w-4 h-4 rounded-md border-slate-300" /></td>
-                      {selectedSource === 'services' ? (
+                      {selectedSource === 'services' || selectedSource === 'deadlines' ? (
                         <>
                           <th className="px-6 py-5">SR ID</th>
                           <th className="px-6 py-5">Name</th>
@@ -348,7 +381,7 @@ const WorkerDashboard = () => {
                              </div>
                           </td>
                           
-                          {selectedSource === 'services' ? (
+                          {selectedSource === 'services' || selectedSource === 'deadlines' ? (
                             <>
                               <td className="px-4 py-3 font-bold text-slate-900">
                                  {customer.srId || `SRF${customer.id.substring(0,4).toUpperCase()}`}

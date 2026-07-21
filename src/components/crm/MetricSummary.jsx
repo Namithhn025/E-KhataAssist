@@ -25,6 +25,7 @@ const MetricSummary = ({ metrics, viewMode }) => {
     { label: 'Total Leads', count: metrics.total,     color: 'text-slate-900',  bgColor: 'bg-white',          borderColor: 'border-slate-200'  },
     { label: 'Pre-active',  count: metrics.preActive, color: 'text-yellow-600', bgColor: 'bg-yellow-50/50',   borderColor: 'border-yellow-100' },
     { label: 'Active',      count: metrics.active,    color: 'text-green-600',  bgColor: 'bg-green-50/50',    borderColor: 'border-green-100'  },
+    { label: 'Deadlines',   count: metrics.deadlines, color: 'text-purple-600', bgColor: 'bg-purple-50/50',   borderColor: 'border-purple-100' },
     { label: 'Closed',      count: metrics.closed,    color: 'text-blue-600',   bgColor: 'bg-blue-50/50',     borderColor: 'border-blue-100'   },
     { label: 'Blocked',     count: metrics.blocked,   color: 'text-red-600',    bgColor: 'bg-red-50/50',      borderColor: 'border-red-100'    },
     { label: 'Retry',       count: metrics.retry,     color: 'text-orange-600', bgColor: 'bg-orange-50/50',   borderColor: 'border-orange-100' },

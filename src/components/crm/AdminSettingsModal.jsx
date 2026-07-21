@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { X, Plus, Trash2, Check, UserPlus, Briefcase, Home, DollarSign } from 'lucide-react';
+import { X, Plus, Trash2, Check, UserPlus, Briefcase, Home, DollarSign, Calendar } from 'lucide-react';
 
 const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
   const [newAcq, setNewAcq] = useState('');
   const [newServiceAcq, setNewServiceAcq] = useState('');
   const [newApartment, setNewApartment] = useState('');
   const [editingPrice, setEditingPrice] = useState({ service: null, amount: '' });
+  const [editingDeadline, setEditingDeadline] = useState({ service: null, days: '' });
+  const [customDeadlineService, setCustomDeadlineService] = useState('');
+  const [customDeadlineDays, setCustomDeadlineDays] = useState('');
 
   const serviceOptions = [
     'Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)',
@@ -38,6 +41,22 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
     pricing[service] = amount;
     onUpdate({ ...pocs, pricing });
     setEditingPrice({ service: null, amount: '' });
+  };
+
+  const handleUpdateDeadline = (service, days) => {
+    const deadlines = { ...(pocs.deadlines || {}) };
+    deadlines[service] = parseInt(days, 10) || 15;
+    onUpdate({ ...pocs, deadlines });
+    setEditingDeadline({ service: null, days: '' });
+  };
+
+  const handleAddCustomDeadline = () => {
+    if (!customDeadlineService.trim() || !customDeadlineDays.trim()) return;
+    const deadlines = { ...(pocs.deadlines || {}) };
+    deadlines[customDeadlineService.trim()] = parseInt(customDeadlineDays, 10) || 15;
+    onUpdate({ ...pocs, deadlines });
+    setCustomDeadlineService('');
+    setCustomDeadlineDays('');
   };
 
   return (
@@ -172,7 +191,87 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
                       </div>
                     </div>
                   );
+                 })}
+             </div>
+          </div>
+
+          {/* Service Deadlines Configuration */}
+          <div className="space-y-4">
+             <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                   <Calendar size={16} className="text-purple-500" />
+                   <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Service Deadlines (Days)</h3>
+                </div>
+                <span className="text-[10px] font-bold text-slate-400">Default: 15 Days</span>
+             </div>
+
+             <div className="grid grid-cols-1 gap-3">
+                {Array.from(new Set([...serviceOptions.filter(s => s !== 'Others'), ...Object.keys(pocs.deadlines || {})])).map(service => {
+                  const currentDays = pocs.deadlines?.[service] || '15';
+                  const isEditing = editingDeadline.service === service;
+
+                  return (
+                    <div key={service} className="flex items-center justify-between px-6 py-4 bg-slate-50 rounded-2xl border border-slate-100 group transition-all hover:bg-white hover:shadow-md">
+                      <span className="text-xs font-black text-slate-700 uppercase tracking-tight">{service}</span>
+                      
+                      <div className="flex items-center gap-3">
+                        {isEditing ? (
+                          <div className="flex items-center gap-2 animate-in slide-in-from-right-2">
+                            <input 
+                              autoFocus
+                              type="number"
+                              min="1"
+                              value={editingDeadline.days}
+                              onChange={(e) => setEditingDeadline({ ...editingDeadline, days: e.target.value })}
+                              className="w-20 px-3 py-1.5 rounded-lg bg-white border border-purple-500 text-xs font-bold text-slate-900 outline-none"
+                              placeholder="Days"
+                            />
+                            <button 
+                              onClick={() => handleUpdateDeadline(service, editingDeadline.days)}
+                              className="p-1.5 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all"
+                            >
+                              <Check size={14} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-4">
+                            <span className="text-xs font-black text-purple-600 bg-purple-50 border border-purple-100 px-3 py-1 rounded-full">{currentDays} Days</span>
+                            <button 
+                              onClick={() => setEditingDeadline({ service, days: currentDays.toString() })}
+                              className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-purple-600 transition-colors opacity-0 group-hover:opacity-100"
+                            >
+                              Edit Days
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
                 })}
+             </div>
+
+             {/* Add Custom Service Deadline */}
+             <div className="flex gap-2 pt-2">
+                <input 
+                  value={customDeadlineService}
+                  onChange={(e) => setCustomDeadlineService(e.target.value)}
+                  placeholder="Custom service name..."
+                  className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-purple-500/10 outline-none font-bold text-xs"
+                />
+                <input 
+                  type="number"
+                  min="1"
+                  value={customDeadlineDays}
+                  onChange={(e) => setCustomDeadlineDays(e.target.value)}
+                  placeholder="Days"
+                  className="w-24 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-purple-500/10 outline-none font-bold text-xs"
+                />
+                <button 
+                  onClick={handleAddCustomDeadline}
+                  className="px-5 bg-purple-500 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-purple-600 transition-all"
+                >
+                  Add Deadline
+                </button>
              </div>
           </div>
 
