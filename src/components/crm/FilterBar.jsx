@@ -53,7 +53,7 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
       'Document Received', 'eKYC Pending', 'eKYC Done', 
       'Ready to eSign', 'Application Submitted', 'Approved', 'Rejected'
     ]},
-    apartment: { label: 'Apartment', options: pocs.apartments || [] },
+    apartment: { label: 'Apartment', options: [...(pocs.apartments || [])].sort((a, b) => a.localeCompare(b)) },
     docsSubmitted: { label: 'Docs Status', options: ['Submitted', 'Pending'] }
   };
 

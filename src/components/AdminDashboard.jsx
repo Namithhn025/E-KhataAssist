@@ -17,7 +17,7 @@ import MassUploadModal from './crm/MassUploadModal';
 import ExpensesSection from './crm/ExpensesSection';
 import RemindersSection, { ReminderModal } from './crm/RemindersSection';
 import { setDoc, arrayUnion, Timestamp } from 'firebase/firestore';
-import { ChevronDown, MessageSquare, DollarSign, Bell, X, Edit2 } from 'lucide-react';
+import { ChevronDown, MessageSquare, DollarSign, Bell, X, Edit2, CopyPlus } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [selectedSource, setSelectedSource] = useState('sales');
@@ -34,6 +34,8 @@ const AdminDashboard = () => {
   const [copyFeedback, setCopyFeedback] = useState(null);
   const [editingPhoneId, setEditingPhoneId] = useState(null);
   const [editingPhoneValue, setEditingPhoneValue] = useState('');
+  const [editingNameId, setEditingNameId] = useState(null);
+  const [editingNameValue, setEditingNameValue] = useState('');
   const [noteInputId, setNoteInputId] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [customerToDelete, setCustomerToDelete] = useState(null);
@@ -906,10 +908,60 @@ const AdminDashboard = () => {
                                   <span className="text-xs font-black text-slate-900 tracking-tighter uppercase">{customer.srId || `SRF${customer.id.substring(0,4).toUpperCase()}`}</span>
                                </div>
                             </td>
-                            <td className="px-6 py-6">
-                              <div className="font-bold text-slate-900 group-hover:text-primary transition-colors flex items-center gap-2">
-                                {customer.customerName}
-                              </div>
+                            <td className="px-6 py-6" onClick={(e) => e.stopPropagation()}>
+                              {editingNameId === customer.id ? (
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    type="text"
+                                    value={editingNameValue}
+                                    onChange={(e) => setEditingNameValue(e.target.value)}
+                                    className="bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 w-40 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter' && editingNameValue.trim()) {
+                                        handlePOCUpdate(customer.id, 'customerName', editingNameValue.trim());
+                                        setEditingNameId(null);
+                                      } else if (e.key === 'Escape') {
+                                        setEditingNameId(null);
+                                      }
+                                    }}
+                                  />
+                                  <button
+                                    onClick={async () => {
+                                      if (!editingNameValue.trim()) return;
+                                      await handlePOCUpdate(customer.id, 'customerName', editingNameValue.trim());
+                                      setEditingNameId(null);
+                                    }}
+                                    className="text-green-500 hover:text-green-600 p-1 transition-all hover:scale-110"
+                                    title="Save"
+                                  >
+                                    <Check size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => setEditingNameId(null)}
+                                    className="text-red-400 hover:text-red-500 p-1 transition-all hover:scale-110"
+                                    title="Cancel"
+                                  >
+                                    <X size={14} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="font-bold text-slate-900 group-hover:text-primary transition-colors flex items-center gap-2 group/name">
+                                  {customer.customerName}
+                                  {isAdmin && (
+                                    <button
+                                      onClick={() => {
+                                        setEditingNameId(customer.id);
+                                        setEditingNameValue(customer.customerName || '');
+                                      }}
+                                      className="text-slate-300 hover:text-primary transition-colors p-1 opacity-0 group-hover/name:opacity-100"
+                                      title="Rename"
+                                    >
+                                      <Edit2 size={12} />
+                                    </button>
+                                  )}
+                                </div>
+                              )}
                             </td>
                             <td className="px-6 py-6" onClick={(e) => e.stopPropagation()}>
                                {editingPhoneId === customer.id ? (
@@ -1007,9 +1059,63 @@ const AdminDashboard = () => {
                           </>
                         ) : (
                           <>
-                            <td className="px-4 py-3">
-                              <div className="font-bold text-slate-900 group-hover:text-primary transition-colors">{customer.customerName}</div>
-                              <div className="text-[10px] font-black text-slate-400 tracking-widest mt-0.5">UIDE{customer.id.substring(0, 4).toUpperCase()}</div>
+                            <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                              {editingNameId === customer.id ? (
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    type="text"
+                                    value={editingNameValue}
+                                    onChange={(e) => setEditingNameValue(e.target.value)}
+                                    className="bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-bold text-slate-700 w-40 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                                    autoFocus
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter' && editingNameValue.trim()) {
+                                        handlePOCUpdate(customer.id, 'customerName', editingNameValue.trim());
+                                        setEditingNameId(null);
+                                      } else if (e.key === 'Escape') {
+                                        setEditingNameId(null);
+                                      }
+                                    }}
+                                  />
+                                  <button
+                                    onClick={async () => {
+                                      if (!editingNameValue.trim()) return;
+                                      await handlePOCUpdate(customer.id, 'customerName', editingNameValue.trim());
+                                      setEditingNameId(null);
+                                    }}
+                                    className="text-green-500 hover:text-green-600 p-1 transition-all hover:scale-110"
+                                    title="Save"
+                                  >
+                                    <Check size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => setEditingNameId(null)}
+                                    className="text-red-400 hover:text-red-500 p-1 transition-all hover:scale-110"
+                                    title="Cancel"
+                                  >
+                                    <X size={14} />
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 group/name">
+                                  <div>
+                                    <div className="font-bold text-slate-900 group-hover:text-primary transition-colors">{customer.customerName}</div>
+                                    <div className="text-[10px] font-black text-slate-400 tracking-widest mt-0.5">UIDE{customer.id.substring(0, 4).toUpperCase()}</div>
+                                  </div>
+                                  {isAdmin && (
+                                    <button
+                                      onClick={() => {
+                                        setEditingNameId(customer.id);
+                                        setEditingNameValue(customer.customerName || '');
+                                      }}
+                                      className="text-slate-300 hover:text-primary transition-colors p-1 opacity-0 group-hover/name:opacity-100"
+                                      title="Rename"
+                                    >
+                                      <Edit2 size={12} />
+                                    </button>
+                                  )}
+                                </div>
+                              )}
                             </td>
                             <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                                {editingPhoneId === customer.id ? (
@@ -1121,6 +1227,27 @@ const AdminDashboard = () => {
                                     title="Add Reminder"
                                   >
                                     <Bell size={16} />
+                                  </button>
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      if (!confirm(`Duplicate lead "${customer.customerName}"?`)) return;
+                                      try {
+                                        const { id, ...rest } = customer;
+                                        await addDoc(collection(db, 'customers'), {
+                                          ...rest,
+                                          createdAt: new Date().toISOString(),
+                                          updatedAt: new Date().toISOString(),
+                                        });
+                                      } catch (err) {
+                                        console.error('Duplicate error:', err);
+                                        alert('Failed to duplicate: ' + err.message);
+                                      }
+                                    }}
+                                    className="p-2 text-slate-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                    title="Duplicate Lead"
+                                  >
+                                    <CopyPlus size={16} />
                                   </button>
                                   <button 
                                     onClick={(e) => {

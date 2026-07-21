@@ -104,7 +104,10 @@ const CloseConfirmModal = ({ open, onConfirm, onCancel }) => {
 };
 
 // ─── Active Confirm Modal ───────────────────────────────────────────────────
-const ActiveConfirmModal = ({ open, onConfirm, onCancel, customerName }) => {
+const ActiveConfirmModal = ({ open, onConfirm, onCancel, customerName, initialDocSource }) => {
+  const [docSource, setDocSource] = useState('');
+  const [customSource, setCustomSource] = useState('');
+
   if (!open) return null;
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
@@ -128,12 +131,52 @@ const ActiveConfirmModal = ({ open, onConfirm, onCancel, customerName }) => {
             <p className="text-xs font-bold text-green-700">Service Acquisition POC is assigned</p>
           </div>
         </div>
+        {!initialDocSource ? (
+          <div className="space-y-3">
+            <label className="text-xs font-bold text-slate-700">Document Source</label>
+            <select
+              value={docSource}
+              onChange={e => setDocSource(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="">Select Document Source</option>
+              <option value="ajay whatsapp">Ajay Whatsapp</option>
+              <option value="rakshith whatsapp">Rakshith Whatsapp</option>
+              <option value="mail">Mail</option>
+              <option value="physical">Physical</option>
+              <option value="others">Others</option>
+            </select>
+            {docSource === 'others' && (
+              <input
+                type="text"
+                placeholder="Enter custom source..."
+                value={customSource}
+                onChange={e => setCustomSource(e.target.value)}
+                className="w-full mt-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            )}
+          </div>
+        ) : (
+          <div className="bg-slate-50 rounded-2xl px-5 py-4 border border-slate-100 space-y-1">
+            <p className="text-xs font-bold text-slate-700">Document Source: <span className="font-black text-primary">{initialDocSource}</span></p>
+          </div>
+        )}
         <div className="flex gap-3">
-          <button onClick={onCancel} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 transition-all border border-slate-200">
+          <button onClick={() => { setDocSource(''); setCustomSource(''); onCancel(); }} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 transition-all border border-slate-200">
             Cancel
           </button>
           <button
-            onClick={onConfirm}
+            onClick={() => {
+              if (initialDocSource) {
+                onConfirm(initialDocSource);
+                return;
+              }
+              if (!docSource) return alert('Please select a document source');
+              if (docSource === 'others' && !customSource.trim()) return alert('Please enter a custom document source');
+              onConfirm(docSource === 'others' ? customSource.trim() : docSource);
+              setDocSource('');
+              setCustomSource('');
+            }}
             className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white bg-green-500 hover:bg-green-600 transition-all shadow-lg shadow-green-200"
           >
             ✓ Move to Active
@@ -286,10 +329,11 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
     onUpdate('closedDate', new Date().toISOString());
   };
 
-  const handleConfirmActive = () => {
+  const handleConfirmActive = (source) => {
     setShowActiveModal(false);
     onUpdate('docsSubmitted', true);
     onUpdate('docsSubmittedDate', new Date().toISOString());
+    onUpdate('docSource', source);
     // Also save the pending POC if the modal was triggered by a POC change
     if (pendingPOC !== null) {
       onUpdate('serviceAcqPOC', pendingPOC);
@@ -342,6 +386,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
         onConfirm={handleConfirmActive}
         onCancel={() => setShowActiveModal(false)}
         customerName={customer.customerName}
+        initialDocSource={customer.docSource}
       />
       <RetryConfirmModal
         open={showRetryModal}
@@ -399,6 +444,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                 <th className="px-6 py-4">ePID</th>
                 <th className="px-6 py-4">Priority</th>
                 {showAmount && <th className="px-6 py-4">Amount</th>}
+                <th className="px-6 py-4">Doc Source</th>
                 <th className="px-6 py-4">Docs Status</th>
               </tr>
             </thead>
@@ -676,6 +722,35 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                   </td>
                 )}
 
+                {/* Doc Source */}
+                <td className="px-6 py-4 text-center">
+                  <select
+                    disabled={isLocked}
+                    value={customer.docSource && !['ajay whatsapp', 'rakshith whatsapp', 'mail', 'physical', ''].includes(customer.docSource) ? 'others' : (customer.docSource || '')}
+                    onChange={e => {
+                      if (e.target.value === 'others') {
+                        const custom = prompt('Enter custom doc source:');
+                        if (custom) onUpdate('docSource', custom);
+                      } else {
+                        onUpdate('docSource', e.target.value);
+                      }
+                    }}
+                    className={`w-28 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[9px] font-bold text-slate-600 outline-none focus:ring-2 focus:ring-primary/20 transition-all mx-auto ${isLocked ? 'cursor-default opacity-70' : 'cursor-pointer'}`}
+                  >
+                    <option value="">Unassigned</option>
+                    <option value="ajay whatsapp">Ajay Whatsapp</option>
+                    <option value="rakshith whatsapp">Rakshith Whatsapp</option>
+                    <option value="mail">Mail</option>
+                    <option value="physical">Physical</option>
+                    <option value="others">Others (Custom)</option>
+                  </select>
+                  {customer.docSource && !['ajay whatsapp', 'rakshith whatsapp', 'mail', 'physical', ''].includes(customer.docSource) && (
+                    <div className="mt-1 text-[9px] text-slate-500 font-bold truncate max-w-[100px] mx-auto text-center" title={customer.docSource}>
+                      {customer.docSource}
+                    </div>
+                  )}
+                </td>
+
                 {/* Docs Status */}
                 <td className="px-6 py-4 text-center">
                   <button
@@ -689,9 +764,9 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                         if (val) onUpdate('docsSubmittedDate', new Date().toISOString());
                       }
                     }}
-                    className={`w-10 h-5 rounded-full relative transition-all mx-auto ${customer.docsSubmitted ? 'bg-emerald-500' : 'bg-slate-200'} ${isLocked ? 'cursor-not-allowed opacity-60' : ''}`}
+                    className={`w-10 h-5 rounded-full relative transition-colors mx-auto ${customer.docsSubmitted ? 'bg-emerald-500' : 'bg-slate-200'} ${isLocked ? 'cursor-not-allowed opacity-60' : ''}`}
                   >
-                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-md transition-all ${customer.docsSubmitted ? 'left-5.5' : 'left-0.5'}`} />
+                    <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 ${customer.docsSubmitted ? 'translate-x-5' : 'translate-x-0'}`} />
                   </button>
                 </td>
 

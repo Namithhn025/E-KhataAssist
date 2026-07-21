@@ -62,14 +62,15 @@ const MassUploadModal = ({ isOpen, onClose, onUpload, pocs = {}, existingCustome
       'Other Service Description',
       'EC Number',
       'Acquisition POC',
+      'Document Source',
       'Notes',
       'ePID'
     ];
     
     const sampleRows = [
-      ['Rohan Sharma', '9876543210', '+91', 'rohan@example.com', 'High', 'Direct', 'Asset Aura', 'Ekatha, Bescom', '', 'EC100293', 'Ajay Kumar', 'Call after 6 PM', '1234567890'],
-      ['Priya Patel', '9123456789', '+91', 'priya@gmail.com', 'Medium', 'Referral', 'Prestige Falcon', 'Katha Transfer (Combo)', '', '', '', '', ''],
-      ['John Doe', '1234567890', '+1', 'john@us.com', 'Low', 'Partner', 'Others', 'Others', 'Custom Property Check', '', '', 'International client', '0987654321']
+      ['Rohan Sharma', '9876543210', '+91', 'rohan@example.com', 'High', 'Direct', 'Asset Aura', 'Ekatha, Bescom', '', 'EC100293', 'Ajay Kumar', 'ajay whatsapp', 'Call after 6 PM', '1234567890'],
+      ['Priya Patel', '9123456789', '+91', 'priya@gmail.com', 'Medium', 'Referral', 'Prestige Falcon', 'Katha Transfer (Combo)', '', '', '', '', '', ''],
+      ['John Doe', '1234567890', '+1', 'john@us.com', 'Low', 'Partner', 'Others', 'Others', 'Custom Property Check', '', '', '', 'International client', '0987654321']
     ];
     
     const csvRows = [headers.join(',')];
@@ -193,6 +194,7 @@ const MassUploadModal = ({ isOpen, onClose, onUpload, pocs = {}, existingCustome
       const otherServiceInput = getVal(['Other Service Description', 'OtherService', 'Other Service']);
       const ec = getVal(['EC Number', 'EC', 'ECNumber']);
       const acqPOC = getVal(['Acquisition POC', 'Acq POC', 'acqPOC', 'AcquisitionPOC']);
+      const docSource = getVal(['Document Source', 'Doc Source', 'docSource', 'DocumentSource']);
       const notes = getVal(['Notes', 'Note', 'Internal Notes', 'Description']);
       const ePID = getVal(['ePID', 'EPID', 'Epid']);
 
@@ -390,6 +392,7 @@ const MassUploadModal = ({ isOpen, onClose, onUpload, pocs = {}, existingCustome
           serviceRequested,
           ec,
           acqPOC: resolvedAcqPOC,
+          docSource,
           notes,
           ePID: cleanEPID,
           acquisitionDate: new Date().toISOString().split('T')[0]
