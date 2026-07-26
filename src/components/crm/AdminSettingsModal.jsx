@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Plus, Trash2, Check, UserPlus, Briefcase, Home, DollarSign, Calendar } from 'lucide-react';
+import SearchableSelect from './SearchableSelect';
 
 const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
   const [newAcq, setNewAcq] = useState('');
@@ -24,7 +25,11 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
     
     if (val && !list.includes(val)) {
       list.push(val);
-      onUpdate({ ...pocs, [type]: list });
+      const updated = { ...pocs, [type]: list };
+      if (type === 'acquisition') {
+        updated.marketingTeam = list;
+      }
+      onUpdate(updated);
       if (type === 'acquisition') setNewAcq('');
       else if (type === 'serviceAcquisition') setNewServiceAcq('');
       else setNewApartment('');
@@ -32,8 +37,12 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
   };
 
   const handleRemove = (type, name) => {
-    const list = pocs[type].filter(n => n !== name);
-    onUpdate({ ...pocs, [type]: list });
+    const list = (pocs[type] || []).filter(n => n !== name);
+    const updated = { ...pocs, [type]: list };
+    if (type === 'acquisition') {
+      updated.marketingTeam = list;
+    }
+    onUpdate(updated);
   };
 
   const handleUpdatePrice = (service, amount) => {
@@ -110,11 +119,11 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
              </div>
           </div>
 
-          {/* Acquisition POCs */}
+          {/* Acquisition / Marketing POCs */}
           <div className="space-y-4">
              <div className="flex items-center gap-2 mb-2">
                 <UserPlus size={16} className="text-primary" />
-                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Acquisition Team</h3>
+                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Marketing & Acquisition Team</h3>
              </div>
              
              <div className="flex gap-2">
@@ -137,6 +146,40 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
                   <div key={name} className="flex justify-between items-center px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 group">
                     <span className="text-xs font-bold text-slate-700">{name}</span>
                     <button onClick={() => handleRemove('acquisition', name)} className="text-slate-300 hover:text-red-500 transition-colors">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+             </div>
+          </div>
+
+          {/* Service Acquisition POCs */}
+          <div className="space-y-4">
+             <div className="flex items-center gap-2 mb-2">
+                <Briefcase size={16} className="text-blue-500" />
+                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Service Acquisition Team</h3>
+             </div>
+             
+             <div className="flex gap-2">
+                <input 
+                  value={newServiceAcq}
+                  onChange={(e) => setNewServiceAcq(e.target.value)}
+                  placeholder="Enter name..."
+                  className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-blue-500/10 outline-none font-bold text-sm"
+                />
+                <button 
+                  onClick={() => handleAdd('serviceAcquisition')}
+                  className="px-6 bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all"
+                >
+                  Add
+                </button>
+             </div>
+
+             <div className="grid grid-cols-2 gap-2">
+                {pocs.serviceAcquisition?.map(name => (
+                  <div key={name} className="flex justify-between items-center px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 group">
+                    <span className="text-xs font-bold text-slate-700">{name}</span>
+                    <button onClick={() => handleRemove('serviceAcquisition', name)} className="text-slate-300 hover:text-red-500 transition-colors">
                       <Trash2 size={14} />
                     </button>
                   </div>
@@ -275,37 +318,96 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
              </div>
           </div>
 
-          {/* Service Acquisition POCs (Restored) */}
-          <div className="space-y-4">
+          {/* Specialist Defaults & Team Management */}
+          <div className="space-y-6 pt-4 border-t border-slate-100">
              <div className="flex items-center gap-2 mb-2">
-                <Briefcase size={16} className="text-indigo-500" />
-                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Service Acquisition</h3>
-             </div>
-             
-             <div className="flex gap-2">
-                <input 
-                  value={newServiceAcq}
-                  onChange={(e) => setNewServiceAcq(e.target.value)}
-                  placeholder="Enter name..."
-                  className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-indigo-500/10 outline-none font-bold text-sm"
-                />
-                <button 
-                  onClick={() => handleAdd('serviceAcquisition')}
-                  className="px-6 bg-indigo-500 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-indigo-600 transition-all"
-                >
-                  Add
-                </button>
+                <Briefcase size={16} className="text-blue-600" />
+                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Operations Specialists & Priority Defaults</h3>
              </div>
 
-             <div className="grid grid-cols-2 gap-2">
-                {pocs.serviceAcquisition?.map(name => (
-                  <div key={name} className="flex justify-between items-center px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 group">
-                    <span className="text-xs font-bold text-slate-700">{name}</span>
-                    <button onClick={() => handleRemove('serviceAcquisition', name)} className="text-slate-300 hover:text-red-500 transition-colors">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
+             {/* EPID & E-Sign Specialist */}
+             <div className="bg-slate-50 p-4 rounded-2xl space-y-3 border border-slate-100">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-slate-800 uppercase tracking-tight">1. EPID & E-Sign Specialist</span>
+                  <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-md">Stage: Pre-active & Ready to eSign</span>
+                </div>
+                <div className="flex gap-2">
+                  <SearchableSelect
+                    options={pocs.epidAndEsignSpecialist || pocs.serviceAcquisition || []}
+                    value={pocs.defaults?.epidAndEsignSpecialist || ''}
+                    onChange={(val) => {
+                      const defaults = { ...(pocs.defaults || {}), epidAndEsignSpecialist: val };
+                      onUpdate({ ...pocs, defaults });
+                    }}
+                    placeholder="Select Priority Default Member"
+                    size="md"
+                    className="flex-1"
+                  />
+                </div>
+             </div>
+
+             {/* eKYC Specialist */}
+             <div className="bg-slate-50 p-4 rounded-2xl space-y-3 border border-slate-100">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-slate-800 uppercase tracking-tight">2. eKYC Specialist</span>
+                  <span className="text-[10px] text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded-md">Stage: Move to Active → eKYC Done</span>
+                </div>
+                <div className="flex gap-2">
+                  <SearchableSelect
+                    options={pocs.ekycSpecialist || pocs.serviceAcquisition || []}
+                    value={pocs.defaults?.ekycSpecialist || ''}
+                    onChange={(val) => {
+                      const defaults = { ...(pocs.defaults || {}), ekycSpecialist: val };
+                      onUpdate({ ...pocs, defaults });
+                    }}
+                    placeholder="Select Priority Default Member"
+                    size="md"
+                    className="flex-1"
+                  />
+                </div>
+             </div>
+
+             {/* Address Specialist */}
+             <div className="bg-slate-50 p-4 rounded-2xl space-y-3 border border-slate-100">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-slate-800 uppercase tracking-tight">3. Address Specialist</span>
+                  <span className="text-[10px] text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded-md">Stage: eKYC Done → Ready to eSign</span>
+                </div>
+                <div className="flex gap-2">
+                  <SearchableSelect
+                    options={pocs.addressSpecialist || pocs.serviceAcquisition || []}
+                    value={pocs.defaults?.addressSpecialist || ''}
+                    onChange={(val) => {
+                      const defaults = { ...(pocs.defaults || {}), addressSpecialist: val };
+                      onUpdate({ ...pocs, defaults });
+                    }}
+                    placeholder="Select Priority Default Member"
+                    size="md"
+                    className="flex-1"
+                  />
+                </div>
+             </div>
+
+             {/* Marketing Deadline Days Configuration */}
+             <div className="bg-slate-50 p-4 rounded-2xl space-y-3 border border-slate-100">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-slate-800 uppercase tracking-tight">Marketing Data Deadline (Days)</span>
+                  <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">Default: {pocs.marketingDeadlineDays || 5} Days</span>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    value={pocs.marketingDeadlineDays || 5}
+                    onChange={(e) => {
+                      const days = parseInt(e.target.value, 10) || 5;
+                      onUpdate({ ...pocs, marketingDeadlineDays: days });
+                    }}
+                    className="w-32 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 outline-none"
+                    placeholder="Days (e.g. 5 or 10)"
+                  />
+                  <p className="text-[11px] text-slate-400 font-medium self-center">Default deadline for pre-active marketing data uploads.</p>
+                </div>
              </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, onSnapshot, query, where, updateDoc, doc, arrayUnion, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, getDoc, query, where, updateDoc, doc, arrayUnion, Timestamp } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Phone, MessageCircle, Copy, Check, FileText, Search, User, ChevronDown, MessageSquare, Bell } from 'lucide-react';
@@ -27,7 +27,7 @@ const WorkerDashboard = () => {
   const [noteInputId, setNoteInputId] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [servicesSubMode, setServicesSubMode] = useState('active');
-  const [visibleFilters, setVisibleFilters] = useState(['priority', 'acqPOC', 'serviceAcqPOC', 'stage', 'service']);
+  const [visibleFilters, setVisibleFilters] = useState(['priority', 'acqPOC', 'opsSpecialist', 'docSource', 'serviceAcqPOC', 'stage', 'service']);
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 20;
   
@@ -89,15 +89,21 @@ const WorkerDashboard = () => {
     pricing: {}
   });
 
+  // Load settings once at mount — no live listener needed
   useEffect(() => {
-    const unsubscribe = onSnapshot(doc(db, 'settings', 'crm_config'), (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data().pocs || { acquisition: [], serviceAcquisition: [], service: [], apartments: [], pricing: {} };
-        if (!data.pricing) data.pricing = {};
-        setPocs(data);
+    const loadSettings = async () => {
+      try {
+        const snap = await getDoc(doc(db, 'settings', 'crm_config'));
+        if (snap.exists()) {
+          const data = snap.data().pocs || { acquisition: [], serviceAcquisition: [], service: [], apartments: [], pricing: {} };
+          if (!data.pricing) data.pricing = {};
+          setPocs(data);
+        }
+      } catch (e) {
+        console.error('Worker: Failed to load settings:', e);
       }
-    });
-    return unsubscribe;
+    };
+    loadSettings();
   }, []);
 
   // Load Customers
@@ -228,7 +234,7 @@ const WorkerDashboard = () => {
     }
     
     const matchesPriority = !activeFilters.priority || c.priority === activeFilters.priority;
-    const matchesStage = !activeFilters.stage || (c.status === activeFilters.stage || c.serviceStage === activeFilters.stage);
+    const matchesStage = !activeFilters.stage || (c.serviceStage === activeFilters.stage);
     const matchesService = !activeFilters.service || (() => {
       const standardServices = ['Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)', 'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration'];
       const leadServices = c.serviceRequested ? c.serviceRequested.split(/,\s*/).map(s => s.trim()) : [];
@@ -247,8 +253,18 @@ const WorkerDashboard = () => {
       if (activeFilters.docsSubmitted === 'Pending') return !c.docsSubmitted;
       return true;
     })();
+    const matchesOpsSpecialist = !activeFilters.opsSpecialist || (
+      activeFilters.opsSpecialist === 'Unassigned'
+        ? (!c.epidAndEsignSpecialist && !c.ekycSpecialist && !c.addressSpecialist)
+        : (c.epidAndEsignSpecialist === activeFilters.opsSpecialist || c.ekycSpecialist === activeFilters.opsSpecialist || c.addressSpecialist === activeFilters.opsSpecialist)
+    );
+    const matchesDocSource = !activeFilters.docSource || (
+      activeFilters.docSource === 'Unassigned'
+        ? !c.docSource
+        : (c.docSource?.toLowerCase() === activeFilters.docSource.toLowerCase())
+    );
     
-    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesAcqPOC && matchesServiceAcqPOC && matchesApartment && matchesSource && matchesDocsSubmitted;
+    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesAcqPOC && matchesServiceAcqPOC && matchesApartment && matchesSource && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource;
   }).sort((a, b) => {
     if (sortBy === 'Deadline (Ascending)' || sortBy === 'Deadline (Descending)') {
       const getDaysLeft = (c) => {
@@ -306,7 +322,7 @@ const WorkerDashboard = () => {
           />
   
           {selectedSource !== 'reminders' && (
-            <FilterBar 
+            <FilterBar
               activeFilters={activeFilters}
               visibleFilters={visibleFilters}
               setVisibleFilters={setVisibleFilters}
@@ -316,6 +332,7 @@ const WorkerDashboard = () => {
               pocs={pocs}
               sortBy={sortBy}
               onSortChange={setSortBy}
+              customers={customers}
             />
           )}
   

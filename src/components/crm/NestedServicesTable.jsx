@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import { arrayUnion } from 'firebase/firestore';
+import AssignmentHistoryModal from './AssignmentHistoryModal';
 import { Phone, User, DollarSign, Clock, MessageSquare, AlertTriangle, CheckCircle, XCircle, Lock, RefreshCw, BadgeCheck, FileText, Globe, Edit2 } from 'lucide-react';
+import SearchableSelect from './SearchableSelect';
 
 // Full lifecycle stages for a service
 const SERVICE_STAGES = [
@@ -273,6 +276,8 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const [showRetryModal, setShowRetryModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [pendingPOC, setPendingPOC] = useState(null);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historyLead, setHistoryLead] = useState(null);
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [editingPhoneValue, setEditingPhoneValue] = useState('');
   const userRole = localStorage.getItem('crm_role') || 'worker';
@@ -286,17 +291,60 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const showAmount = viewMode === 'invoices';
   const showDeadline = !(customer.serviceStage === 'Application Submitted' || customer.serviceStatus === 'Closed' || customer.serviceStatus === 'Approved' || subMode === 'closed' || subMode === 'approved');
 
+  // Auto-assign specialists based on the CURRENT stage lifecycle:
+  // Pre-active → EPID & E-Sign Specialist
+  // Active (Document Received) → eKYC Specialist
+  // eKYC Done → Address Specialist
+  // Ready to eSign → EPID & E-Sign Specialist (comes back)
+  React.useEffect(() => {
+    const defaults = pocs.defaults || {};
+    if (!defaults.epidAndEsignSpecialist && !defaults.ekycSpecialist && !defaults.addressSpecialist) return;
+
+    // Pre-active: auto-assign EPID specialist if missing
+    if (!customer.docsSubmitted && !customer.epidAndEsignSpecialist && defaults.epidAndEsignSpecialist) {
+      console.log('[AutoAssign] Pre-active: assigning EPID specialist', defaults.epidAndEsignSpecialist);
+      onUpdate && onUpdate('epidAndEsignSpecialist', defaults.epidAndEsignSpecialist);
+    }
+
+    // Active: auto-assign eKYC specialist if missing
+    if (customer.docsSubmitted && !customer.ekycSpecialist && defaults.ekycSpecialist) {
+      console.log('[AutoAssign] Active: assigning eKYC specialist', defaults.ekycSpecialist);
+      onUpdate && onUpdate('ekycSpecialist', defaults.ekycSpecialist);
+    }
+
+    // Also ensure EPID is assigned on Active landing (from marketing)
+    if (customer.docsSubmitted && !customer.epidAndEsignSpecialist && defaults.epidAndEsignSpecialist) {
+      onUpdate && onUpdate('epidAndEsignSpecialist', defaults.epidAndEsignSpecialist);
+    }
+
+    // eKYC Done: auto-assign Address specialist if missing
+    if (customer.serviceStage === 'eKYC Done' && !customer.addressSpecialist && defaults.addressSpecialist) {
+      console.log('[AutoAssign] eKYC Done: assigning Address specialist', defaults.addressSpecialist);
+      onUpdate && onUpdate('addressSpecialist', defaults.addressSpecialist);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customer.id, customer.docsSubmitted, customer.serviceStage, pocs.defaults]);
+
+
+
+
+
+
   // Deadline Info Calculation
   const getDeadlineInfo = () => {
-    if (!customer.docsSubmitted) return null;
-    const serviceList = (customer.serviceRequested || customer.serviceType || customer.service || '').split(/,\s*/).filter(Boolean);
+    if (!customer.docsSubmitted && !customer.isMarketingData && subMode !== 'pre-active') return null;
+
     let totalDays = 15;
-    if (pocs.deadlines) {
+    if (customer.isMarketingData || (!customer.docsSubmitted && subMode === 'pre-active')) {
+      totalDays = pocs.marketingDeadlineDays || 5;
+    } else if (pocs.deadlines) {
+      const serviceList = (customer.serviceRequested || customer.serviceType || customer.service || '').split(/,\s*/).filter(Boolean);
       for (const s of serviceList) {
         if (pocs.deadlines[s]) { totalDays = parseInt(pocs.deadlines[s], 10) || 15; break; }
       }
     }
-    const startDateStr = customer.docsSubmittedDate || customer.createdAt;
+
+    const startDateStr = customer.marketingUploadDate || customer.docsSubmittedDate || customer.createdAt;
     const startDate = startDateStr ? new Date(startDateStr) : new Date();
     const now = new Date();
     const elapsedDays = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -307,7 +355,8 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
       elapsedDays,
       totalDays,
       isExceeded: remainingDays < 0,
-      isReaching: remainingDays >= 0 && remainingDays <= 1
+      isReaching: remainingDays >= 0 && remainingDays <= 1,
+      isOnTrack: remainingDays > 1
     };
   };
 
@@ -319,9 +368,6 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
 
   const handleStageChange = (newStage) => {
     if (isBlocked || isClosed || isApproved || isLocked) return;
-    
-    // Workers CAN move service stages, but only Admins can revive/delete (handled elsewhere)
-    // Removed the hard restriction here to allow worker progress
 
     if (newStage === 'Blocked') {
       setShowRejectionModal(true);
@@ -332,6 +378,29 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
     if (newStage === CLOSING_STAGE) {
       setShowCloseModal(true);
       return;
+    }
+
+    // Auto-assign specialist based on target stage
+    if (newStage === 'eKYC Done') {
+      const role = 'Address Specialist';
+      onUpdate('assignedSpecialistRole', role);
+      if (pocs.defaults?.addressSpecialist) {
+        const specialist = pocs.defaults.addressSpecialist;
+        onUpdate('assignedSpecialist', specialist);
+        onUpdate('serviceAcqPOC', specialist);
+        // Push history entry
+        onUpdate('assignmentHistory', arrayUnion({ timestamp: new Date().toISOString(), specialistRole: role, assignedTo: specialist, note: 'Auto-assigned on stage change' }));
+      }
+    } else if (newStage === 'Ready to eSign') {
+      const role = 'EPID & E-Sign Specialist';
+      onUpdate('assignedSpecialistRole', role);
+      if (pocs.defaults?.epidAndEsignSpecialist) {
+        const specialist = pocs.defaults.epidAndEsignSpecialist;
+        onUpdate('assignedSpecialist', specialist);
+        onUpdate('serviceAcqPOC', specialist);
+        // Push history entry
+        onUpdate('assignmentHistory', arrayUnion({ timestamp: new Date().toISOString(), specialistRole: role, assignedTo: specialist, note: 'Auto-assigned on stage change' }));
+      }
     }
 
     onUpdate('serviceStage', newStage);
@@ -362,9 +431,20 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
     onUpdate('docsSubmitted', true);
     onUpdate('docsSubmittedDate', new Date().toISOString());
     onUpdate('docSource', source);
-    // Also save the pending POC if the modal was triggered by a POC change
+
+    // Auto-assign eKYC Specialist when moving to Active
+    const role = 'eKYC Specialist';
+    onUpdate('assignedSpecialistRole', role);
+    const defaultEkyc = pocs.defaults?.ekycSpecialist;
+    if (defaultEkyc) {
+      onUpdate('assignedSpecialist', defaultEkyc);
+      onUpdate('serviceAcqPOC', defaultEkyc);
+      // Push history entry
+      onUpdate('assignmentHistory', arrayUnion({ timestamp: new Date().toISOString(), specialistRole: role, assignedTo: defaultEkyc, note: 'Auto-assigned on Active transition' }));
+    }
     if (pendingPOC !== null) {
       onUpdate('serviceAcqPOC', pendingPOC);
+      onUpdate('assignedSpecialist', pendingPOC);
       setPendingPOC(null);
     }
   };
@@ -426,6 +506,15 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
         onConfirm={handleConfirmApprove}
         onCancel={() => setShowApproveModal(false)}
       />
+      {/* Assignment History Modal */}
+      {historyLead && (
+        <AssignmentHistoryModal
+          open={showHistoryModal}
+          onClose={() => setShowHistoryModal(false)}
+          customer={historyLead}
+          history={historyLead.assignmentHistory || []}
+        />
+      )}
 
       <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-xl ring-1 ring-slate-900/5">
 
@@ -465,13 +554,15 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                 <th className="px-6 py-4">Product/Service</th>
                 <th className="px-6 py-4">Apartment/Site</th>
                 <th className="px-6 py-4">Acq. POC</th>
-                <th className="px-6 py-4">S-Acq. POC</th>
+                <th className="px-6 py-4">Ops Specialists</th>
                 <th className="px-6 py-4">EC</th>
                 <th className="px-6 py-4 min-w-[220px]">Live Lifecycle Stage</th>
                 <th className="px-6 py-4">Age (S-Date)</th>
                 {showDeadline && <th className="px-6 py-4">Deadline</th>}
                 <th className="px-6 py-4">ePID</th>
                 <th className="px-6 py-4">Priority</th>
+<th className="px-6 py-4">History</th>
+{showAmount && <th className="px-6 py-4">Amount</th>}
                 {showAmount && <th className="px-6 py-4">Amount</th>}
                 <th className="px-6 py-4">Doc Source</th>
                 <th className="px-6 py-4">Docs Status</th>
@@ -617,25 +708,34 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                   </select>
                 </td>
 
-                {/* S-Acq. POC */}
-                <td className="px-6 py-4 text-center">
-                  <select
-                    disabled={!isAdmin || isLocked}
-                    value={customer.serviceAcqPOC || ''}
-                    onChange={e => {
-                      const val = e.target.value;
-                      if (val && customer.docsSubmitted) {
-                        setPendingPOC(val);
-                        setShowActiveModal(true);
-                      } else {
-                        onUpdate('serviceAcqPOC', val);
-                      }
-                    }}
-                    className={`bg-indigo-50 font-bold border-none rounded-lg px-3 py-1.5 text-[9px] text-indigo-500 outline-none disabled:opacity-60 transition-all ${isLocked ? 'cursor-default' : 'cursor-pointer'} appearance-none mx-auto`}
-                  >
-                    <option value="">Unassigned</option>
-                    {pocs.serviceAcquisition?.map(name => <option key={name}>{name}</option>)}
-                  </select>
+                {/* Ops Specialists */}
+                <td className="px-6 py-4">
+                  <div className="flex flex-col gap-2">
+                    <SearchableSelect
+                      options={pocs.epidAndEsignSpecialist || pocs.serviceAcquisition || []}
+                      value={customer.epidAndEsignSpecialist || ''}
+                      onChange={val => onUpdate('epidAndEsignSpecialist', val)}
+                      placeholder="EPID & E-SIGN: Unassigned"
+                      disabled={!isAdmin || isLocked}
+                      size="sm"
+                    />
+                    <SearchableSelect
+                      options={pocs.ekycSpecialist || pocs.serviceAcquisition || []}
+                      value={customer.ekycSpecialist || ''}
+                      onChange={val => onUpdate('ekycSpecialist', val)}
+                      placeholder="EKYC: Unassigned"
+                      disabled={!isAdmin || isLocked}
+                      size="sm"
+                    />
+                    <SearchableSelect
+                      options={pocs.addressSpecialist || pocs.serviceAcquisition || []}
+                      value={customer.addressSpecialist || ''}
+                      onChange={val => onUpdate('addressSpecialist', val)}
+                      placeholder="ADDRESS: Unassigned"
+                      disabled={!isAdmin || isLocked}
+                      size="sm"
+                    />
+                  </div>
                 </td>
 
                 {/* EC Column - Editable by both Admin and Worker */}
@@ -756,6 +856,18 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                     {customer.priority || 'Low'}
                   </button>
                 </td>
+<td className="px-6 py-4 text-center">
+  <button
+    onClick={() => {
+      setHistoryLead(customer);
+      setShowHistoryModal(true);
+    }}
+    className="text-primary hover:text-primary-600"
+    title="View Assignment History"
+  >
+    <Clock size={12} />
+  </button>
+</td>
 
                 {/* Amount */}
                 {showAmount && (

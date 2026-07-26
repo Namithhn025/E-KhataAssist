@@ -27,7 +27,7 @@ const FilterSelect = ({ label, options, value, onChange, onRemove, isRemovable }
   );
 };
 
-const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterChange, onReset, viewMode, pocs = {}, sortBy, onSortChange }) => {
+const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterChange, onReset, viewMode, pocs = {}, sortBy, onSortChange, customers = [] }) => {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const menuRef = useRef(null);
 
@@ -41,10 +41,30 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const safePocs = pocs || {};
+  const opsSpecialistOptions = Array.from(new Set([
+    ...(safePocs.epidAndEsignSpecialist || []),
+    ...(safePocs.ekycSpecialist || []),
+    ...(safePocs.addressSpecialist || []),
+    ...(safePocs.serviceAcquisition || []),
+  ])).filter(Boolean);
+
+  const dynamicDocSources = Array.from(new Set(
+    customers
+      .map(c => c.docSource)
+      .filter(Boolean)
+      .map(s => s.toLowerCase())
+  )).sort();
+  const docSourceOptions = ['Unassigned', ...Array.from(new Set([...dynamicDocSources])).map(s =>
+    s.charAt(0).toUpperCase() + s.slice(1)
+  )];
+
   const allFilterSpecs = {
     priority: { label: 'Priority', options: ['High', 'Medium', 'Low'] },
-    acqPOC: { label: 'Acquisit. POC', options: ['Unassigned', ...(pocs.acquisition || [])] },
-    serviceAcqPOC: { label: 'Service POC', options: ['Unassigned', ...(pocs.serviceAcquisition || [])] },
+    acqPOC: { label: 'Acquisit. POC', options: ['Unassigned', ...(safePocs.acquisition || [])] },
+    opsSpecialist: { label: 'Ops Specialist', options: ['Unassigned', ...opsSpecialistOptions] },
+    docSource: { label: 'Doc Source', options: docSourceOptions },
+    serviceAcqPOC: { label: 'Service POC', options: ['Unassigned', ...(safePocs.serviceAcquisition || [])] },
     service: { label: 'Service Type', options: [
       'Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)', 
       'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration', 'Others'
@@ -53,11 +73,11 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
       'Document Received', 'eKYC Pending', 'eKYC Done', 
       'Ready to eSign', 'Application Submitted', 'Approved', 'Rejected'
     ]},
-    apartment: { label: 'Apartment', options: [...(pocs.apartments || [])].sort((a, b) => a.localeCompare(b)) },
+    apartment: { label: 'Apartment', options: [...(safePocs.apartments || [])].sort((a, b) => a.localeCompare(b)) },
     docsSubmitted: { label: 'Docs Status', options: ['Submitted', 'Pending'] }
   };
 
-  const commonKeys = ['priority', 'acqPOC', 'serviceAcqPOC', 'stage', 'service'];
+  const commonKeys = ['priority', 'acqPOC', 'opsSpecialist', 'docSource', 'serviceAcqPOC', 'stage', 'service'];
   
   const handleAddFilter = (key) => {
     if (!visibleFilters.includes(key)) {

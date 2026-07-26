@@ -15,11 +15,48 @@ import { AuthProvider } from './contexts/AuthContext';
 import Login from './components/Login';
 import AdminDashboard from './components/AdminDashboard';
 import WorkerDashboard from './components/WorkerDashboard';
+import MarketingDashboard from './components/crm/MarketingDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("CRM ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center">
+          <div className="w-16 h-16 bg-red-500/20 text-red-400 rounded-2xl flex items-center justify-center mb-4 text-2xl font-black">
+            !
+          </div>
+          <h1 className="text-2xl font-black mb-2">Something went wrong</h1>
+          <p className="text-slate-400 text-sm max-w-md mb-6">{this.state.error?.message || 'An unexpected error occurred.'}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-primary hover:bg-emerald-600 font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg"
+          >
+            Reload Dashboard
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function App() {
   const location = useLocation();
-  const isCRM = location.pathname.startsWith('/admin') || location.pathname.startsWith('/worker') || location.pathname === '/login';
+  const isCRM = location.pathname.startsWith('/admin') || location.pathname.startsWith('/worker') || location.pathname.startsWith('/marketing') || location.pathname === '/login';
 
   // Scroll to top on every route change
   useEffect(() => {
@@ -59,7 +96,8 @@ function App() {
         {!isCRM && <Header />}
         
         <main>
-          <Routes>
+          <ErrorBoundary>
+            <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/admin" element={
               <ProtectedRoute allowedRoles={['admin']}>
@@ -69,6 +107,11 @@ function App() {
             <Route path="/worker" element={
               <ProtectedRoute allowedRoles={['worker', 'admin']}>
                 <WorkerDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/marketing" element={
+              <ProtectedRoute allowedRoles={['marketing', 'admin']}>
+                <MarketingDashboard />
               </ProtectedRoute>
             } />
             
@@ -177,8 +220,9 @@ function App() {
 
           {/* Blog Detail Route */}
           <Route path="/blogs/:blogId" element={<BlogDetail />} />
-        </Routes>
-      </main>
+          </Routes>
+          </ErrorBoundary>
+        </main>
       
       {!isCRM && <ContactFooter />}
 

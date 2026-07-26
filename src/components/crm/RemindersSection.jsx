@@ -331,9 +331,8 @@ const ResolveModal = ({ isOpen, onClose, onResolve, reminder }) => {
 };
 
 /* ─── Main Component ─────────────────────────────────────────── */
-const RemindersSection = ({ isAdmin, currentUser }) => {
+const RemindersSection = ({ isAdmin, currentUser, customers = [] }) => {
   const [reminders, setReminders] = useState([]);
-  const [customers, setCustomers] = useState([]);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editData, setEditData] = useState(null);
   const [resolveTarget, setResolveTarget] = useState(null);
@@ -347,14 +346,6 @@ const RemindersSection = ({ isAdmin, currentUser }) => {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
-  /* ── Load Customers directly (self-contained) ───────────────── */
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'customers'), snap => {
-      setCustomers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    }, err => console.error('Customers fetch in RemindersSection:', err));
-    return unsub;
-  }, []);
 
   /* ── Load Reminders ─────────────────────────────────────────── */
   useEffect(() => {

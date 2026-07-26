@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../firebase';
-import { collection, addDoc, onSnapshot, query, where, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, getDocs, getDoc, query, where, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ChevronRight, Phone, MessageCircle, BookOpen, Copy, Check, Filter, FileText, Plus, Search, User, Trash2, AlertTriangle } from 'lucide-react';
@@ -40,12 +40,13 @@ const AdminDashboard = () => {
   const [noteText, setNoteText] = useState('');
   const [customerToDelete, setCustomerToDelete] = useState(null);
   const [servicesSubMode, setServicesSubMode] = useState('active');
-  const [visibleFilters, setVisibleFilters] = useState(['priority', 'acqPOC', 'serviceAcqPOC', 'stage', 'service']);
+  const [visibleFilters, setVisibleFilters] = useState(['priority', 'acqPOC', 'opsSpecialist', 'docSource', 'serviceAcqPOC', 'stage', 'service']);
   const [currentPage, setCurrentPage] = useState(1);
   const [isMassUploadOpen, setIsMassUploadOpen] = useState(false);
   const rowsPerPage = 20;
   const { user, logout } = useAuth();
   const [reminderCustomer, setReminderCustomer] = useState(null);
+  const autoAssignRanRef = useRef(false);
 
   const handleSaveReminder = async (data) => {
     try {
@@ -101,16 +102,22 @@ const AdminDashboard = () => {
     apartments: [],
     pricing: {}
   });
+  // Load settings once at mount — no live listener needed (admin saves update state directly via onUpdate)
   useEffect(() => {
-    const unsubscribe = onSnapshot(doc(db, 'settings', 'crm_config'), (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data().pocs || { acquisition: [], serviceAcquisition: [], service: [], apartments: [], pricing: {} };
-        if (!data.apartments) data.apartments = [];
-        if (!data.pricing) data.pricing = {};
-        setPocs(data);
+    const loadSettings = async () => {
+      try {
+        const snap = await getDoc(doc(db, 'settings', 'crm_config'));
+        if (snap.exists()) {
+          const data = snap.data().pocs || { acquisition: [], serviceAcquisition: [], service: [], apartments: [], pricing: {} };
+          if (!data.apartments) data.apartments = [];
+          if (!data.pricing) data.pricing = {};
+          setPocs(data);
+        }
+      } catch (e) {
+        console.error('Failed to load settings:', e);
       }
-    });
-    return unsubscribe;
+    };
+    loadSettings();
   }, []);
 
   // Load Customers
@@ -129,26 +136,58 @@ const AdminDashboard = () => {
     return unsubscribe;
   }, []);
 
-  // Load Campaigns for Overview
+  // Auto-assign default specialists — runs ONCE at login via getDocs (not on every snapshot)
   useEffect(() => {
-    let q = query(collection(db, 'campaigns'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setCampaigns(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }, (error) => {
-       console.error("Admin campaigns fetch failed:", error);
-    });
-    return unsubscribe;
-  }, []);
+    if (autoAssignRanRef.current) return;
+    if (!pocs.defaults) return;
+    const defaults = pocs.defaults;
+    if (!defaults.epidAndEsignSpecialist && !defaults.ekycSpecialist && !defaults.addressSpecialist) return;
 
-  // Load Expenses for Overview
+    autoAssignRanRef.current = true;
+
+    const runAutoAssign = async () => {
+      try {
+        const snap = await getDocs(
+          query(collection(db, 'customers'), where('marketingMovedDate', '!=', null), where('isMarketingData', '==', false))
+        );
+        snap.docs.forEach(async (d) => {
+          const c = d.data();
+          const updates = {};
+          if (!c.epidAndEsignSpecialist && defaults.epidAndEsignSpecialist)
+            updates.epidAndEsignSpecialist = defaults.epidAndEsignSpecialist;
+          if (!c.ekycSpecialist && defaults.ekycSpecialist)
+            updates.ekycSpecialist = defaults.ekycSpecialist;
+          if (!c.addressSpecialist && defaults.addressSpecialist)
+            updates.addressSpecialist = defaults.addressSpecialist;
+          if (Object.keys(updates).length > 0) {
+            try { await updateDoc(doc(db, 'customers', d.id), updates); }
+            catch (e) { console.error('Auto-assign failed for', d.id, e); }
+          }
+        });
+      } catch (e) {
+        console.error('Auto-assign getDocs failed:', e);
+        autoAssignRanRef.current = false; // allow retry on next mount if it errored
+      }
+    };
+
+    runAutoAssign();
+  }, [pocs.defaults]); // only re-evaluates if defaults change (admin saves new settings)
+
+  // Load Campaigns & Expenses once for Overview metrics — not real-time, changes are infrequent
   useEffect(() => {
-    let q = query(collection(db, 'expenses'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setExpenses(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }, (error) => {
-       console.error("Admin expenses fetch failed:", error);
-    });
-    return unsubscribe;
+    const loadOverviewData = async () => {
+      try {
+        const [campSnap, expSnap] = await Promise.all([
+          getDocs(query(collection(db, 'campaigns'))),
+          getDocs(query(collection(db, 'expenses'))),
+        ]);
+        setCampaigns(campSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        setExpenses(expSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (e) {
+        console.error('Failed to load overview data:', e);
+      }
+    };
+    loadOverviewData();
   }, []);
 
   const handleLogout = async () => {
@@ -171,10 +210,12 @@ const AdminDashboard = () => {
 
   const handlePOCUpdate = async (customerId, field, value) => {
     try {
-      await updateDoc(doc(db, 'customers', customerId), { [field]: value });
+      if (!field || !customerId) return;
+      const cleanVal = value === undefined ? '' : value;
+      await updateDoc(doc(db, 'customers', customerId), { [field]: cleanVal });
     } catch (error) {
-      console.error("Firestore Update Error:", error);
-      alert("Failed to update field. Ensure Cloud Firestore is enabled in your Firebase console.");
+      console.error("Firestore Update Error:", field, value, error);
+      alert(`Failed to update ${field}: ${error.message}`);
     }
   };
 
@@ -302,12 +343,13 @@ const AdminDashboard = () => {
     // Services metrics — match exactly the filter logic in filteredCustomers
     totalSRs:  serviceLeads.length,
     preActive: serviceLeads.filter(c =>
-      (!c.docsSubmitted || !c.serviceAcqPOC) &&
+      (!c.docsSubmitted || !c.docSource) &&
+      !c.isMarketingData &&
       c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
     active: serviceLeads.filter(c =>
-      c.docsSubmitted && c.serviceAcqPOC &&
+      c.docsSubmitted && c.docSource &&
       c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
@@ -348,11 +390,11 @@ const AdminDashboard = () => {
         const isRetry    = c.serviceStatus === 'Retry';
         const isApproved = c.serviceStatus === 'Approved';
 
-        // Pre-active: has service, docs NOT submitted yet OR Service Acquisition POC not assigned
-        const isPreActive = (!c.docsSubmitted || !c.serviceAcqPOC) && !isBlocked && !isClosed && !isRetry && !isApproved;
-        // Active: docs submitted AND Service Acquisition POC assigned, still in progress
-        const isActive = c.docsSubmitted && c.serviceAcqPOC && !isBlocked && !isClosed && !isRetry && !isApproved;
-        // Deadlines: docs submitted AND not yet 'Application Submitted' (exit condition) AND not in terminal states
+        // Pre-active: docs NOT yet submitted OR doc source missing (and not marketing data)
+        const isPreActive = (!c.docsSubmitted || !c.docSource) && !isBlocked && !isClosed && !isRetry && !isApproved && !c.isMarketingData;
+        // Active: docs submitted AND doc source set — no serviceAcqPOC required
+        const isActive = c.docsSubmitted && c.docSource && !isBlocked && !isClosed && !isRetry && !isApproved;
+        // Deadlines: docs submitted AND not yet 'Application Submitted'
         const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isRetry && !isApproved;
 
         if (servicesSubMode === 'pre-active' && !isPreActive) return false;
@@ -373,6 +415,10 @@ const AdminDashboard = () => {
         const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isRetry && !isApproved;
 
         if (!isDeadlines) return false;
+    } else if (selectedSource === 'marketing-deadlines') {
+       // Show only marketing data leads
+       if (!c.isMarketingData) return false;
+       if (['Closed', 'Approved'].includes(c.serviceStatus)) return false;
     } else {
        if (c.sourceVault !== selectedSource) return false;
     }
@@ -380,7 +426,7 @@ const AdminDashboard = () => {
     const matchesInterest = !activeFilters.interest || c.interest === activeFilters.interest;
     const matchesServiceAcqPOC = !activeFilters.serviceAcqPOC || (activeFilters.serviceAcqPOC === 'Unassigned' ? !c.serviceAcqPOC : c.serviceAcqPOC === activeFilters.serviceAcqPOC);
     const matchesPriority = !activeFilters.priority || c.priority === activeFilters.priority;
-    const matchesStage = !activeFilters.stage || (c.status === activeFilters.stage || c.serviceStage === activeFilters.stage);
+    const matchesStage = !activeFilters.stage || (c.serviceStage === activeFilters.stage);
     const matchesService = !activeFilters.service || (() => {
       const standardServices = ['Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)', 'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration'];
       const leadServices = c.serviceRequested ? c.serviceRequested.split(/,\s*/).map(s => s.trim()) : [];
@@ -393,13 +439,23 @@ const AdminDashboard = () => {
     const matchesApartment = !activeFilters.apartment || (c.apartment === activeFilters.apartment || c.society === activeFilters.apartment);
     const matchesSource = !activeFilters.source || c.sourceVault === activeFilters.source;
     const matchesAcqPOC = !activeFilters.acqPOC || (activeFilters.acqPOC === 'Unassigned' ? !c.acqPOC : c.acqPOC === activeFilters.acqPOC);
+    const matchesOpsSpecialist = !activeFilters.opsSpecialist || (
+      activeFilters.opsSpecialist === 'Unassigned'
+        ? (!c.epidAndEsignSpecialist && !c.ekycSpecialist && !c.addressSpecialist)
+        : (c.epidAndEsignSpecialist === activeFilters.opsSpecialist || c.ekycSpecialist === activeFilters.opsSpecialist || c.addressSpecialist === activeFilters.opsSpecialist)
+    );
     const matchesDocsSubmitted = !activeFilters.docsSubmitted || (() => {
       if (activeFilters.docsSubmitted === 'Submitted') return c.docsSubmitted === true;
       if (activeFilters.docsSubmitted === 'Pending') return !c.docsSubmitted;
       return true;
     })();
+    const matchesDocSource = !activeFilters.docSource || (
+      activeFilters.docSource === 'Unassigned'
+        ? !c.docSource
+        : (c.docSource?.toLowerCase() === activeFilters.docSource.toLowerCase())
+    );
     
-    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesApartment && matchesSource && matchesAcqPOC && matchesServiceAcqPOC && matchesDocsSubmitted;
+    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesApartment && matchesSource && matchesAcqPOC && matchesServiceAcqPOC && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource;
   }).sort((a, b) => {
     if (sortBy === 'Deadline (Ascending)' || sortBy === 'Deadline (Descending)') {
       const getDaysLeft = (c) => {
@@ -470,6 +526,7 @@ const AdminDashboard = () => {
               selectedSource === 'invoices' ? 'Invoices' :
               selectedSource === 'reminders' ? 'Reminders' :
               selectedSource === 'deadlines' ? 'Deadlines' :
+              selectedSource === 'marketing-deadlines' ? 'Marketing Deadlines' :
               selectedSource === 'services' ? `Services / ${servicesSubMode.charAt(0).toUpperCase() + servicesSubMode.slice(1)}` : 
               'Sales'
             }
@@ -482,7 +539,7 @@ const AdminDashboard = () => {
   
           {/* Filter Bar */}
           {selectedSource !== 'nexus' && selectedSource !== 'reminders' && (
-            <FilterBar 
+            <FilterBar
               activeFilters={activeFilters}
               visibleFilters={visibleFilters}
               setVisibleFilters={setVisibleFilters}
@@ -492,6 +549,7 @@ const AdminDashboard = () => {
               pocs={pocs}
               sortBy={sortBy}
               onSortChange={setSortBy}
+              customers={customers}
             />
           )}
 
@@ -886,8 +944,106 @@ const AdminDashboard = () => {
             />
           )}
 
+          {/* ── MARKETING DEADLINES SECTION ─────────────────────────────── */}
+          {selectedSource === 'marketing-deadlines' && (() => {
+            const mkDeadlineDays = pocs.marketingDeadlineDays || 5;
+            const mkLeads = filteredCustomers;
+            const getStatus = (lead) => {
+              const uploadDate = lead.marketingUploadDate || lead.createdAt;
+              if (!uploadDate) return 'unknown';
+              const elapsed = Math.floor((Date.now() - new Date(uploadDate)) / (1000 * 60 * 60 * 24));
+              const remaining = mkDeadlineDays - elapsed;
+              if (remaining < 0) return 'overdue';
+              if (remaining <= 1) return 'reaching';
+              return 'ontrack';
+            };
+            const overdue = mkLeads.filter(l => getStatus(l) === 'overdue').length;
+            const reaching = mkLeads.filter(l => getStatus(l) === 'reaching').length;
+            const ontrack = mkLeads.filter(l => getStatus(l) === 'ontrack').length;
+            return (
+              <div className="px-8 pb-20">
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  {[
+                    { label: 'On Track 🟢', val: ontrack, cls: 'bg-emerald-50 border-emerald-100 text-emerald-700' },
+                    { label: 'Reaching 🟡', val: reaching, cls: 'bg-yellow-50 border-yellow-100 text-yellow-700' },
+                    { label: 'Overdue 🔴', val: overdue, cls: 'bg-red-50 border-red-100 text-red-700' },
+                  ].map(s => (
+                    <div key={s.label} className={`rounded-2xl p-5 border ${s.cls} flex items-center justify-between`}>
+                      <span className="text-xs font-black uppercase tracking-widest">{s.label}</span>
+                      <span className="text-3xl font-black">{s.val}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
+                  <div className="overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50/80 text-slate-400 text-[10px] font-black uppercase tracking-[0.15em] border-b border-slate-100/50">
+                          <th className="px-6 py-5">Customer</th>
+                          <th className="px-6 py-5">Phone</th>
+                          <th className="px-6 py-5">Service</th>
+                          <th className="px-6 py-5">Site</th>
+                          <th className="px-6 py-5">S-Acq. POC</th>
+                          <th className="px-6 py-5">Upload Date</th>
+                          <th className="px-6 py-5">Deadline Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100/50">
+                        {mkLeads.length === 0 ? (
+                          <tr><td colSpan={7} className="py-16 text-center text-slate-400 text-sm font-bold">No marketing data leads found.</td></tr>
+                        ) : mkLeads.map(lead => {
+                          const uploadDate = lead.marketingUploadDate || lead.createdAt;
+                          const status = getStatus(lead);
+                          const elapsed = uploadDate ? Math.floor((Date.now() - new Date(uploadDate)) / (1000 * 60 * 60 * 24)) : 0;
+                          const remaining = mkDeadlineDays - elapsed;
+                          return (
+                            <tr key={lead.id} className="hover:bg-slate-50/50 transition-all">
+                              <td className="px-6 py-4">
+                                <div className="font-black text-slate-900 text-sm">{lead.customerName || '—'}</div>
+                              </td>
+                              <td className="px-6 py-4 text-xs font-bold text-slate-500 font-mono">{lead.phone || '—'}</td>
+                              <td className="px-6 py-4">
+                                <span className="px-2 py-0.5 bg-violet-50 text-violet-600 rounded-lg text-[9px] font-black uppercase tracking-wider border border-violet-100">
+                                  {lead.serviceRequested || '—'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-xs font-bold text-slate-500 uppercase">{lead.apartment || lead.society || 'Direct'}</td>
+                              <td className="px-6 py-4">
+                                <span className="text-xs font-bold text-slate-600">{lead.serviceAcqPOC || <span className="italic text-slate-300">Unassigned</span>}</span>
+                              </td>
+                              <td className="px-6 py-4 text-[10px] font-bold text-slate-400">
+                                {uploadDate ? new Date(uploadDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' }) : '—'}
+                              </td>
+                              <td className="px-6 py-4">
+                                {status === 'overdue' ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-black uppercase bg-red-500 text-white animate-pulse">
+                                    🔴 {Math.abs(remaining)}d Overdue
+                                  </span>
+                                ) : status === 'reaching' ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-black uppercase bg-yellow-400 text-slate-900">
+                                    🟡 {remaining === 0 ? 'Due Today' : '1d Left'}
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-black uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    🟢 {remaining}d Left
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* ── MAIN TABLE (Sales / Services) ─────────────────────────── */}
-          {selectedSource !== 'invoices' && selectedSource !== 'camp' && selectedSource !== 'nexus' && selectedSource !== 'expenses' && selectedSource !== 'reminders' && (
+          {selectedSource !== 'invoices' && selectedSource !== 'camp' && selectedSource !== 'nexus' && selectedSource !== 'expenses' && selectedSource !== 'reminders' && selectedSource !== 'marketing-deadlines' && (
         <div className="px-8 pb-20">
           <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
             <div className="overflow-x-auto no-scrollbar">

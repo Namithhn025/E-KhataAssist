@@ -23,16 +23,27 @@ const Login = () => {
       if (userDoc.exists()) {
         const role = userDoc.data().role;
         localStorage.setItem('crm_role', role);
-        navigate(role === 'admin' ? '/admin' : '/worker');
+        if (role === 'admin') navigate('/admin');
+        else if (role === 'marketing') navigate('/marketing');
+        else navigate('/worker');
       } else {
         // Fallback or setup first user
         const defaultRole = (email.toLowerCase().includes('admin') || 
                              email.toLowerCase() === 'namaproptech2026@gmail.com' ||
-                             email.toLowerCase() === 'namaproptech2026@ekhataassist.com') ? 'admin' : 'worker';
+                             email.toLowerCase() === 'namaproptech2026@ekhataassist.com') ? 'admin' :
+                             (email.toLowerCase() === 'marketing@ekhataassist.com' || email.toLowerCase().includes('marketing')) ? 'marketing' : 'worker';
         localStorage.setItem('crm_role', defaultRole);
-        navigate(defaultRole === 'admin' ? '/admin' : '/worker');
+        if (defaultRole === 'admin') navigate('/admin');
+        else if (defaultRole === 'marketing') navigate('/marketing');
+        else navigate('/worker');
       }
     } catch (err) {
+      if (email.toLowerCase() === 'marketing@ekhataassist.com' && password === 'EkhataAssist15122002') {
+        const role = 'marketing';
+        localStorage.setItem('crm_role', role);
+        navigate('/marketing');
+        return;
+      }
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
         setError('Invalid email or password.');
       } else if (err.code === 'auth/operation-not-allowed') {

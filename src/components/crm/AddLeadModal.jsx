@@ -104,9 +104,9 @@ const AddLeadModal = ({ isOpen, onClose, onAdd, pocs = {} }) => {
     setFormData(prev => ({ ...prev, phone: value }));
   };
 
-  const filteredApartments = (pocs.apartments || []).filter(opt => 
-    opt.toLowerCase().includes(apartmentSearch.toLowerCase())
-  );
+  const filteredApartments = (pocs.apartments || [])
+    .filter(opt => opt.toLowerCase().includes(apartmentSearch.toLowerCase()))
+    .sort((a, b) => a.localeCompare(b));
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
