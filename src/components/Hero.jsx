@@ -92,7 +92,7 @@ const Hero = () => {
                     </div>
                     <div className="mt-16 flex flex-wrap justify-center gap-8 opacity-60">
                         <div className="flex items-center gap-2"><ShieldCheck size={20} className="text-primary" /><span className="text-sm font-bold text-gray-500 uppercase tracking-widest">Legal Verified</span></div>
-                        <div className="flex items-center gap-2"><FileText size={20} className="text-primary" /><span className="text-sm font-bold text-gray-500 uppercase tracking-widest">7k+ Delivered</span></div>
+                        <div className="flex items-center gap-2"><FileText size={20} className="text-primary" /><span className="text-sm font-bold text-gray-500 uppercase tracking-widest">10k+ Delivered</span></div>
                         <div className="flex items-center gap-2"><Users size={20} className="text-primary" /><span className="text-sm font-bold text-gray-500 uppercase tracking-widest">100% Transparent</span></div>
                     </div>
                 </div>

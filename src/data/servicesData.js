@@ -13,16 +13,14 @@ export const servicesData = [
         desc: 'Official property identification (Form 9 & 11A) issued by authorities. Fast and verified documentation for your property.',
         overview: 'E-Khata is the digital form of a Khata certificate in Karnataka. It proves property ownership, enables easy tax payments, and simplifies approvals for property transactions. Our experts ensure your E-Khata process is smooth, accurate, and stress-free.',
         useCases: ['Buy Property', 'Sell Property', 'Loan/Mortgage', 'Property Tax'],
-        documents: ['Aadhaar card of the owners', 'Sale deed', 'Bescom Bill', 'Property Tax Receipt', 'Khata Certificate', 'Mutation Fee Receipt (Optional)'],
+        documents: ['Aadhaar Card of the owners', 'Sale Deed', 'BESCOM Bill', 'Property Tax Receipt', 'Khata Certificate', 'Mutation Fee Receipt (Optional)'],
         sampleDocsList: [
             { name: 'Aadhaar Card', desc: 'Clear photocopy of the front and back of all owners\' Aadhaar cards.', image: '/samples/aadhaar.png' },
             { name: 'Sale Deed', desc: 'Registered sale deed document of the property.', image: '/samples/sale-deed.png' },
             { name: 'BESCOM Bill', desc: 'Latest electricity bill from BESCOM in the current owner\'s name.', image: '/samples/bescom-bill.png' },
             { name: 'Property Tax Receipt', desc: 'Latest property tax paid receipt from BBMP/local authority.', image: '/samples/property-tax.png' },
-            { name: 'Khata Certificate', desc: 'Existing Khata certificate (A-Khata) of the property.', image: '/samples/ekhata.png' },
-            { name: 'Form-B Property Register Extract (B-Khata)', desc: 'Form-B register extract page showing property details.', image: '/samples/b-khata.png' },
-            { name: 'Form 9 / 11 E-Khata', desc: 'Official digital E-Khata Form 11 certificate issued by BBMP.', image: '/samples/form-11.png' },
-            { name: 'Bangalore One Receipt', desc: 'Bangalore One citizen services payment receipt.', image: '/samples/bangalore-one.png' }
+            { name: 'A-Khata / E-Khata', desc: 'Existing Khata certificate (A-Khata or E-Khata) of the property.', image: '/samples/ekhata.png' },
+            { name: 'B-Khata (if applicable)', desc: 'B-Khata / Form-B BBMP register extract, if the property currently holds a B-Khata.', image: '/samples/b-khata.png' },
         ],
         price: '2,799',
         originalPrice: '4,999'
@@ -39,16 +37,17 @@ export const servicesData = [
             'Sale Deed',
             'Discharge Deed from Bank (within 3 months)',
             'Exemption Letter',
-            'Aadhaar Cards of the owners having bank\'s seal and signature',
-            'PAN of the owners having bank\'s seal and signature',
-            'Ekhata',
-            'Property Tax Receipt of current financial year'
+            'Aadhaar Card of the owners (with bank seal & signature)',
+            'PAN Card of the owners (with bank seal & signature)',
+            'E-Khata',
+            'Property Tax Receipt (current financial year)'
         ],
         sampleDocsList: [
             { name: 'Sale Deed', desc: 'Registered sale deed document of the property.', image: '/samples/sale-deed.png' },
-            { name: 'Aadhaar Card', desc: 'Aadhaar cards of the owners with bank seal.', image: '/samples/aadhaar.png' },
-            { name: 'E-Khata', desc: 'Form 9/11A E-Khata document.', image: '/samples/ekhata.png' },
-            { name: 'Property Tax Receipt', desc: 'Current financial year tax receipt.', image: '/samples/property-tax.png' }
+            { name: 'Aadhaar Card', desc: 'Aadhaar cards of the owners with bank seal and signature.', image: '/samples/aadhaar.png' },
+            { name: 'E-Khata', desc: 'Form 9/11A E-Khata document of the property.', image: '/samples/ekhata.png' },
+            { name: 'Property Tax Receipt', desc: 'Current financial year property tax paid receipt.', image: '/samples/property-tax.png' },
+            { name: 'Bangalore One Receipt', desc: 'Bangalore One payment receipt for fees paid during the process.', image: '/samples/bangalore-one.png' },
         ],
         price: '7,999',
         originalPrice: '15,000'
@@ -61,12 +60,14 @@ export const servicesData = [
         desc: 'Seamless transfer of property ownership records in municipal books. We handle the entire documentation and follow-up.',
         overview: 'Khata Transfer is the process of updating the owner\'s name on the Khata after a sale, inheritance, or gift. It is crucial for tax assessment and legal proof of ownership in municipal records.',
         useCases: ['Post-purchase updates', 'Tax assessment', 'Property sales', 'Loans/mortgages'],
-        documents: ['Sale Deed', 'Aadhaar Card', 'Tax Paid Receipt', 'BESCOM Bill'],
+        documents: ['Sale Deed', 'Aadhaar Card of the owners', 'Property Tax Paid Receipt', 'BESCOM Bill'],
         sampleDocsList: [
             { name: 'Sale Deed', desc: 'Absolute Sale Deed registered at Sub-registrar office.', image: '/samples/absolute-sale-deed.png' },
             { name: 'Aadhaar Card', desc: 'Owner\'s Aadhaar card.', image: '/samples/aadhaar.png' },
-            { name: 'Tax Paid Receipt', desc: 'Latest property tax receipt.', image: '/samples/property-tax.png' },
-            { name: 'BESCOM Bill', desc: 'Latest electricity bill.', image: '/samples/bescom-bill.png' }
+            { name: 'Property Tax Receipt', desc: 'Latest property tax paid receipt.', image: '/samples/property-tax.png' },
+            { name: 'BESCOM Bill', desc: 'Latest electricity bill in owner\'s name.', image: '/samples/bescom-bill.png' },
+            { name: 'B-Khata (if applicable)', desc: 'B-Khata / Form-B extract if the property currently holds a B-Khata.', image: '/samples/b-khata.png' },
+            { name: 'Form 11 (BBMP Record)', desc: 'BBMP Form 11 property record document.', image: '/samples/form-11.png' },
         ],
         whatAllIncluded: ['Khata Transfer', 'Ekhata', 'Encumbrance Certificate', 'GBA Property Tax Portal Name Change'],
         price: '8,499',
@@ -81,21 +82,21 @@ export const servicesData = [
         overview: 'Updating electricity connection records to reflect the new owner\'s name after a property sale, inheritance, or transfer. This ensures legal proof of occupancy and accurate billing.',
         useCases: ['Legal proof of occupancy', 'Accurate billing', 'Preventing disputes', 'Claiming subsidies (e.g., Gruha Jyothi)'],
         documents: [
-            'Passport size photo of the owners',
-            'Aadhaar card of the Owners',
+            'Passport Size Photo of the owners',
+            'Aadhaar Card of the owners',
             'BESCOM Bill',
             'BESCOM Meter Photo',
             'Sale Deed',
-            'Ekhata / Khata Certificate',
+            'E-Khata / Khata Certificate',
             'Property Tax Receipt',
-            'No Objection Certificate (NOC)'
+            'No Objection Certificate (NOC) — if applicable'
         ],
         sampleDocsList: [
             { name: 'Aadhaar Card', desc: 'Owner\'s Aadhaar card.', image: '/samples/aadhaar.png' },
-            { name: 'BESCOM Bill', desc: 'Latest BESCOM bill.', image: '/samples/bescom-bill.png' },
+            { name: 'BESCOM Bill', desc: 'Latest BESCOM electricity bill.', image: '/samples/bescom-bill.png' },
             { name: 'Sale Deed', desc: 'Registered Sale Deed.', image: '/samples/sale-deed.png' },
-            { name: 'E-Khata', desc: 'Form 9/11A E-Khata.', image: '/samples/ekhata.png' },
-            { name: 'Property Tax Receipt', desc: 'Latest tax receipt.', image: '/samples/property-tax.png' }
+            { name: 'E-Khata', desc: 'Form 9/11A E-Khata certificate.', image: '/samples/ekhata.png' },
+            { name: 'Property Tax Receipt', desc: 'Latest property tax paid receipt.', image: '/samples/property-tax.png' }
         ],
         price: '4,999',
         originalPrice: '7,500'
@@ -110,8 +111,9 @@ export const servicesData = [
         useCases: ['Renting property', 'Proof of residence', 'Regulatory compliance', 'Legal protection'],
         documents: ['Aadhaar Card', 'BESCOM Bill', 'BWSSB Bill', 'Security Deposit details'],
         sampleDocsList: [
-            { name: 'Aadhaar Card', desc: 'Tenant/Owner Aadhaar card.', image: '/samples/aadhaar.png' },
-            { name: 'BESCOM Bill', desc: 'Latest BESCOM bill for address proof.', image: '/samples/bescom-bill.png' }
+            { name: 'Aadhaar Card', desc: 'Aadhaar card of both owner and tenant.', image: '/samples/aadhaar.png' },
+            { name: 'BESCOM Bill', desc: 'Latest BESCOM bill for property address proof.', image: '/samples/bescom-bill.png' },
+            { name: 'Sale Deed / Ownership Proof', desc: 'Registered sale deed or any document proving ownership of the property.', image: '/samples/sale-deed.png' },
         ],
         price: '1,500',
         originalPrice: '3,000'
@@ -160,7 +162,9 @@ export const servicesData = [
         useCases: ['Business collaboration', 'Partnership agreements', 'Joint ventures', 'Pre-sale agreements'],
         documents: ['Aadhaar Card', 'PAN Card', 'Witness Signatures'],
         sampleDocsList: [
-            { name: 'Aadhaar Card', desc: 'Party Aadhaar card.', image: '/samples/aadhaar.png' }
+            { name: 'Aadhaar Card', desc: 'Aadhaar card of all parties signing the MOU.', image: '/samples/aadhaar.png' },
+            { name: 'Sale Deed / Property Document', desc: 'Registered sale deed or property document relevant to the MOU.', image: '/samples/absolute-sale-deed.png' },
+            { name: 'E-Khata', desc: 'E-Khata of the property involved in the agreement.', image: '/samples/ekhata.png' },
         ],
         startsFrom: true,
         price: '4,999',
@@ -176,7 +180,10 @@ export const servicesData = [
         useCases: ['Inheritance claims', 'Legal heirship', 'Property transfer', 'Ownership disputes'],
         documents: ['Affidavit', 'Aadhaar Card', 'PAN Card', 'Death Certificate of the deceased'],
         sampleDocsList: [
-            { name: 'Aadhaar Card', desc: 'Heir Aadhaar card.', image: '/samples/aadhaar.png' }
+            { name: 'Aadhaar Card', desc: 'Aadhaar card of all legal heirs.', image: '/samples/aadhaar.png' },
+            { name: 'Property Tax Receipt', desc: 'Property tax paid receipt in the deceased owner\'s name.', image: '/samples/property-tax.png' },
+            { name: 'E-Khata / Khata Document', desc: 'Existing Khata document showing deceased owner\'s name.', image: '/samples/ekhata.png' },
+            { name: 'Sale Deed', desc: 'Original sale deed or title document of the inherited property.', image: '/samples/sale-deed.png' },
         ],
         startsFrom: true,
         price: '8,999',
@@ -191,7 +198,12 @@ export const servicesData = [
         overview: 'Expert guidance on property-related matters including ownership, transfers, disputes, and compliance. Professional advice to ensure your property transactions are secure.',
         useCases: ['Ownership guidance', 'Navigating disputes', 'Compliance checks', 'Document verification'],
         documents: ['Variable (Usually relevant property documents needed for review)'],
-        sampleDocsList: [],
+        sampleDocsList: [
+            { name: 'Sale Deed', desc: 'Registered sale deed or title document related to the dispute or query.', image: '/samples/sale-deed.png' },
+            { name: 'E-Khata / Khata Document', desc: 'Khata certificate for ownership verification.', image: '/samples/ekhata.png' },
+            { name: 'Property Tax Receipt', desc: 'Latest property tax paid receipt.', image: '/samples/property-tax.png' },
+            { name: 'Aadhaar Card', desc: 'Identity proof of the property owner.', image: '/samples/aadhaar.png' },
+        ],
         startsFrom: true,
         price: '999',
         originalPrice: null
