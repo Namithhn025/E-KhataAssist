@@ -38,8 +38,8 @@ const StatCard = ({ target, label, delay = 0, border = false }) => {
     const { count, ref } = useCountUp(target, 2000 + delay);
     return (
         <div ref={ref} className={`p-8 group ${border ? 'md:border-l border-white/10' : ''}`}>
-            <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">
-                {formatNumber(count)}+
+            <div className="text-5xl lg:text-7xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60 whitespace-nowrap">
+                {formatNumber(count)}<span>+</span>
             </div>
             <div className="inline-block px-4 py-1.5 rounded-full glass-pill text-green-300 text-xs font-black uppercase tracking-widest border border-white/10">{label}</div>
         </div>
