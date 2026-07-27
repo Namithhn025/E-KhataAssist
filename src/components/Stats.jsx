@@ -15,11 +15,11 @@ const Stats = () => {
                         <div className="inline-block px-4 py-1.5 rounded-full glass-pill text-green-300 text-xs font-black uppercase tracking-widest border border-white/10">Documents Delivered</div>
                     </div>
                     <div className="p-8 md:border-l border-white/10 group">
-                        <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">10,000+</div>
+                        <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">8,500+</div>
                         <div className="inline-block px-4 py-1.5 rounded-full glass-pill text-green-300 text-xs font-black uppercase tracking-widest border border-white/10">Properties Served</div>
                     </div>
                     <div className="p-8 md:border-l border-white/10 group">
-                        <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">10,000+</div>
+                        <div className="text-6xl lg:text-8xl font-black mb-4 tracking-tighter group-hover:scale-110 transition-transform duration-500 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">7,900+</div>
                         <div className="inline-block px-4 py-1.5 rounded-full glass-pill text-green-300 text-xs font-black uppercase tracking-widest border border-white/10">Trusted Customers</div>
                     </div>
                 </div>

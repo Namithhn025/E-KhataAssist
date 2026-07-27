@@ -125,7 +125,7 @@ const About = () => {
                                     <div className="text-green-300 text-xs font-black uppercase tracking-widest opacity-80">Happy NRIs</div>
                                 </div>
                                 <div>
-                                    <div className="text-4xl font-black tracking-tighter mb-1">10k+</div>
+                                    <div className="text-4xl font-black tracking-tighter mb-1">8.5k+</div>
                                     <div className="text-green-300 text-xs font-black uppercase tracking-widest opacity-80">Properties</div>
                                 </div>
                                 <div>
