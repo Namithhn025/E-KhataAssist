@@ -55,9 +55,9 @@ const Stats = () => {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-                    <StatCard target={10000} label="Documents Delivered" delay={0} />
-                    <StatCard target={8500} label="Properties Served" delay={200} border />
-                    <StatCard target={7900} label="Trusted Customers" delay={400} border />
+                    <StatCard target={10250} label="Documents Delivered" delay={0} />
+                    <StatCard target={8542} label="Properties Served" delay={200} border />
+                    <StatCard target={7913} label="Trusted Customers" delay={400} border />
                 </div>
 
                 <div className="mt-12 text-center pb-6">
