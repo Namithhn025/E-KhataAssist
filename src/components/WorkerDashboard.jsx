@@ -405,7 +405,7 @@ const WorkerDashboard = () => {
                               </td>
                               <td className="px-4 py-3 font-bold text-slate-700">{customer.customerName}</td>
                               <td className="px-4 py-3 font-bold text-slate-700">{customer.phone}</td>
-                              <td className="px-4 py-3 text-xs font-bold text-slate-500">{customer.serviceType || 'E-Khata'}</td>
+                              <td className="px-4 py-3 text-xs font-bold text-slate-500">{customer.serviceRequested || customer.serviceType || customer.service || 'N/A'}</td>
                               {servicesSubMode === 'blocked' && <td className="px-4 py-3 text-center text-slate-400">-</td>}
                               <td className="px-4 py-3 text-center">
                                 <button

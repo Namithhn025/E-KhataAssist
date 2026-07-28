@@ -1215,7 +1215,7 @@ const AdminDashboard = () => {
                                )}
                             </td>
                             <td className="px-4 py-3">
-                               <span className="text-xs font-bold text-slate-700">{customer.serviceType || 'E-Khata'}</span>
+                               <span className="text-xs font-bold text-slate-700">{customer.serviceRequested || customer.serviceType || customer.service || 'N/A'}</span>
                             </td>
                              {servicesSubMode === 'blocked' && (
                               <td className="px-4 py-3">
