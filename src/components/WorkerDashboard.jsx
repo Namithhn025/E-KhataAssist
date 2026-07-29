@@ -170,12 +170,12 @@ const WorkerDashboard = () => {
     advance:   customers.filter(c => c.payment === 'Pending').length,
     totalSRs:  serviceLeads.length,
     preActive: serviceLeads.filter(c =>
-      (!c.docsSubmitted || !c.serviceAcqPOC) &&
+      (!c.docsSubmitted || !c.docSource) &&
       c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
     active: serviceLeads.filter(c =>
-      c.docsSubmitted && c.serviceAcqPOC &&
+      c.docsSubmitted && c.docSource &&
       c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
@@ -207,8 +207,8 @@ const WorkerDashboard = () => {
         const isClosed   = c.serviceStatus === 'Closed';
         const isRetry    = c.serviceStatus === 'Retry';
         const isApproved = c.serviceStatus === 'Approved';
-        const isPreActive = (!c.docsSubmitted || !c.serviceAcqPOC) && !isBlocked && !isClosed && !isRetry && !isApproved;
-        const isActive = c.docsSubmitted && c.serviceAcqPOC && !isBlocked && !isClosed && !isRetry && !isApproved;
+        const isPreActive = (!c.docsSubmitted || !c.docSource) && !isBlocked && !isClosed && !isRetry && !isApproved;
+        const isActive = c.docsSubmitted && c.docSource && !isBlocked && !isClosed && !isRetry && !isApproved;
         const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isRetry && !isApproved;
 
         if (servicesSubMode === 'pre-active' && !isPreActive) return false;
