@@ -338,28 +338,32 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                   <span key={i} className="px-2 py-0.5 bg-green-50 text-green-700 rounded-lg text-[8px] font-black uppercase tracking-wider border border-green-100">{s}</span>
                 ))}
               </div>
-              {isAdmin && !isLocked && (
-                <select value="" onChange={e => {
-                  const val = e.target.value;
-                  if (!val) return;
-                  if (val === 'OTHER_CUSTOM') { onUpdate('serviceRequested', ''); return; }
-                  const current = (customer.serviceRequested || '').split(', ').filter(Boolean);
-                  const isRemoving = current.includes(val);
-                  if (isRemoving && current.length <= 1) return;
-                  const next = isRemoving ? current.filter(x => x !== val) : [...current, val];
-                  onUpdate('serviceRequested', next.join(', '));
-                  let totalAmount = 0;
-                  if (pocs.pricing) next.forEach(s => { if (pocs.pricing[s]) totalAmount += parseFloat(pocs.pricing[s]); });
-                  onUpdate('amount', totalAmount || '');
-                }} className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[8px] font-black text-slate-500 outline-none cursor-pointer hover:bg-slate-50 transition-all appearance-none uppercase w-full">
-                  <option value="">+ Add/Remove Service</option>
-                  {serviceOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  <option value="OTHER_CUSTOM">+ Custom Entry</option>
-                </select>
-              )}
-              {((!serviceOptions.some(opt => (customer.serviceRequested || '').includes(opt)) && customer.serviceRequested) || customer.serviceRequested === '') && (
-                <input type="text" placeholder="Type custom service..." value={customer.serviceRequested} onChange={e => onUpdate('serviceRequested', e.target.value)} className="mt-1.5 px-2 py-1 bg-white border border-blue-100 rounded-lg text-[9px] font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-400/20 w-full" />
-              )}
+              {isAdmin && !isLocked && (() => {
+                const current = (customer.serviceRequested || '').split(', ').filter(Boolean);
+                const hasCustom = current.some(s => !serviceOptions.includes(s));
+                return (
+                  <>
+                    <select value="" onChange={e => {
+                      const val = e.target.value;
+                      if (!val) return;
+                      const isRemoving = current.includes(val);
+                      if (isRemoving && current.length <= 1) return;
+                      const next = isRemoving ? current.filter(x => x !== val) : [...current, val];
+                      onUpdate('serviceRequested', next.join(', '));
+                      let totalAmount = 0;
+                      if (pocs.pricing) next.forEach(s => { if (pocs.pricing[s]) totalAmount += parseFloat(pocs.pricing[s]); });
+                      onUpdate('amount', totalAmount || '');
+                    }} className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[8px] font-black text-slate-500 outline-none cursor-pointer hover:bg-slate-50 transition-all appearance-none uppercase w-full">
+                      <option value="">+ Add/Remove Service</option>
+                      {serviceOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    </select>
+                    {!hasCustom && current.length === 0 && (
+                      <input type="text" placeholder="Type custom service..." className="mt-1.5 px-2 py-1 bg-white border border-blue-100 rounded-lg text-[9px] font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-400/20 w-full"
+                        onBlur={e => { if (e.target.value.trim()) onUpdate('serviceRequested', e.target.value.trim()); }} />
+                    )}
+                  </>
+                );
+              })()}
             </Field>
 
             {/* Stage */}
