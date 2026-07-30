@@ -356,6 +356,9 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                     }} className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[8px] font-black text-slate-500 outline-none cursor-pointer hover:bg-slate-50 transition-all appearance-none uppercase w-full">
                       <option value="">+ Add/Remove Service</option>
                       {serviceOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      {current.filter(s => !serviceOptions.includes(s)).map(s => (
+                        <option key={s} value={s}>✕ Remove: {s}</option>
+                      ))}
                     </select>
                     {!hasCustom && current.length === 0 && (
                       <input type="text" placeholder="Type custom service..." className="mt-1.5 px-2 py-1 bg-white border border-blue-100 rounded-lg text-[9px] font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-400/20 w-full"
