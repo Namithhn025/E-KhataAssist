@@ -431,7 +431,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
 
               <Field label="Priority">
                 <button
-                  disabled={isLocked}
+                  disabled={viewMode === 'sales' || viewMode === 'nexus'}
                   onClick={() => onUpdate('priority', customer.priority === 'High' ? 'Medium' : (customer.priority === 'Medium' ? 'Low' : 'High'))}
                   className={`w-full px-3 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-sm disabled:opacity-50 transition-all ${customer.priority === 'High' ? 'bg-red-500 text-white shadow-red-200' : customer.priority === 'Medium' ? 'bg-yellow-500 text-white shadow-yellow-200' : 'bg-slate-200 text-slate-400'}`}
                 >
