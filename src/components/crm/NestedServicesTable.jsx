@@ -344,7 +344,9 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                   if (!val) return;
                   if (val === 'OTHER_CUSTOM') { onUpdate('serviceRequested', ''); return; }
                   const current = (customer.serviceRequested || '').split(', ').filter(Boolean);
-                  const next = current.includes(val) ? current.filter(x => x !== val) : [...current, val];
+                  const isRemoving = current.includes(val);
+                  if (isRemoving && current.length <= 1) return;
+                  const next = isRemoving ? current.filter(x => x !== val) : [...current, val];
                   onUpdate('serviceRequested', next.join(', '));
                   let totalAmount = 0;
                   if (pocs.pricing) next.forEach(s => { if (pocs.pricing[s]) totalAmount += parseFloat(pocs.pricing[s]); });
