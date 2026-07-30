@@ -70,10 +70,13 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4 animate-in fade-in duration-300">
-      <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl border border-white animate-in zoom-in-95 duration-500 flex flex-col">
-        
+      <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl border border-slate-100 animate-in zoom-in-95 duration-500 flex flex-col overflow-hidden">
+
+        {/* Top accent bar */}
+        <div className="h-1 w-full bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-600" />
+
         {/* Header */}
-        <div className="p-10 flex justify-between items-start border-b border-slate-50">
+        <div className="px-10 pt-8 pb-6 flex justify-between items-start border-b border-slate-100">
           <div>
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">Admin Settings</h2>
             <p className="text-sm text-slate-500 font-medium">Manage team members and POC lists</p>
@@ -87,21 +90,27 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
           
           {/* Apartments Management */}
           <div className="space-y-4">
-             <div className="flex items-center gap-2 mb-2">
-                <Home size={16} className="text-amber-500" />
-                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Apartments / Projects</h3>
+             <div className="flex items-center gap-3 pb-3 border-b border-amber-100">
+                <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100">
+                  <Home size={15} className="text-amber-500" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Apartments / Projects</h3>
+                  <p className="text-[10px] text-slate-400 font-medium">{pocs.apartments?.length || 0} registered</p>
+                </div>
              </div>
-             
+
              <div className="flex gap-2">
-                <input 
+                <input
                   value={newApartment}
                   onChange={(e) => setNewApartment(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAdd('apartments')}
                   placeholder="Enter apartment name..."
-                  className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-amber-500/10 outline-none font-bold text-sm"
+                  className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-200 outline-none font-bold text-sm"
                 />
-                <button 
+                <button
                   onClick={() => handleAdd('apartments')}
-                  className="px-6 bg-amber-500 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-amber-600 transition-all"
+                  className="px-6 bg-amber-500 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-amber-600 transition-all shadow-sm shadow-amber-200"
                 >
                   Add
                 </button>
@@ -109,10 +118,15 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
 
              <div className="grid grid-cols-2 gap-2">
                 {pocs.apartments?.map(name => (
-                  <div key={name} className="flex justify-between items-center px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 group">
-                    <span className="text-xs font-bold text-slate-700">{name}</span>
-                    <button onClick={() => handleRemove('apartments', name)} className="text-slate-300 hover:text-red-500 transition-colors">
-                      <Trash2 size={14} />
+                  <div key={name} className="flex justify-between items-center px-4 py-2.5 bg-amber-50/60 rounded-xl border border-amber-100/80 group hover:bg-amber-50 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                        <span className="text-[8px] font-black text-amber-600">{name.charAt(0).toUpperCase()}</span>
+                      </div>
+                      <span className="text-xs font-bold text-slate-700 truncate">{name}</span>
+                    </div>
+                    <button onClick={() => handleRemove('apartments', name)} className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 ))}
@@ -121,21 +135,27 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
 
           {/* Acquisition / Marketing POCs */}
           <div className="space-y-4">
-             <div className="flex items-center gap-2 mb-2">
-                <UserPlus size={16} className="text-primary" />
-                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Marketing & Acquisition Team</h3>
+             <div className="flex items-center gap-3 pb-3 border-b border-green-100">
+                <div className="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center border border-green-100">
+                  <UserPlus size={15} className="text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Marketing & Acquisition Team</h3>
+                  <p className="text-[10px] text-slate-400 font-medium">{pocs.acquisition?.length || 0} members</p>
+                </div>
              </div>
-             
+
              <div className="flex gap-2">
-                <input 
+                <input
                   value={newAcq}
                   onChange={(e) => setNewAcq(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAdd('acquisition')}
                   placeholder="Enter name..."
-                  className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-primary/10 outline-none font-bold text-sm"
+                  className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-green-500/10 focus:border-green-200 outline-none font-bold text-sm"
                 />
-                <button 
+                <button
                   onClick={() => handleAdd('acquisition')}
-                  className="px-6 bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all"
+                  className="px-6 bg-green-600 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-green-700 transition-all shadow-sm shadow-green-200"
                 >
                   Add
                 </button>
@@ -143,10 +163,15 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
 
              <div className="grid grid-cols-2 gap-2">
                 {pocs.acquisition?.map(name => (
-                  <div key={name} className="flex justify-between items-center px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 group">
-                    <span className="text-xs font-bold text-slate-700">{name}</span>
-                    <button onClick={() => handleRemove('acquisition', name)} className="text-slate-300 hover:text-red-500 transition-colors">
-                      <Trash2 size={14} />
+                  <div key={name} className="flex justify-between items-center px-4 py-2.5 bg-green-50/60 rounded-xl border border-green-100/80 group hover:bg-green-50 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+                        <span className="text-[8px] font-black text-white">{name.charAt(0).toUpperCase()}</span>
+                      </div>
+                      <span className="text-xs font-bold text-slate-700 truncate">{name}</span>
+                    </div>
+                    <button onClick={() => handleRemove('acquisition', name)} className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 ))}
@@ -155,21 +180,27 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
 
           {/* Service Acquisition POCs */}
           <div className="space-y-4">
-             <div className="flex items-center gap-2 mb-2">
-                <Briefcase size={16} className="text-blue-500" />
-                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Service Acquisition Team</h3>
+             <div className="flex items-center gap-3 pb-3 border-b border-blue-100">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100">
+                  <Briefcase size={15} className="text-blue-500" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Service Acquisition Team</h3>
+                  <p className="text-[10px] text-slate-400 font-medium">{pocs.serviceAcquisition?.length || 0} members</p>
+                </div>
              </div>
-             
+
              <div className="flex gap-2">
-                <input 
+                <input
                   value={newServiceAcq}
                   onChange={(e) => setNewServiceAcq(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAdd('serviceAcquisition')}
                   placeholder="Enter name..."
-                  className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-blue-500/10 outline-none font-bold text-sm"
+                  className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-200 outline-none font-bold text-sm"
                 />
-                <button 
+                <button
                   onClick={() => handleAdd('serviceAcquisition')}
-                  className="px-6 bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all"
+                  className="px-6 bg-blue-500 text-white font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-blue-600 transition-all shadow-sm shadow-blue-200"
                 >
                   Add
                 </button>
@@ -177,10 +208,15 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
 
              <div className="grid grid-cols-2 gap-2">
                 {pocs.serviceAcquisition?.map(name => (
-                  <div key={name} className="flex justify-between items-center px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 group">
-                    <span className="text-xs font-bold text-slate-700">{name}</span>
-                    <button onClick={() => handleRemove('serviceAcquisition', name)} className="text-slate-300 hover:text-red-500 transition-colors">
-                      <Trash2 size={14} />
+                  <div key={name} className="flex justify-between items-center px-4 py-2.5 bg-blue-50/60 rounded-xl border border-blue-100/80 group hover:bg-blue-50 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+                        <span className="text-[8px] font-black text-white">{name.charAt(0).toUpperCase()}</span>
+                      </div>
+                      <span className="text-xs font-bold text-slate-700 truncate">{name}</span>
+                    </div>
+                    <button onClick={() => handleRemove('serviceAcquisition', name)} className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                      <Trash2 size={13} />
                     </button>
                   </div>
                 ))}
@@ -189,9 +225,14 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
 
           {/* Service Fee Structures */}
           <div className="space-y-4">
-             <div className="flex items-center gap-2 mb-2">
-                <DollarSign size={16} className="text-emerald-500" />
-                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Service Fee Structures</h3>
+             <div className="flex items-center gap-3 pb-3 border-b border-emerald-100">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                  <DollarSign size={15} className="text-emerald-500" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Service Fee Structures</h3>
+                  <p className="text-[10px] text-slate-400 font-medium">Hover to edit pricing</p>
+                </div>
              </div>
              
              <div className="grid grid-cols-1 gap-3">

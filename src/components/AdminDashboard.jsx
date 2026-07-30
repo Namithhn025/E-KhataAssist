@@ -591,60 +591,70 @@ const AdminDashboard = () => {
                 {/* Top Summary Cards */}
                 <div className="grid grid-cols-3 gap-5">
                   {[
-                    { label: 'Total Leads (All)',  value: total,                  sub: 'Across all pipelines',        color: 'text-slate-900',   bg: 'bg-white border-slate-200' },
-                    { label: 'In Services',         value: serviceLeadsAll.length, sub: 'Has a service request',       color: 'text-blue-700',    bg: 'bg-blue-50 border-blue-100' },
-                    { label: 'Approved / Invoiced', value: metrics.approved,       sub: 'Ready to invoice',            color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-100' },
-                  ].map(({ label, value, sub, color, bg }) => (
-                    <div key={label} className={`rounded-3xl border p-7 ${bg} shadow-sm flex flex-col gap-2`}>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</p>
-                      <p className={`text-4xl font-black ${color}`}>{value}</p>
+                    { label: 'Total Leads (All)',  value: total,                  sub: 'Across all pipelines',  color: 'text-slate-900',   bg: 'bg-white border-slate-100', accent: 'bg-slate-100', dot: 'bg-slate-400' },
+                    { label: 'In Services',         value: serviceLeadsAll.length, sub: 'Has a service request', color: 'text-blue-600',    bg: 'bg-blue-50 border-blue-100', accent: 'bg-blue-100', dot: 'bg-blue-400' },
+                    { label: 'Approved / Invoiced', value: metrics.approved,       sub: 'Ready to invoice',      color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100', accent: 'bg-emerald-100', dot: 'bg-emerald-500' },
+                  ].map(({ label, value, sub, color, bg, accent, dot }) => (
+                    <div key={label} className={`rounded-3xl border p-7 ${bg} shadow-sm flex flex-col gap-3 relative overflow-hidden`}>
+                      <div className={`absolute top-0 left-0 right-0 h-1 ${accent} rounded-t-3xl opacity-60`} />
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${dot}`} />
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</p>
+                      </div>
+                      <p className={`text-5xl font-black tracking-tighter ${color}`}>{value.toLocaleString()}</p>
                       <p className="text-xs font-bold text-slate-400">{sub}</p>
                     </div>
                   ))}
                 </div>
 
                 {/* Pie Chart + Legend */}
-                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 flex flex-col md:flex-row items-center gap-12">
-                  {/* Donut / Pie */}
-                  <div className="relative shrink-0">
-                    <div
-                      style={{
-                        background: `conic-gradient(${conicStops})`,
-                        width: 220,
-                        height: 220,
-                        borderRadius: '50%',
-                      }}
-                    />
-                    {/* Donut hole */}
-                    <div
-                      className="absolute bg-white rounded-full flex flex-col items-center justify-center"
-                      style={{ width: 110, height: 110, top: 55, left: 55 }}
-                    >
-                      <span className="text-3xl font-black text-slate-900">{rawTotal}</span>
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">SRs Total</span>
+                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                  <div className="h-1 w-full bg-gradient-to-r from-emerald-500 via-green-400 to-blue-500 opacity-60" />
+                  <div className="p-8 flex flex-col md:flex-row items-center gap-12">
+                    {/* Donut / Pie */}
+                    <div className="relative shrink-0">
+                      <div
+                        style={{
+                          background: `conic-gradient(${conicStops})`,
+                          width: 220,
+                          height: 220,
+                          borderRadius: '50%',
+                          boxShadow: '0 8px 32px rgba(0,0,0,0.10)',
+                        }}
+                      />
+                      {/* Donut hole */}
+                      <div
+                        className="absolute bg-white rounded-full flex flex-col items-center justify-center shadow-inner"
+                        style={{ width: 110, height: 110, top: 55, left: 55 }}
+                      >
+                        <span className="text-3xl font-black text-slate-900">{rawTotal}</span>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total SRs</span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Legend + stats */}
-                  <div className="flex-1 grid grid-cols-2 gap-4">
-                    {slices.map(sl => {
-                      const pct = rawTotal > 0 ? ((sl.count / rawTotal) * 100).toFixed(1) : '0.0';
-                      return (
-                        <div key={sl.label} className="flex items-center gap-4 bg-slate-50 rounded-2xl px-5 py-4 border border-slate-100">
-                          <div className={`w-3 h-3 rounded-full ${sl.bg} shrink-0`} />
-                          <div className="flex-1">
-                            <p className="text-xs font-black text-slate-700">{sl.label}</p>
-                            <p className="text-[10px] font-bold text-slate-400">{pct}% of pipeline</p>
+                    {/* Legend + stats */}
+                    <div className="flex-1 grid grid-cols-2 gap-3">
+                      {slices.map(sl => {
+                        const pct = rawTotal > 0 ? ((sl.count / rawTotal) * 100).toFixed(1) : '0.0';
+                        return (
+                          <div key={sl.label} className="flex items-center gap-3 bg-slate-50/80 rounded-2xl px-4 py-3.5 border border-slate-100 hover:bg-white hover:shadow-sm transition-all">
+                            <div className={`w-2.5 h-2.5 rounded-full ${sl.bg} shrink-0`} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-black text-slate-700 truncate">{sl.label}</p>
+                              <p className="text-[10px] font-bold text-slate-400">{pct}%</p>
+                            </div>
+                            <span className="text-lg font-black text-slate-900">{sl.count}</span>
                           </div>
-                          <span className="text-xl font-black text-slate-900">{sl.count}</span>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
                 {/* Apartment-specific breakdown */}
-                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 overflow-hidden">
+                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                  <div className="h-1 w-full bg-gradient-to-r from-amber-400 to-orange-400 opacity-50" />
+                  <div className="p-8 overflow-hidden">
                   <div className="flex items-center justify-between mb-6">
                     <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Leads by Apartment</p>
                     <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-3 py-1 rounded-full uppercase tracking-widest">
@@ -672,6 +682,7 @@ const AdminDashboard = () => {
                         </div>
                       </button>
                     ))}
+                  </div>
                   </div>
                 </div>
 
@@ -1474,24 +1485,15 @@ const AdminDashboard = () => {
                       </tr>
                       {expandedRows.has(customer.id) && (
                         <tr className="bg-[#f8fafc]">
-                          <td colSpan={isAdmin ? ((selectedSource === 'services' || selectedSource === 'deadlines') ? (servicesSubMode === 'blocked' ? 7 : 6) : 7) : ((selectedSource === 'services' || selectedSource === 'deadlines') ? (servicesSubMode === 'blocked' ? 6 : 5) : 6)} className="px-6 py-8">
-                            <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-top-2 duration-500">
-                               
-                               <div className="h-0.5 w-full bg-slate-50/50" />
-
-                               {/* Advanced Services Table */}
-                               <div className="space-y-4">
-                                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 px-2">
-                                     <div className="w-2 h-2 rounded bg-primary" /> Active Service Requests
-                                  </h4>
-                                   <NestedServicesTable 
-                                     customer={customer} 
-                                     onUpdate={(field, val) => handlePOCUpdate(customer.id, field, val)} 
+                          <td colSpan={isAdmin ? ((selectedSource === 'services' || selectedSource === 'deadlines') ? (servicesSubMode === 'blocked' ? 7 : 6) : 7) : ((selectedSource === 'services' || selectedSource === 'deadlines') ? (servicesSubMode === 'blocked' ? 6 : 5) : 6)} className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                            <div className="animate-in fade-in slide-in-from-top-2 duration-300 flex flex-col gap-4">
+                                   <NestedServicesTable
+                                     customer={customer}
+                                     onUpdate={(field, val) => handlePOCUpdate(customer.id, field, val)}
                                      pocs={pocs}
                                      viewMode={selectedSource}
                                      subMode={servicesSubMode}
                                    />
-                                </div>
 
                                 <div className="space-y-4">
                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">Administrative Logs & Timeline</h4>

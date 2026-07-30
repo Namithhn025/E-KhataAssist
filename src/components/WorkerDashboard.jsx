@@ -455,23 +455,15 @@ const WorkerDashboard = () => {
                         </tr>
                         {expandedRows.has(customer.id) && (
                           <tr className="bg-[#f8fafc]">
-                            <td colSpan={10} className="px-6 py-8">
-                              <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-top-2 duration-500">
-                                 {/* Redundant Row Removed per User Request */}
-                                 <div className="h-0.5 w-full bg-slate-50/50" />
-  
-                                 <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 px-2">
-                                       <div className="w-2 h-2 rounded bg-primary" /> Active Service Requests
-                                    </h4>
-                                     <NestedServicesTable 
-                                       customer={customer} 
-                                       onUpdate={(field, val) => handleFieldUpdate(customer.id, field, val)} 
+                            <td colSpan={10} className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                     <NestedServicesTable
+                                       customer={customer}
+                                       onUpdate={(field, val) => handleFieldUpdate(customer.id, field, val)}
                                        pocs={pocs}
                                        viewMode={selectedSource}
                                        subMode={servicesSubMode}
                                      />
-                                  </div>
   
                                   <div className="space-y-4">
                                      <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2">Administrative Logs & Timeline</h4>
