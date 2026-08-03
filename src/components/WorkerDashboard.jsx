@@ -197,7 +197,8 @@ const WorkerDashboard = () => {
       c.ePID?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.srId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.apartment?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.id?.toLowerCase().includes(searchQuery.toLowerCase());
+      c.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.ec?.toLowerCase().includes(searchQuery.toLowerCase());
     
     if (selectedSource === 'services') {
        const hasService = c.serviceType || c.serviceRequested || c.service;
