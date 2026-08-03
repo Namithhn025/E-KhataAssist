@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { db, auth } from '../../firebase';
 import {
-  collection, query, where, onSnapshot, doc, updateDoc, writeBatch, addDoc, getDoc
+  collection, query, where, onSnapshot, doc, updateDoc, writeBatch, addDoc, getDoc, deleteDoc
 } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import MassUploadModal from './MassUploadModal';
@@ -160,6 +160,7 @@ const MarketingDashboard = () => {
   const [search, setSearch] = useState('');
   const [deadlineFilter, setDeadlineFilter] = useState('all');
   const [moveLead, setMoveLead] = useState(null);
+  const [deleteLead, setDeleteLead] = useState(null);
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [editingNotesId, setEditingNotesId] = useState(null);
   const [notesText, setNotesText] = useState('');
@@ -209,7 +210,7 @@ const MarketingDashboard = () => {
       const newDocRef = doc(collection(db, 'customers'));
       batch.set(newDocRef, {
         ...leadData,
-        isMarketingData: true,
+        isMarketingData: !leadData.moveToOperation,
         marketingUploadDate: new Date().toISOString(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -217,7 +218,7 @@ const MarketingDashboard = () => {
         serviceStatus: 'Open',
         serviceStage: 'Document Received',
         status: 'Document Received',
-        docsSubmitted: false,
+        docsSubmitted: leadData.docsSubmitted || false,
         // Auto-assign marketing team member (round-robin)
         ...(marketingTeam.length > 0 ? { serviceAcqPOC: marketingTeam[index % marketingTeam.length] } : {}),
       });
@@ -305,6 +306,16 @@ const MarketingDashboard = () => {
     } catch (e) {
       alert('Failed to save notes: ' + e.message);
     }
+  };
+
+  const handleDeleteLead = async () => {
+    if (!deleteLead) return;
+    try {
+      await deleteDoc(doc(db, 'customers', deleteLead.id));
+    } catch (e) {
+      alert('Failed to delete lead: ' + e.message);
+    }
+    setDeleteLead(null);
   };
 
   const getDeadlineStatus = useCallback((lead) => {
@@ -612,12 +623,21 @@ const MarketingDashboard = () => {
                         <DeadlineBadge lead={lead} deadlineDays={deadlineDays} />
                       </td>
                       <td className="px-5 py-3.5 text-center" onClick={e => e.stopPropagation()}>
-                        <button
-                          onClick={() => setMoveLead(lead)}
-                          className="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all shadow-md shadow-violet-900/30"
-                        >
-                          Move to Operation Team
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => setMoveLead(lead)}
+                            className="px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all shadow-md shadow-violet-900/30"
+                          >
+                            Move to Operation Team
+                          </button>
+                          <button
+                            onClick={() => setDeleteLead(lead)}
+                            className="p-1.5 bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white rounded-lg transition-all"
+                            title="Delete lead"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                     {expandedRows.has(lead.id) && (
@@ -706,6 +726,23 @@ const MarketingDashboard = () => {
         onConfirm={handleMoveToActive}
         onCancel={() => setMoveLead(null)}
       />
+      {deleteLead && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl p-8 w-full max-w-sm border border-slate-700 space-y-6">
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 rounded-2xl bg-red-500/20 flex items-center justify-center mx-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-400"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              </div>
+              <h3 className="text-lg font-black text-white">Delete Lead?</h3>
+              <p className="text-sm text-slate-400">Are you sure you want to delete <span className="text-white font-bold">{deleteLead.customerName}</span>? This cannot be undone.</p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteLead(null)} className="flex-1 py-2.5 rounded-xl bg-slate-700 text-slate-300 font-black text-xs uppercase tracking-widest hover:bg-slate-600 transition-all">Cancel</button>
+              <button onClick={handleDeleteLead} className="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-black text-xs uppercase tracking-widest hover:bg-red-600 transition-all">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

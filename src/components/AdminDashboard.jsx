@@ -266,7 +266,7 @@ const AdminDashboard = () => {
          sourceVault: selectedSource === 'nexus' ? 'direct' : (selectedSource || 'sales'),
          amount: totalAmount || '',
          createdAt: new Date().toISOString(),
-         docsSubmitted: false,
+         docsSubmitted: leadData.docsSubmitted || false,
          serviceStatus: 'Open',
          serviceStage: 'Document Received',
          status: 'Document Received'
