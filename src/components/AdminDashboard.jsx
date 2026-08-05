@@ -378,7 +378,7 @@ const AdminDashboard = () => {
     if (selectedSource === 'nexus') {
        // All leads are visible in Nexus
     } else if (selectedSource === 'sales') {
-       if (c.sourceVault && c.sourceVault !== 'sales') return false;
+       if (c.sourceVault && c.sourceVault !== 'sales' && !(c.sourceVault === 'marketing' && !c.isMarketingData)) return false;
     } else if (selectedSource === 'invoices') {
        if (c.serviceStatus !== 'Approved') return false;
     } else if (selectedSource === 'services') {
