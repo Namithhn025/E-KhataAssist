@@ -229,7 +229,7 @@ const WorkerDashboard = () => {
         const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isRetry && !isApproved;
         if (!isDeadlines) return false;
     } else if (selectedSource === 'sales') {
-        if (c.sourceVault && c.sourceVault !== 'sales') return false;
+        if (c.sourceVault && c.sourceVault !== 'sales' && !(c.sourceVault === 'marketing' && !c.isMarketingData)) return false;
     } else {
         if (c.sourceVault !== selectedSource) return false;
     }
