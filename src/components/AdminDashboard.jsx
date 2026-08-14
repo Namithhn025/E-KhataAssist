@@ -247,6 +247,20 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleFixMarketingData = async () => {
+    const snapshot = await getDocs(query(collection(db, 'customers'), where('marketingMovedDate', '!=', null)));
+    const batch = writeBatch(db);
+    let count = 0;
+    snapshot.forEach(docSnap => {
+      if (docSnap.data().isMarketingData !== false) {
+        batch.update(doc(db, 'customers', docSnap.id), { isMarketingData: false });
+        count++;
+      }
+    });
+    if (count > 0) await batch.commit();
+    return count;
+  };
+
   const handleBulkAdd = async (leads) => {
     const batch = writeBatch(db);
     
@@ -1670,6 +1684,7 @@ const AdminDashboard = () => {
              await setDoc(doc(db, 'settings', 'crm_config'), { pocs: newPocs });
              setPocs(newPocs);
           }}
+          onFixMarketingData={handleFixMarketingData}
         />
 
         {/* Delete Confirmation Modal */}

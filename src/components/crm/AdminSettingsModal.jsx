@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { X, Plus, Trash2, Check, UserPlus, Briefcase, Home, DollarSign, Calendar } from 'lucide-react';
 import SearchableSelect from './SearchableSelect';
 
-const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
+const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate, onFixMarketingData }) => {
+  const [fixingMarketing, setFixingMarketing] = useState(false);
+  const [fixResult, setFixResult] = useState(null);
   const [newAcq, setNewAcq] = useState('');
   const [newServiceAcq, setNewServiceAcq] = useState('');
   const [newApartment, setNewApartment] = useState('');
@@ -453,7 +455,25 @@ const AdminSettingsModal = ({ isOpen, onClose, pocs, onUpdate }) => {
           </div>
         </div>
 
-        <div className="p-8 border-t border-slate-50 bg-slate-50/50 rounded-b-[2.5rem]">
+        <div className="p-8 border-t border-slate-50 bg-slate-50/50 rounded-b-[2.5rem] space-y-3">
+           {onFixMarketingData && (
+             <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 space-y-2">
+               <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest">Data Migration</p>
+               <p className="text-xs text-amber-600 font-medium">Fix old marketing leads that were moved to Operation but still hidden in Sales tab.</p>
+               <button
+                 disabled={fixingMarketing}
+                 onClick={async () => {
+                   setFixingMarketing(true); setFixResult(null);
+                   const count = await onFixMarketingData();
+                   setFixResult(count); setFixingMarketing(false);
+                 }}
+                 className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all"
+               >
+                 {fixingMarketing ? 'Fixing...' : 'Fix Marketing Data'}
+               </button>
+               {fixResult !== null && <p className="text-xs text-green-600 font-bold text-center">{fixResult} records fixed!</p>}
+             </div>
+           )}
            <button onClick={onClose} className="w-full bg-slate-200 text-slate-600 font-black py-4 rounded-2xl hover:bg-slate-300 transition-all text-xs uppercase tracking-widest">
               Close Settings
            </button>
