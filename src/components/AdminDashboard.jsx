@@ -248,10 +248,16 @@ const AdminDashboard = () => {
   };
 
   const handleFixMarketingData = async () => {
-    const snapshot = await getDocs(query(collection(db, 'customers'), where('marketingMovedDate', '!=', null)));
+    const [snap1, snap2] = await Promise.all([
+      getDocs(query(collection(db, 'customers'), where('marketingMovedDate', '!=', null))),
+      getDocs(query(collection(db, 'customers'), where('sourceVault', '==', 'marketing'), where('docsSubmitted', '==', true))),
+    ]);
     const batch = writeBatch(db);
     let count = 0;
-    snapshot.forEach(docSnap => {
+    const seen = new Set();
+    [...snap1.docs, ...snap2.docs].forEach(docSnap => {
+      if (seen.has(docSnap.id)) return;
+      seen.add(docSnap.id);
       if (docSnap.data().isMarketingData !== false) {
         batch.update(doc(db, 'customers', docSnap.id), { isMarketingData: false });
         count++;
