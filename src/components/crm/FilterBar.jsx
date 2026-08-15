@@ -30,30 +30,51 @@ const FilterSelect = ({ label, options, value, onChange, onRemove, isRemovable }
 const SearchableFilterSelect = ({ label, options, value, onChange, onRemove, isRemovable }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const ref = useRef(null);
+  const triggerRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const handler = (e) => {
+      if (triggerRef.current && !triggerRef.current.contains(e.target) &&
+          dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  const handleOpen = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setDropdownPos({ top: rect.bottom + window.scrollY + 6, left: rect.left + window.scrollX });
+    }
+    setOpen(o => !o);
+  };
 
   const filtered = options.filter(o => o.toLowerCase().includes(search.toLowerCase()));
   const display = value || 'All';
 
   return (
-    <div ref={ref} className="relative flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl hover:border-slate-300 shadow-sm group">
-      <div className="flex flex-col min-w-24 cursor-pointer" onClick={() => setOpen(o => !o)}>
-        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</span>
-        <span className="text-xs font-bold text-slate-700 truncate max-w-[140px]">{display}</span>
+    <>
+      <div ref={triggerRef} className="relative flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl hover:border-slate-300 shadow-sm group shrink-0">
+        <div className="flex flex-col min-w-24 cursor-pointer" onClick={handleOpen}>
+          <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</span>
+          <span className="text-xs font-bold text-slate-700 truncate max-w-[140px]">{display}</span>
+        </div>
+        {isRemovable && (
+          <button onClick={onRemove} className="p-1 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-colors">
+            <X size={14} />
+          </button>
+        )}
       </div>
-      {isRemovable && (
-        <button onClick={onRemove} className="p-1 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-colors">
-          <X size={14} />
-        </button>
-      )}
-      {open && (
-        <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 z-[200] animate-in zoom-in-95 duration-200 origin-top-left">
+      {open && typeof document !== 'undefined' && (
+        <div
+          ref={dropdownRef}
+          style={{ position: 'fixed', top: dropdownPos.top, left: dropdownPos.left, zIndex: 9999 }}
+          className="w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200 origin-top-left"
+        >
           <div className="p-2 border-b border-slate-50">
             <input
               autoFocus
@@ -78,7 +99,7 @@ const SearchableFilterSelect = ({ label, options, value, onChange, onRemove, isR
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
