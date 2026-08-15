@@ -27,6 +27,61 @@ const FilterSelect = ({ label, options, value, onChange, onRemove, isRemovable }
   );
 };
 
+const SearchableFilterSelect = ({ label, options, value, onChange, onRemove, isRemovable }) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const filtered = options.filter(o => o.toLowerCase().includes(search.toLowerCase()));
+  const display = value || 'All';
+
+  return (
+    <div ref={ref} className="relative flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl hover:border-slate-300 shadow-sm group">
+      <div className="flex flex-col min-w-24 cursor-pointer" onClick={() => setOpen(o => !o)}>
+        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{label}</span>
+        <span className="text-xs font-bold text-slate-700 truncate max-w-[140px]">{display}</span>
+      </div>
+      {isRemovable && (
+        <button onClick={onRemove} className="p-1 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-colors">
+          <X size={14} />
+        </button>
+      )}
+      {open && (
+        <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 z-[200] animate-in zoom-in-95 duration-200 origin-top-left">
+          <div className="p-2 border-b border-slate-50">
+            <input
+              autoFocus
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search apartment..."
+              className="w-full px-3 py-2 text-xs font-bold text-slate-700 bg-slate-50 rounded-xl outline-none border border-slate-100 focus:border-primary/30"
+            />
+          </div>
+          <div className="max-h-52 overflow-y-auto no-scrollbar p-2 space-y-0.5">
+            <button onClick={() => { onChange(''); setOpen(false); setSearch(''); }}
+              className={`w-full text-left px-3 py-2 text-xs font-bold rounded-xl transition-all ${!value ? 'bg-primary/10 text-primary' : 'text-slate-600 hover:bg-slate-50'}`}>
+              All
+            </button>
+            {filtered.map(opt => (
+              <button key={opt} onClick={() => { onChange(opt); setOpen(false); setSearch(''); }}
+                className={`w-full text-left px-3 py-2 text-xs font-bold rounded-xl transition-all ${value === opt ? 'bg-primary/10 text-primary' : 'text-slate-600 hover:bg-slate-50'}`}>
+                {opt}
+              </button>
+            ))}
+            {filtered.length === 0 && <p className="text-xs text-slate-400 text-center py-3">No results</p>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterChange, onReset, viewMode, pocs = {}, sortBy, onSortChange, customers = [] }) => {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const menuRef = useRef(null);
@@ -114,8 +169,19 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
         {(viewMode !== 'camp' && viewMode !== 'expenses') && visibleFilters.map((key) => {
           const spec = allFilterSpecs[key];
           if (!spec) return null;
+          if (key === 'apartment') return (
+            <SearchableFilterSelect
+              key={key}
+              label={spec.label}
+              options={spec.options}
+              value={activeFilters[key] || ''}
+              onChange={(val) => onFilterChange(key, val)}
+              onRemove={() => handleRemoveFilter(key)}
+              isRemovable={!commonKeys.includes(key)}
+            />
+          );
           return (
-            <FilterSelect 
+            <FilterSelect
               key={key}
               label={spec.label}
               options={spec.options}

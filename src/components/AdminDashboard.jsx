@@ -392,7 +392,8 @@ const AdminDashboard = () => {
       c.srId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.apartment?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.ec?.toLowerCase().includes(searchQuery.toLowerCase());
+      c.ec?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.notes?.toLowerCase().includes(searchQuery.toLowerCase());
     
     // View Filtering
     if (selectedSource === 'nexus') {
