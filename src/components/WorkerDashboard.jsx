@@ -199,7 +199,8 @@ const WorkerDashboard = () => {
       c.apartment?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.ec?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.notes?.toLowerCase().includes(searchQuery.toLowerCase());
+      c.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.specialNotes?.toLowerCase().includes(searchQuery.toLowerCase());
     
     if (selectedSource === 'services') {
        const hasService = c.serviceType || c.serviceRequested || c.service;
