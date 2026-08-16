@@ -172,22 +172,26 @@ const WorkerDashboard = () => {
     preActive: serviceLeads.filter(c =>
       (!c.docsSubmitted || !c.docSource) &&
       c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
+      c.serviceStatus !== 'Pre-Invoice' &&
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
     active: serviceLeads.filter(c =>
       c.docsSubmitted && c.docSource &&
       c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
+      c.serviceStatus !== 'Pre-Invoice' &&
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
     deadlines: serviceLeads.filter(c =>
       c.docsSubmitted && c.serviceStage !== 'Application Submitted' &&
       c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
+      c.serviceStatus !== 'Pre-Invoice' &&
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
-    blocked:  serviceLeads.filter(c => c.serviceStatus === 'Blocked').length,
-    closed:   serviceLeads.filter(c => c.serviceStatus === 'Closed').length,
-    retry:    serviceLeads.filter(c => c.serviceStatus === 'Retry').length,
-    approved: serviceLeads.filter(c => c.serviceStatus === 'Approved').length,
+    blocked:    serviceLeads.filter(c => c.serviceStatus === 'Blocked').length,
+    closed:     serviceLeads.filter(c => c.serviceStatus === 'Closed').length,
+    preInvoice: serviceLeads.filter(c => c.serviceStatus === 'Pre-Invoice').length,
+    retry:      serviceLeads.filter(c => c.serviceStatus === 'Retry').length,
+    approved:   serviceLeads.filter(c => c.serviceStatus === 'Approved').length,
   };
 
   const filteredCustomers = customers.filter(c => {
@@ -206,29 +210,32 @@ const WorkerDashboard = () => {
        const hasService = c.serviceType || c.serviceRequested || c.service;
        if (!hasService) return false;
        
-        const isBlocked  = c.serviceStatus === 'Blocked';
-        const isClosed   = c.serviceStatus === 'Closed';
-        const isRetry    = c.serviceStatus === 'Retry';
-        const isApproved = c.serviceStatus === 'Approved';
-        const isPreActive = (!c.docsSubmitted || !c.docSource) && !isBlocked && !isClosed && !isRetry && !isApproved;
-        const isActive = c.docsSubmitted && c.docSource && !isBlocked && !isClosed && !isRetry && !isApproved;
-        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isRetry && !isApproved;
+        const isBlocked    = c.serviceStatus === 'Blocked';
+        const isClosed     = c.serviceStatus === 'Closed';
+        const isPreInvoice = c.serviceStatus === 'Pre-Invoice';
+        const isRetry      = c.serviceStatus === 'Retry';
+        const isApproved   = c.serviceStatus === 'Approved';
+        const isPreActive = (!c.docsSubmitted || !c.docSource) && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
+        const isActive = c.docsSubmitted && c.docSource && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
+        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
 
-        if (servicesSubMode === 'pre-active' && !isPreActive) return false;
-        if (servicesSubMode === 'active'     && !isActive)    return false;
-        if (servicesSubMode === 'deadlines'  && !isDeadlines) return false;
-        if (servicesSubMode === 'blocked'    && !isBlocked)   return false;
-        if (servicesSubMode === 'closed'     && !isClosed)    return false;
-        if (servicesSubMode === 'retry'      && !isRetry)     return false;
-        if (servicesSubMode === 'approved'   && !isApproved)  return false;
+        if (servicesSubMode === 'pre-active'  && !isPreActive)  return false;
+        if (servicesSubMode === 'active'      && !isActive)     return false;
+        if (servicesSubMode === 'deadlines'   && !isDeadlines)  return false;
+        if (servicesSubMode === 'blocked'     && !isBlocked)    return false;
+        if (servicesSubMode === 'closed'      && !isClosed)     return false;
+        if (servicesSubMode === 'pre-invoice' && !isPreInvoice) return false;
+        if (servicesSubMode === 'retry'       && !isRetry)      return false;
+        if (servicesSubMode === 'approved'    && !isApproved)   return false;
     } else if (selectedSource === 'deadlines') {
         const hasService = c.serviceType || c.serviceRequested || c.service;
         if (!hasService) return false;
-        const isBlocked  = c.serviceStatus === 'Blocked';
-        const isClosed   = c.serviceStatus === 'Closed';
-        const isRetry    = c.serviceStatus === 'Retry';
-        const isApproved = c.serviceStatus === 'Approved';
-        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isRetry && !isApproved;
+        const isBlocked    = c.serviceStatus === 'Blocked';
+        const isClosed     = c.serviceStatus === 'Closed';
+        const isPreInvoice = c.serviceStatus === 'Pre-Invoice';
+        const isRetry      = c.serviceStatus === 'Retry';
+        const isApproved   = c.serviceStatus === 'Approved';
+        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
         if (!isDeadlines) return false;
     } else if (selectedSource === 'sales') {
         if (c.sourceVault && c.sourceVault !== 'sales' && !(c.sourceVault === 'marketing' && (!c.isMarketingData || c.marketingMovedDate))) return false;

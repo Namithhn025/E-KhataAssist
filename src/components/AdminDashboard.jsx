@@ -366,22 +366,26 @@ const AdminDashboard = () => {
       (!c.docsSubmitted || !c.docSource) &&
       !c.isMarketingData &&
       c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
+      c.serviceStatus !== 'Pre-Invoice' &&
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
     active: serviceLeads.filter(c =>
       c.docsSubmitted && c.docSource &&
       c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
+      c.serviceStatus !== 'Pre-Invoice' &&
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
     deadlines: serviceLeads.filter(c =>
       c.docsSubmitted && c.serviceStage !== 'Application Submitted' &&
       c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
+      c.serviceStatus !== 'Pre-Invoice' &&
       c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
     ).length,
-    blocked:  serviceLeads.filter(c => c.serviceStatus === 'Blocked').length,
-    closed:   serviceLeads.filter(c => c.serviceStatus === 'Closed').length,
-    retry:    serviceLeads.filter(c => c.serviceStatus === 'Retry').length,
-    approved: serviceLeads.filter(c => c.serviceStatus === 'Approved').length,
+    blocked:    serviceLeads.filter(c => c.serviceStatus === 'Blocked').length,
+    closed:     serviceLeads.filter(c => c.serviceStatus === 'Closed').length,
+    preInvoice: serviceLeads.filter(c => c.serviceStatus === 'Pre-Invoice').length,
+    retry:      serviceLeads.filter(c => c.serviceStatus === 'Retry').length,
+    approved:   serviceLeads.filter(c => c.serviceStatus === 'Approved').length,
   };
 
   const filteredCustomers = customers.filter(c => {
@@ -408,34 +412,37 @@ const AdminDashboard = () => {
        if (!hasService) return false;
        
         // Terminal states — driven by serviceStatus set automatically
-        const isBlocked  = c.serviceStatus === 'Blocked';
-        const isClosed   = c.serviceStatus === 'Closed';
-        const isRetry    = c.serviceStatus === 'Retry';
-        const isApproved = c.serviceStatus === 'Approved';
+        const isBlocked    = c.serviceStatus === 'Blocked';
+        const isClosed     = c.serviceStatus === 'Closed';
+        const isPreInvoice = c.serviceStatus === 'Pre-Invoice';
+        const isRetry      = c.serviceStatus === 'Retry';
+        const isApproved   = c.serviceStatus === 'Approved';
 
         // Pre-active: docs NOT yet submitted OR doc source missing (and not marketing data)
-        const isPreActive = (!c.docsSubmitted || !c.docSource) && !isBlocked && !isClosed && !isRetry && !isApproved && !c.isMarketingData;
+        const isPreActive = (!c.docsSubmitted || !c.docSource) && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved && !c.isMarketingData;
         // Active: docs submitted AND doc source set — no serviceAcqPOC required
-        const isActive = c.docsSubmitted && c.docSource && !isBlocked && !isClosed && !isRetry && !isApproved;
+        const isActive = c.docsSubmitted && c.docSource && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
         // Deadlines: docs submitted AND not yet 'Application Submitted'
-        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isRetry && !isApproved;
+        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
 
-        if (servicesSubMode === 'pre-active' && !isPreActive) return false;
-        if (servicesSubMode === 'active'     && !isActive)    return false;
-        if (servicesSubMode === 'deadlines'  && !isDeadlines) return false;
-        if (servicesSubMode === 'blocked'    && !isBlocked)   return false;
-        if (servicesSubMode === 'closed'     && !isClosed)    return false;
-        if (servicesSubMode === 'retry'      && !isRetry)     return false;
-        if (servicesSubMode === 'approved'   && !isApproved)  return false;
+        if (servicesSubMode === 'pre-active'  && !isPreActive)  return false;
+        if (servicesSubMode === 'active'      && !isActive)     return false;
+        if (servicesSubMode === 'deadlines'   && !isDeadlines)  return false;
+        if (servicesSubMode === 'blocked'     && !isBlocked)    return false;
+        if (servicesSubMode === 'closed'      && !isClosed)     return false;
+        if (servicesSubMode === 'pre-invoice' && !isPreInvoice) return false;
+        if (servicesSubMode === 'retry'       && !isRetry)      return false;
+        if (servicesSubMode === 'approved'    && !isApproved)   return false;
     } else if (selectedSource === 'deadlines') {
        const hasService = c.serviceType || c.serviceRequested || c.service;
        if (!hasService) return false;
        
-        const isBlocked  = c.serviceStatus === 'Blocked';
-        const isClosed   = c.serviceStatus === 'Closed';
-        const isRetry    = c.serviceStatus === 'Retry';
-        const isApproved = c.serviceStatus === 'Approved';
-        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isRetry && !isApproved;
+        const isBlocked    = c.serviceStatus === 'Blocked';
+        const isClosed     = c.serviceStatus === 'Closed';
+        const isPreInvoice = c.serviceStatus === 'Pre-Invoice';
+        const isRetry      = c.serviceStatus === 'Retry';
+        const isApproved   = c.serviceStatus === 'Approved';
+        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
 
         if (!isDeadlines) return false;
     } else if (selectedSource === 'marketing-deadlines') {
@@ -589,8 +596,9 @@ const AdminDashboard = () => {
             const slices = [
               { label: 'Pre-active',  count: metrics.preActive, color: '#f59e0b', bg: 'bg-amber-400'   },
               { label: 'Active',      count: metrics.active,    color: '#22c55e', bg: 'bg-green-500'   },
-              { label: 'Blocked',     count: metrics.blocked,   color: '#ef4444', bg: 'bg-red-500'     },
+              { label: 'Blocked',     count: metrics.blocked,    color: '#ef4444', bg: 'bg-red-500'     },
               { label: 'Closed',      count: metrics.closed,    color: '#3b82f6', bg: 'bg-blue-500'    },
+              { label: 'Pre-Invoice', count: metrics.preInvoice,color: '#a855f7', bg: 'bg-purple-500'  },
               { label: 'Retry',       count: metrics.retry,     color: '#f97316', bg: 'bg-orange-500'  },
               { label: 'Approved',    count: metrics.approved,  color: '#10b981', bg: 'bg-emerald-500' },
             ];

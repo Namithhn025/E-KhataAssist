@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { 
-  BarChart2, Compass, ShoppingBag, Briefcase, FileText, 
+import {
+  BarChart2, Compass, ShoppingBag, Briefcase, FileText,
   Settings, LogOut, ChevronDown,
   Clock, PlayCircle, XCircle, CheckCircle, RefreshCw,
-  DollarSign, Bell, Calendar, Megaphone
+  DollarSign, Bell, Calendar, Megaphone, FileCheck
 } from 'lucide-react';
 
 const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode, setServicesSubMode, userRole }) => {
@@ -13,8 +13,9 @@ const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode,
     { id: 'pre-active', name: 'Pre-active',          icon: Clock,       color: 'text-yellow-400' },
     { id: 'active',     name: 'Active',               icon: PlayCircle,  color: 'text-green-400'  },
     { id: 'blocked',    name: 'Blocked',              icon: XCircle,     color: 'text-red-500'    },
-    { id: 'closed',     name: 'Closed',               icon: CheckCircle, color: 'text-blue-400'   },
-    { id: 'retry',      name: 'Retry',                icon: RefreshCw,   color: 'text-orange-400' },
+    { id: 'closed',      name: 'Closed',               icon: CheckCircle, color: 'text-blue-400'   },
+    { id: 'pre-invoice', name: 'Pre-Invoice',          icon: FileCheck,   color: 'text-purple-400' },
+    { id: 'retry',       name: 'Retry',                icon: RefreshCw,   color: 'text-orange-400' },
   ];
 
   const menuItems = [

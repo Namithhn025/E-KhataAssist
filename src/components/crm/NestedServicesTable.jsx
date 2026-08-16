@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { arrayUnion } from 'firebase/firestore';
 import AssignmentHistoryModal from './AssignmentHistoryModal';
-import { Phone, Clock, MessageSquare, AlertTriangle, CheckCircle, XCircle, Lock, RefreshCw, BadgeCheck, Globe, Edit2, ChevronRight } from 'lucide-react';
+import { Phone, Clock, MessageSquare, AlertTriangle, CheckCircle, XCircle, Lock, RefreshCw, BadgeCheck, Globe, Edit2, ChevronRight, FileCheck, Send } from 'lucide-react';
 import SearchableSelect from './SearchableSelect';
 
 const SERVICE_STAGES = [
@@ -122,18 +122,18 @@ const RetryConfirmModal = ({ open, onConfirm, onCancel }) => {
   );
 };
 
-const ApproveConfirmModal = ({ open, onConfirm, onCancel }) => {
+const PreInvoiceConfirmModal = ({ open, onConfirm, onCancel }) => {
   if (!open) return null;
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center"><BadgeCheck size={22} className="text-emerald-600" /></div>
-          <div><h3 className="text-lg font-black text-emerald-900">Approve for Invoice?</h3><p className="text-xs text-emerald-600 font-medium">Moves lead to <span className="font-black text-emerald-700">Approved</span>.</p></div>
+          <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center"><FileCheck size={22} className="text-purple-600" /></div>
+          <div><h3 className="text-lg font-black text-purple-900">Move to Pre-Invoice?</h3><p className="text-xs text-purple-600 font-medium">Lead will move to <span className="font-black text-purple-700">Pre-Invoice</span> stage.</p></div>
         </div>
         <div className="flex gap-3">
           <button onClick={onCancel} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200">Cancel</button>
-          <button onClick={onConfirm} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-200">✓ Approved</button>
+          <button onClick={onConfirm} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-200">Move to Pre-Invoice</button>
         </div>
       </div>
     </div>
@@ -180,9 +180,10 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const isLocked = viewMode === 'sales' || viewMode === 'nexus';
   const isBlocked = customer.serviceStatus === 'Blocked';
   const isClosed = customer.serviceStatus === 'Closed';
+  const isPreInvoice = customer.serviceStatus === 'Pre-Invoice';
   const isApproved = customer.serviceStatus === 'Approved';
   const showAmount = viewMode === 'invoices';
-  const showDeadline = !(customer.serviceStage === 'Application Submitted' || isClosed || isApproved || subMode === 'closed' || subMode === 'approved');
+  const showDeadline = !(customer.serviceStage === 'Application Submitted' || isClosed || isPreInvoice || isApproved || subMode === 'closed' || subMode === 'pre-invoice' || subMode === 'approved');
 
   React.useEffect(() => {
     const defaults = pocs.defaults || {};
@@ -214,7 +215,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const availableStages = [...SERVICE_STAGES, 'Blocked'];
 
   const handleStageChange = (newStage) => {
-    if (isBlocked || isClosed || isApproved || isLocked) return;
+    if (isBlocked || isClosed || isPreInvoice || isApproved || isLocked) return;
     if (newStage === 'Blocked') { setShowRejectionModal(true); return; }
     if (newStage === CLOSING_STAGE) { setShowCloseModal(true); return; }
     if (newStage === 'eKYC Done') {
@@ -237,7 +238,8 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
     if (pendingPOC !== null) { onUpdate('serviceAcqPOC', pendingPOC); onUpdate('assignedSpecialist', pendingPOC); setPendingPOC(null); }
   };
   const handleConfirmRetry = () => { setShowRetryModal(false); onUpdate('serviceStatus', 'Retry'); onUpdate('serviceStage', 'Document Received'); };
-  const handleConfirmApprove = () => { setShowApproveModal(false); onUpdate('serviceStatus', 'Approved'); onUpdate('approvedDate', new Date().toISOString()); };
+  const handleConfirmPreInvoice = () => { setShowApproveModal(false); onUpdate('serviceStatus', 'Pre-Invoice'); onUpdate('preInvoiceDate', new Date().toISOString()); };
+  const handleMoveToInvoice = () => { onUpdate('serviceStatus', 'Approved'); onUpdate('approvedDate', new Date().toISOString()); };
   const handleConfirmRejection = (reason) => { setShowRejectionModal(false); onUpdate('serviceStage', 'Blocked'); onUpdate('serviceStatus', 'Blocked'); onUpdate('blockerReason', reason); onUpdate('blockedDate', new Date().toISOString()); };
 
   const calculateAge = (startDate) => {
@@ -256,13 +258,13 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
       <CloseConfirmModal open={showCloseModal} onConfirm={handleConfirmClose} onCancel={() => setShowCloseModal(false)} />
       <ActiveConfirmModal open={showActiveModal} onConfirm={handleConfirmActive} onCancel={() => setShowActiveModal(false)} customerName={customer.customerName} initialDocSource={customer.docSource} />
       <RetryConfirmModal open={showRetryModal} onConfirm={handleConfirmRetry} onCancel={() => setShowRetryModal(false)} />
-      <ApproveConfirmModal open={showApproveModal} onConfirm={handleConfirmApprove} onCancel={() => setShowApproveModal(false)} />
+      <PreInvoiceConfirmModal open={showApproveModal} onConfirm={handleConfirmPreInvoice} onCancel={() => setShowApproveModal(false)} />
       {historyLead && <AssignmentHistoryModal open={showHistoryModal} onClose={() => setShowHistoryModal(false)} customer={historyLead} history={historyLead.assignmentHistory || []} />}
 
       <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-2xl ring-1 ring-slate-900/5">
 
         {/* Top accent bar */}
-        <div className={`h-1 w-full ${isBlocked ? 'bg-red-400' : isApproved ? 'bg-emerald-500' : isClosed ? 'bg-blue-400' : 'bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-600'}`} />
+        <div className={`h-1 w-full ${isBlocked ? 'bg-red-400' : isApproved ? 'bg-emerald-500' : isPreInvoice ? 'bg-purple-400' : isClosed ? 'bg-blue-400' : 'bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-600'}`} />
 
         {/* Blocked Banner */}
         {isBlocked && (
@@ -374,17 +376,40 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
               <select
                 value={currentStage}
                 onChange={e => handleStageChange(e.target.value)}
-                disabled={isClosed || isApproved || isBlocked || isLocked}
+                disabled={isClosed || isPreInvoice || isApproved || isBlocked || isLocked}
                 className={`w-full px-4 py-2.5 rounded-xl border-none text-[9px] font-black uppercase tracking-widest outline-none shadow-sm transition-all ${isLocked ? 'cursor-default bg-slate-50' : 'cursor-pointer'} ${stageColors[currentStage] || 'bg-slate-100'}`}
               >
                 <option value="Blocked" disabled hidden>Blocked</option>
                 {availableStages.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              {!isBlocked && !isClosed && <StageProgress stage={customer.serviceStage || 'Document Received'} />}
+              {!isBlocked && !isClosed && !isPreInvoice && <StageProgress stage={customer.serviceStage || 'Document Received'} />}
               {subMode === 'closed' && isClosed && !isApproved && (
                 <div className="flex flex-col gap-1.5 pt-2">
-                  {canApprove && <button onClick={() => setShowApproveModal(true)} className="w-full py-2 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-1.5"><BadgeCheck size={11} /> Confirm Approve</button>}
+                  {canApprove && <button onClick={() => setShowApproveModal(true)} className="w-full py-2 bg-purple-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-purple-600 shadow-lg shadow-purple-500/10 flex items-center justify-center gap-1.5"><FileCheck size={11} /> Move to Pre-Invoice</button>}
                   <button onClick={() => setShowRetryModal(true)} className="w-full py-2 bg-slate-50 text-slate-400 border border-slate-200 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-slate-100 flex items-center justify-center gap-1.5"><RefreshCw size={11} /> Retry Step</button>
+                </div>
+              )}
+              {subMode === 'pre-invoice' && isPreInvoice && (
+                <div className="flex flex-col gap-2 pt-2">
+                  <div className="flex items-center justify-between p-3 bg-purple-50 rounded-xl border border-purple-100">
+                    <div className="flex items-center gap-2">
+                      <Send size={12} className="text-purple-500" />
+                      <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest">Doc Sent to Client</span>
+                    </div>
+                    <button
+                      onClick={() => !isLocked && onUpdate('sentToClient', !customer.sentToClient)}
+                      disabled={isLocked}
+                      className={`w-10 h-5 rounded-full relative transition-colors ${customer.sentToClient ? 'bg-purple-500' : 'bg-slate-200'} ${isLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${customer.sentToClient ? 'translate-x-5' : ''}`} />
+                    </button>
+                  </div>
+                  {customer.sentToClient && canApprove && (
+                    <button onClick={handleMoveToInvoice} className="w-full py-2 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-1.5"><BadgeCheck size={11} /> Move to Invoice</button>
+                  )}
+                  {!customer.sentToClient && (
+                    <p className="text-[9px] text-purple-400 font-bold text-center">Toggle "Doc Sent to Client" to enable invoicing</p>
+                  )}
                 </div>
               )}
             </Field>
