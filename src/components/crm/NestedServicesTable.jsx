@@ -385,7 +385,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
               {!isBlocked && !isClosed && !isPreInvoice && <StageProgress stage={customer.serviceStage || 'Document Received'} />}
               {subMode === 'closed' && isClosed && !isApproved && (
                 <div className="flex flex-col gap-1.5 pt-2">
-                  {canApprove && <button onClick={() => setShowApproveModal(true)} className="w-full py-2 bg-purple-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-purple-600 shadow-lg shadow-purple-500/10 flex items-center justify-center gap-1.5"><FileCheck size={11} /> Move to Pre-Invoice</button>}
+                  <button onClick={() => setShowApproveModal(true)} className="w-full py-2 bg-purple-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-purple-600 shadow-lg shadow-purple-500/10 flex items-center justify-center gap-1.5"><FileCheck size={11} /> Move to Pre-Invoice</button>
                   <button onClick={() => setShowRetryModal(true)} className="w-full py-2 bg-slate-50 text-slate-400 border border-slate-200 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-slate-100 flex items-center justify-center gap-1.5"><RefreshCw size={11} /> Retry Step</button>
                 </div>
               )}
@@ -404,7 +404,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                       <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${customer.sentToClient ? 'translate-x-5' : ''}`} />
                     </button>
                   </div>
-                  {customer.sentToClient && canApprove && (
+                  {customer.sentToClient && (
                     <button onClick={handleMoveToInvoice} className="w-full py-2 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-1.5"><BadgeCheck size={11} /> Move to Invoice</button>
                   )}
                   {!customer.sentToClient && (
