@@ -150,7 +150,8 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
       'Ready to eSign', 'Application Submitted', 'Approved', 'Rejected'
     ]},
     apartment: { label: 'Apartment', options: [...(safePocs.apartments || [])].sort((a, b) => a.localeCompare(b)) },
-    docsSubmitted: { label: 'Docs Status', options: ['Submitted', 'Pending'] }
+    docsSubmitted: { label: 'Docs Status', options: ['Submitted', 'Pending'] },
+    ecStatus: { label: 'EC Status', options: ['Default', 'Not Applied', 'Applied', 'Generated'] }
   };
 
   const commonKeys = ['priority', 'acqPOC', 'opsSpecialist', 'docSource', 'serviceAcqPOC', 'stage', 'service'];

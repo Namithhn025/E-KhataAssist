@@ -437,6 +437,38 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
               <input type="text" placeholder="EC No..." value={customer.ec || ''} onChange={e => onUpdate('ec', e.target.value)} disabled={isLocked} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[10px] font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20" />
             </Field>
 
+            <Field label="EC Status">
+              <div className="flex gap-2 flex-wrap">
+                {['Default', 'Not Applied', 'Applied', 'Generated'].map(opt => (
+                  <button
+                    key={opt}
+                    disabled={isLocked}
+                    onClick={() => !isLocked && onUpdate('ecStatus', opt)}
+                    className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border ${
+                      (customer.ecStatus || 'Default') === opt
+                        ? opt === 'Generated'   ? 'bg-emerald-500 text-white border-emerald-500'
+                          : opt === 'Applied'   ? 'bg-blue-500 text-white border-blue-500'
+                          : opt === 'Not Applied' ? 'bg-slate-400 text-white border-slate-400'
+                          : 'bg-slate-200 text-slate-600 border-slate-300'
+                        : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
+                    } ${isLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+              {customer.ecStatus === 'Generated' && (
+                <input
+                  type="text"
+                  placeholder="Generated EC No..."
+                  value={customer.generatedEC || ''}
+                  onChange={e => onUpdate('generatedEC', e.target.value)}
+                  disabled={isLocked}
+                  className="mt-2 w-full bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-[10px] font-bold text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-300 placeholder:text-emerald-300"
+                />
+              )}
+            </Field>
+
             <Field label="ePID">
               <div className="relative">
                 <input

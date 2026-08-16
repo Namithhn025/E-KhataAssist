@@ -273,8 +273,9 @@ const WorkerDashboard = () => {
         ? !c.docSource
         : (c.docSource?.toLowerCase() === activeFilters.docSource.toLowerCase())
     );
-    
-    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesAcqPOC && matchesServiceAcqPOC && matchesApartment && matchesSource && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource;
+    const matchesEcStatus = !activeFilters.ecStatus || (c.ecStatus || 'Default') === activeFilters.ecStatus;
+
+    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesAcqPOC && matchesServiceAcqPOC && matchesApartment && matchesSource && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource && matchesEcStatus;
   }).sort((a, b) => {
     if (sortBy === 'Deadline (Ascending)' || sortBy === 'Deadline (Descending)') {
       const getDaysLeft = (c) => {
