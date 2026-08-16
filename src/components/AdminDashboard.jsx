@@ -40,6 +40,7 @@ const AdminDashboard = () => {
   const [noteText, setNoteText] = useState('');
   const [customerToDelete, setCustomerToDelete] = useState(null);
   const [servicesSubMode, setServicesSubMode] = useState('active');
+  const [showCorrupted, setShowCorrupted] = useState(false);
   const [visibleFilters, setVisibleFilters] = useState(['priority', 'acqPOC', 'opsSpecialist', 'docSource', 'serviceAcqPOC', 'stage', 'service']);
   const [currentPage, setCurrentPage] = useState(1);
   const [isMassUploadOpen, setIsMassUploadOpen] = useState(false);
@@ -348,6 +349,16 @@ const AdminDashboard = () => {
     );
   };
 
+  // ─── Corrupted lead detection ─────────────────────────────────────────────
+  const getCorruptedFields = (c) => {
+    const missing = [];
+    if (!c.customerName?.trim()) missing.push('Name');
+    if (!c.phone?.trim()) missing.push('Phone');
+    if (!c.serviceType && !c.serviceRequested && !c.service) missing.push('Service Type');
+    if (!c.apartment?.trim()) missing.push('Apartment');
+    return missing;
+  };
+
   // ─── Master metrics computed from real Firestore data ─────────────────────
   const serviceLeads = customers.filter(c => c.serviceType || c.serviceRequested || c.service);
 
@@ -405,6 +416,10 @@ const AdminDashboard = () => {
        // All leads are visible in Nexus
     } else if (selectedSource === 'sales') {
        if (c.sourceVault && c.sourceVault !== 'sales' && !(c.sourceVault === 'marketing' && (!c.isMarketingData || c.marketingMovedDate))) return false;
+       if (showCorrupted) {
+         const missing = getCorruptedFields(c);
+         if (missing.length === 0) return false;
+       }
     } else if (selectedSource === 'invoices') {
        if (c.serviceStatus !== 'Approved') return false;
     } else if (selectedSource === 'services') {
@@ -581,6 +596,24 @@ const AdminDashboard = () => {
               onSortChange={setSortBy}
               customers={customers}
             />
+          )}
+
+          {selectedSource === 'sales' && isAdmin && (
+            <div className="px-8 py-2 flex items-center gap-3 border-b border-slate-50 bg-white/80">
+              <button
+                onClick={() => { setShowCorrupted(v => !v); setCurrentPage(1); }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all border ${showCorrupted ? 'bg-red-500 text-white border-red-500 shadow-lg shadow-red-200' : 'bg-white text-red-500 border-red-200 hover:bg-red-50'}`}
+              >
+                <span className={`w-2 h-2 rounded-full ${showCorrupted ? 'bg-white' : 'bg-red-400'}`} />
+                {showCorrupted ? 'Showing Corrupted Data' : 'Show Corrupted Data'}
+                {showCorrupted && (
+                  <span className="ml-1 bg-white/20 text-white px-2 py-0.5 rounded-lg">
+                    {filteredCustomers.length} found
+                  </span>
+                )}
+              </button>
+              {showCorrupted && <p className="text-xs text-slate-400 font-bold">Leads with missing Name, Phone, Service Type, or Apartment</p>}
+            </div>
           )}
 
           {selectedSource !== 'nexus' && selectedSource !== 'reminders' && (
@@ -1118,8 +1151,10 @@ const AdminDashboard = () => {
                   {paginatedCustomers.map((customer) => (
                     <React.Fragment key={customer.id}>
                       <tr className={`group transition-all duration-300 cursor-default ${
-                        expandedRows.has(customer.id) ? 'bg-[#f1f5f9]' : 
-                        (selectedSource === 'services' && servicesSubMode === 'blocked') ? 'bg-red-50/30 hover:bg-red-50/50' : 'hover:bg-slate-50/50'
+                        expandedRows.has(customer.id) ? 'bg-[#f1f5f9]' :
+                        (selectedSource === 'services' && servicesSubMode === 'blocked') ? 'bg-red-50/30 hover:bg-red-50/50' :
+                        (showCorrupted && getCorruptedFields(customer).length > 0) ? 'bg-red-50/40 hover:bg-red-50/60' :
+                        'hover:bg-slate-50/50'
                       }`}>
                         <td className="px-6 py-6 ring-inset">
                            <div className="flex items-center gap-3">
@@ -1334,8 +1369,18 @@ const AdminDashboard = () => {
                               ) : (
                                 <div className="flex items-center gap-2 group/name">
                                   <div>
-                                    <div className="font-bold text-slate-900 group-hover:text-primary transition-colors">{customer.customerName}</div>
+                                    <div className="font-bold text-slate-900 group-hover:text-primary transition-colors">{customer.customerName || <span className="text-red-400 italic">No Name</span>}</div>
                                     <div className="text-[10px] font-black text-slate-400 tracking-widest mt-0.5">UIDE{customer.id.substring(0, 4).toUpperCase()}</div>
+                                    {showCorrupted && (() => {
+                                      const missing = getCorruptedFields(customer);
+                                      return missing.length > 0 ? (
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                          {missing.map(f => (
+                                            <span key={f} className="text-[8px] font-black uppercase tracking-widest bg-red-100 text-red-600 px-1.5 py-0.5 rounded-md">Missing: {f}</span>
+                                          ))}
+                                        </div>
+                                      ) : null;
+                                    })()}
                                   </div>
                                   {isAdmin && (
                                     <button
