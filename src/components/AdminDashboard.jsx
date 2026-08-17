@@ -408,6 +408,7 @@ const AdminDashboard = () => {
       c.apartment?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.ec?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.generatedEC?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.specialNotes?.toLowerCase().includes(searchQuery.toLowerCase());
     
