@@ -16,6 +16,7 @@ import CampSection from './crm/CampSection';
 import MassUploadModal from './crm/MassUploadModal';
 import ExpensesSection from './crm/ExpensesSection';
 import RemindersSection, { ReminderModal } from './crm/RemindersSection';
+import DailyMovementView from './crm/DailyMovementView';
 import { setDoc, arrayUnion, Timestamp } from 'firebase/firestore';
 import { ChevronDown, MessageSquare, DollarSign, Bell, X, Edit2, CopyPlus } from 'lucide-react';
 
@@ -574,7 +575,8 @@ const AdminDashboard = () => {
               selectedSource === 'reminders' ? 'Reminders' :
               selectedSource === 'deadlines' ? 'Deadlines' :
               selectedSource === 'marketing-deadlines' ? 'Marketing Deadlines' :
-              selectedSource === 'services' ? `Services / ${servicesSubMode.charAt(0).toUpperCase() + servicesSubMode.slice(1)}` : 
+              selectedSource === 'services' ? `Services / ${servicesSubMode.charAt(0).toUpperCase() + servicesSubMode.slice(1)}` :
+              selectedSource === 'daily-movement' ? 'Daily Movement' :
               'Sales'
             }
             viewMode={selectedSource}
@@ -585,7 +587,7 @@ const AdminDashboard = () => {
           />
   
           {/* Filter Bar */}
-          {selectedSource !== 'nexus' && selectedSource !== 'reminders' && (
+          {selectedSource !== 'nexus' && selectedSource !== 'reminders' && selectedSource !== 'daily-movement' && (
             <FilterBar
               activeFilters={activeFilters}
               visibleFilters={visibleFilters}
@@ -618,7 +620,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {selectedSource !== 'nexus' && selectedSource !== 'reminders' && (
+          {selectedSource !== 'nexus' && selectedSource !== 'reminders' && selectedSource !== 'daily-movement' && (
             <MetricSummary metrics={metrics} viewMode={selectedSource} />
           )}
 
@@ -1019,6 +1021,11 @@ const AdminDashboard = () => {
               currentUser={null}
               customers={customers}
             />
+          )}
+
+          {/* ── DAILY MOVEMENT SECTION ──────────────────────────────────── */}
+          {selectedSource === 'daily-movement' && (
+            <DailyMovementView customers={customers} />
           )}
 
           {/* ── MARKETING DEADLINES SECTION ─────────────────────────────── */}

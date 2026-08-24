@@ -3,7 +3,7 @@ import {
   BarChart2, Compass, ShoppingBag, Briefcase, FileText,
   Settings, LogOut, ChevronDown,
   Clock, PlayCircle, XCircle, CheckCircle, RefreshCw,
-  DollarSign, Bell, Calendar, Megaphone, FileCheck
+  DollarSign, Bell, Calendar, Megaphone, FileCheck, Activity
 } from 'lucide-react';
 
 const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode, setServicesSubMode, userRole }) => {
@@ -34,10 +34,11 @@ const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode,
     { id: 'deadlines', name: 'Deadlines', icon: Calendar },
     { id: 'reminders', name: 'Reminders', icon: Bell },
     ...(userRole === 'admin' ? [
-        { id: 'expenses', name: 'Expenses', icon: DollarSign },
-        { id: 'invoices', name: 'Invoices', icon: FileText },
+        { id: 'expenses',          name: 'Expenses',           icon: DollarSign },
+        { id: 'invoices',          name: 'Invoices',           icon: FileText   },
+        { id: 'daily-movement',    name: 'Daily Movement',     icon: Activity   },
         { id: 'marketing-deadlines', name: 'Marketing Deadlines', icon: Megaphone },
-        { id: 'admin',    name: 'Admin',    icon: Settings }
+        { id: 'admin',             name: 'Admin',              icon: Settings   }
     ] : []),
   ];
 
