@@ -139,7 +139,7 @@ const WorkerDashboard = () => {
      // Workers have restricted editing in NestedServicesTable (POCs/Service)
      // But they might need to update other fields like notes or status
     try {
-      await updateDoc(doc(db, 'customers', customerId), { [field]: value });
+      await updateDoc(doc(db, 'customers', customerId), { [field]: value, updatedAt: new Date().toISOString() });
     } catch (error) {
       console.error("Update Error:", error);
     }

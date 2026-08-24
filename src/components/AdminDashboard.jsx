@@ -214,7 +214,7 @@ const AdminDashboard = () => {
     try {
       if (!field || !customerId) return;
       const cleanVal = value === undefined ? '' : value;
-      await updateDoc(doc(db, 'customers', customerId), { [field]: cleanVal });
+      await updateDoc(doc(db, 'customers', customerId), { [field]: cleanVal, updatedAt: new Date().toISOString() });
     } catch (error) {
       console.error("Firestore Update Error:", field, value, error);
       alert(`Failed to update ${field}: ${error.message}`);
