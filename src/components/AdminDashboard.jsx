@@ -1127,7 +1127,7 @@ const AdminDashboard = () => {
           })()}
 
           {/* ── MAIN TABLE (Sales / Services) ─────────────────────────── */}
-          {selectedSource !== 'invoices' && selectedSource !== 'camp' && selectedSource !== 'nexus' && selectedSource !== 'expenses' && selectedSource !== 'reminders' && selectedSource !== 'marketing-deadlines' && (
+          {selectedSource !== 'invoices' && selectedSource !== 'camp' && selectedSource !== 'nexus' && selectedSource !== 'expenses' && selectedSource !== 'reminders' && selectedSource !== 'marketing-deadlines' && selectedSource !== 'daily-movement' && (
         <div className="px-8 pb-20">
           <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
             <div className="overflow-x-auto no-scrollbar">
