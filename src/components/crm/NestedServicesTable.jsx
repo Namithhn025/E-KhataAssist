@@ -434,7 +434,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
             </Field>
 
             <Field label="EC Number">
-              <input type="text" placeholder="EC No..." value={customer.ec || ''} onChange={e => onUpdate('ec', e.target.value)} disabled={isLocked} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[10px] font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20" />
+              <input type="text" placeholder="EC No..." defaultValue={customer.ec || ''} onBlur={e => onUpdate('ec', e.target.value)} onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }} disabled={isLocked} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[10px] font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary/20" />
             </Field>
 
             <Field label="EC Status">
@@ -461,8 +461,9 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                 <input
                   type="text"
                   placeholder="Generated EC No..."
-                  value={customer.generatedEC || ''}
-                  onChange={e => onUpdate('generatedEC', e.target.value)}
+                  defaultValue={customer.generatedEC || ''}
+                  onBlur={e => onUpdate('generatedEC', e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
                   disabled={isLocked}
                   className="mt-2 w-full bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-[10px] font-bold text-emerald-800 outline-none focus:ring-2 focus:ring-emerald-300 placeholder:text-emerald-300"
                 />
@@ -474,8 +475,9 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                 <input
                   type="text"
                   placeholder="N/A"
-                  value={customer.ePID || ''}
-                  onChange={e => { const val = e.target.value.replace(/\D/g, '').substring(0, 10); if (isLocked) return; if (!isAdmin && customer.ePID) return; onUpdate('ePID', val); }}
+                  defaultValue={customer.ePID || ''}
+                  onBlur={e => { const val = e.target.value.replace(/\D/g, '').substring(0, 10); if (isLocked) return; if (!isAdmin && customer.ePID) return; onUpdate('ePID', val); }}
+                  onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }}
                   disabled={isLocked || (!isAdmin && !!customer.ePID)}
                   className={`w-full px-3 py-2 rounded-lg border font-mono text-[10px] font-black outline-none transition-all ${customer.ePID?.length === 10 ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-200 text-slate-400 focus:border-primary'}`}
                 />
@@ -541,7 +543,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                 {isAdmin ? (
                   <div className="flex items-center gap-1 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2 w-fit">
                     <span className="text-emerald-600 font-black text-sm">₹</span>
-                    <input disabled={isLocked} type="text" value={customer.amount || ''} onChange={e => onUpdate('amount', e.target.value)} className="bg-transparent text-[11px] font-black text-emerald-700 w-20 outline-none" />
+                    <input disabled={isLocked} type="text" defaultValue={customer.amount || ''} onBlur={e => onUpdate('amount', e.target.value)} onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }} className="bg-transparent text-[11px] font-black text-emerald-700 w-20 outline-none" />
                   </div>
                 ) : <span className="text-[9px] font-bold text-slate-300 italic ring-1 ring-slate-100 px-2 py-0.5 rounded-full">PRIVATE</span>}
               </Field>
@@ -571,7 +573,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                 <option>Busy</option>
                 <option>Follow Up</option>
               </select>
-              <input disabled={isLocked} type="text" value={customer.notes || ''} onChange={e => onUpdate('notes', e.target.value)} placeholder={isLocked ? "View only mode" : "Record lead details here..."} className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-600 outline-none focus:ring-4 focus:ring-primary/10 transition-all" />
+              <input disabled={isLocked} type="text" defaultValue={customer.notes || ''} onBlur={e => onUpdate('notes', e.target.value)} onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }} placeholder={isLocked ? "View only mode" : "Record lead details here..."} className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-600 outline-none focus:ring-4 focus:ring-primary/10 transition-all" />
             </div>
           </div>
 
@@ -580,7 +582,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
               <AlertTriangle size={12} className="text-amber-500" />
               <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Special Notes / Challenges</span>
             </div>
-            <textarea disabled={isLocked} value={customer.specialNotes || ''} onChange={e => onUpdate('specialNotes', e.target.value)} placeholder={isLocked ? "View only mode" : "Add technical blockers or specific challenges..."} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-600 outline-none focus:ring-4 focus:ring-primary/10 h-10 resize-none no-scrollbar transition-all" />
+            <textarea disabled={isLocked} defaultValue={customer.specialNotes || ''} onBlur={e => onUpdate('specialNotes', e.target.value)} placeholder={isLocked ? "View only mode" : "Add technical blockers or specific challenges..."} className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-600 outline-none focus:ring-4 focus:ring-primary/10 h-10 resize-none no-scrollbar transition-all" />
           </div>
         </div>
 
