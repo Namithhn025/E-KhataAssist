@@ -973,15 +973,18 @@ const AdminDashboard = () => {
                             </div>
                              <div className="space-y-1">
                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Amount</p>
-                               <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-2">
-                                  <span className="text-emerald-600 font-black">₹</span>
-                                  <input 
-                                    type="text"
-                                    value={customer.amount || '0'}
-                                    onChange={(e) => handlePOCUpdate(customer.id, 'amount', e.target.value)}
-                                    className="bg-transparent text-2xl font-black text-emerald-600 outline-none w-24"
+                               <div className="flex items-center gap-2 bg-emerald-50 border-2 border-emerald-200 rounded-2xl px-4 py-3 focus-within:border-emerald-400 transition-all">
+                                  <span className="text-emerald-600 font-black text-xl">₹</span>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    defaultValue={customer.amount || '0'}
+                                    onBlur={(e) => handlePOCUpdate(customer.id, 'amount', e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+                                    className="bg-transparent text-2xl font-black text-emerald-600 outline-none flex-1 min-w-0 w-full"
                                   />
                                </div>
+                               <p className="text-[9px] text-slate-300 font-bold">Click field → type amount → press Enter or click away to save</p>
                              </div>
                           </div>
                         </div>
