@@ -171,22 +171,18 @@ const WorkerDashboard = () => {
     totalSRs:  serviceLeads.length,
     preActive: serviceLeads.filter(c =>
       (!c.docsSubmitted || !c.docSource) &&
-      c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
-      c.serviceStatus !== 'Pre-Invoice' &&
-      c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
+      !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'].includes(c.serviceStatus)
     ).length,
     active: serviceLeads.filter(c =>
       c.docsSubmitted && c.docSource &&
-      c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
-      c.serviceStatus !== 'Pre-Invoice' &&
-      c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
+      !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'].includes(c.serviceStatus)
     ).length,
     deadlines: serviceLeads.filter(c =>
       c.docsSubmitted && c.serviceStage !== 'Application Submitted' &&
-      c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
-      c.serviceStatus !== 'Pre-Invoice' &&
-      c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
+      !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'].includes(c.serviceStatus)
     ).length,
+    bda:        serviceLeads.filter(c => c.serviceStatus === 'BDA').length,
+    panchayat:  serviceLeads.filter(c => c.serviceStatus === 'Panchayat').length,
     blocked:    serviceLeads.filter(c => c.serviceStatus === 'Blocked').length,
     closed:     serviceLeads.filter(c => c.serviceStatus === 'Closed').length,
     preInvoice: serviceLeads.filter(c => c.serviceStatus === 'Pre-Invoice').length,
@@ -211,14 +207,17 @@ const WorkerDashboard = () => {
        const hasService = c.serviceType || c.serviceRequested || c.service;
        if (!hasService) return false;
        
+        const terminalStatuses = ['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'];
         const isBlocked    = c.serviceStatus === 'Blocked';
         const isClosed     = c.serviceStatus === 'Closed';
         const isPreInvoice = c.serviceStatus === 'Pre-Invoice';
         const isRetry      = c.serviceStatus === 'Retry';
         const isApproved   = c.serviceStatus === 'Approved';
-        const isPreActive = (!c.docsSubmitted || !c.docSource) && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
-        const isActive = c.docsSubmitted && c.docSource && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
-        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
+        const isBDA        = c.serviceStatus === 'BDA';
+        const isPanchayat  = c.serviceStatus === 'Panchayat';
+        const isPreActive = (!c.docsSubmitted || !c.docSource) && !terminalStatuses.includes(c.serviceStatus);
+        const isActive    = c.docsSubmitted && c.docSource && !terminalStatuses.includes(c.serviceStatus);
+        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !terminalStatuses.includes(c.serviceStatus);
 
         if (servicesSubMode === 'pre-active'  && !isPreActive)  return false;
         if (servicesSubMode === 'active'      && !isActive)     return false;
@@ -228,15 +227,12 @@ const WorkerDashboard = () => {
         if (servicesSubMode === 'pre-invoice' && !isPreInvoice) return false;
         if (servicesSubMode === 'retry'       && !isRetry)      return false;
         if (servicesSubMode === 'approved'    && !isApproved)   return false;
+        if (servicesSubMode === 'bda'         && !isBDA)        return false;
+        if (servicesSubMode === 'panchayat'   && !isPanchayat)  return false;
     } else if (selectedSource === 'deadlines') {
         const hasService = c.serviceType || c.serviceRequested || c.service;
         if (!hasService) return false;
-        const isBlocked    = c.serviceStatus === 'Blocked';
-        const isClosed     = c.serviceStatus === 'Closed';
-        const isPreInvoice = c.serviceStatus === 'Pre-Invoice';
-        const isRetry      = c.serviceStatus === 'Retry';
-        const isApproved   = c.serviceStatus === 'Approved';
-        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
+        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'].includes(c.serviceStatus);
         if (!isDeadlines) return false;
     } else if (selectedSource === 'sales') {
         if (c.sourceVault && c.sourceVault !== 'sales' && !(c.sourceVault === 'marketing' && (!c.isMarketingData || c.marketingMovedDate))) return false;
@@ -275,8 +271,12 @@ const WorkerDashboard = () => {
         : (c.docSource?.toLowerCase() === activeFilters.docSource.toLowerCase())
     );
     const matchesEcStatus = !activeFilters.ecStatus || (c.ecStatus || 'Default') === activeFilters.ecStatus;
+    const matchesAuthority = !activeFilters.authority || (c.authority || 'Default') === activeFilters.authority;
+    const matchesSentToClient = !activeFilters.sentToClient || (
+      activeFilters.sentToClient === 'Yes' ? c.sentToClient === true : !c.sentToClient
+    );
 
-    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesAcqPOC && matchesServiceAcqPOC && matchesApartment && matchesSource && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource && matchesEcStatus;
+    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesAcqPOC && matchesServiceAcqPOC && matchesApartment && matchesSource && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource && matchesEcStatus && matchesAuthority && matchesSentToClient;
   }).sort((a, b) => {
     if (sortBy === 'Deadline (Ascending)' || sortBy === 'Deadline (Descending)') {
       const getDaysLeft = (c) => {

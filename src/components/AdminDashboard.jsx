@@ -377,22 +377,18 @@ const AdminDashboard = () => {
     preActive: serviceLeads.filter(c =>
       (!c.docsSubmitted || !c.docSource) &&
       !c.isMarketingData &&
-      c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
-      c.serviceStatus !== 'Pre-Invoice' &&
-      c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
+      !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'].includes(c.serviceStatus)
     ).length,
     active: serviceLeads.filter(c =>
       c.docsSubmitted && c.docSource &&
-      c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
-      c.serviceStatus !== 'Pre-Invoice' &&
-      c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
+      !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'].includes(c.serviceStatus)
     ).length,
     deadlines: serviceLeads.filter(c =>
       c.docsSubmitted && c.serviceStage !== 'Application Submitted' &&
-      c.serviceStatus !== 'Blocked' && c.serviceStatus !== 'Closed' &&
-      c.serviceStatus !== 'Pre-Invoice' &&
-      c.serviceStatus !== 'Retry'   && c.serviceStatus !== 'Approved'
+      !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'].includes(c.serviceStatus)
     ).length,
+    bda:        serviceLeads.filter(c => c.serviceStatus === 'BDA').length,
+    panchayat:  serviceLeads.filter(c => c.serviceStatus === 'Panchayat').length,
     blocked:    serviceLeads.filter(c => c.serviceStatus === 'Blocked').length,
     closed:     serviceLeads.filter(c => c.serviceStatus === 'Closed').length,
     preInvoice: serviceLeads.filter(c => c.serviceStatus === 'Pre-Invoice').length,
@@ -428,19 +424,18 @@ const AdminDashboard = () => {
        const hasService = c.serviceType || c.serviceRequested || c.service;
        if (!hasService) return false;
        
-        // Terminal states — driven by serviceStatus set automatically
+        const terminalStatuses = ['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'];
         const isBlocked    = c.serviceStatus === 'Blocked';
         const isClosed     = c.serviceStatus === 'Closed';
         const isPreInvoice = c.serviceStatus === 'Pre-Invoice';
         const isRetry      = c.serviceStatus === 'Retry';
         const isApproved   = c.serviceStatus === 'Approved';
+        const isBDA        = c.serviceStatus === 'BDA';
+        const isPanchayat  = c.serviceStatus === 'Panchayat';
 
-        // Pre-active: docs NOT yet submitted OR doc source missing (and not marketing data)
-        const isPreActive = (!c.docsSubmitted || !c.docSource) && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved && !c.isMarketingData;
-        // Active: docs submitted AND doc source set — no serviceAcqPOC required
-        const isActive = c.docsSubmitted && c.docSource && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
-        // Deadlines: docs submitted AND not yet 'Application Submitted'
-        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
+        const isPreActive = (!c.docsSubmitted || !c.docSource) && !terminalStatuses.includes(c.serviceStatus) && !c.isMarketingData;
+        const isActive    = c.docsSubmitted && c.docSource && !terminalStatuses.includes(c.serviceStatus);
+        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !terminalStatuses.includes(c.serviceStatus);
 
         if (servicesSubMode === 'pre-active'  && !isPreActive)  return false;
         if (servicesSubMode === 'active'      && !isActive)     return false;
@@ -450,17 +445,15 @@ const AdminDashboard = () => {
         if (servicesSubMode === 'pre-invoice' && !isPreInvoice) return false;
         if (servicesSubMode === 'retry'       && !isRetry)      return false;
         if (servicesSubMode === 'approved'    && !isApproved)   return false;
+        if (servicesSubMode === 'bda'         && !isBDA)        return false;
+        if (servicesSubMode === 'panchayat'   && !isPanchayat)  return false;
     } else if (selectedSource === 'deadlines') {
        const hasService = c.serviceType || c.serviceRequested || c.service;
        if (!hasService) return false;
        
         const isBlocked    = c.serviceStatus === 'Blocked';
-        const isClosed     = c.serviceStatus === 'Closed';
-        const isPreInvoice = c.serviceStatus === 'Pre-Invoice';
-        const isRetry      = c.serviceStatus === 'Retry';
-        const isApproved   = c.serviceStatus === 'Approved';
-        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !isBlocked && !isClosed && !isPreInvoice && !isRetry && !isApproved;
-
+        const terminalStatuses2 = ['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'];
+        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !terminalStatuses2.includes(c.serviceStatus);
         if (!isDeadlines) return false;
     } else if (selectedSource === 'marketing-deadlines') {
        // Show only marketing data leads
@@ -502,8 +495,15 @@ const AdminDashboard = () => {
         : (c.docSource?.toLowerCase() === activeFilters.docSource.toLowerCase())
     );
     const matchesEcStatus = !activeFilters.ecStatus || (c.ecStatus || 'Default') === activeFilters.ecStatus;
+    const matchesAuthority = !activeFilters.authority || (c.authority || 'Default') === activeFilters.authority;
+    const matchesSentToClient = !activeFilters.sentToClient || (
+      activeFilters.sentToClient === 'Yes' ? c.sentToClient === true : !c.sentToClient
+    );
+    const matchesPaymentStatus = !activeFilters.paymentStatus || (
+      activeFilters.paymentStatus === 'Payment Done' ? c.paymentStatus === 'Done' : (c.paymentStatus !== 'Done')
+    );
 
-    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesApartment && matchesSource && matchesAcqPOC && matchesServiceAcqPOC && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource && matchesEcStatus;
+    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesApartment && matchesSource && matchesAcqPOC && matchesServiceAcqPOC && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource && matchesEcStatus && matchesAuthority && matchesSentToClient && matchesPaymentStatus;
   }).sort((a, b) => {
     if (sortBy === 'Deadline (Ascending)' || sortBy === 'Deadline (Descending)') {
       const getDaysLeft = (c) => {

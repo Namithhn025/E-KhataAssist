@@ -182,6 +182,8 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const isClosed = customer.serviceStatus === 'Closed';
   const isPreInvoice = customer.serviceStatus === 'Pre-Invoice';
   const isApproved = customer.serviceStatus === 'Approved';
+  const isBDA = customer.serviceStatus === 'BDA';
+  const isPanchayat = customer.serviceStatus === 'Panchayat';
   const showAmount = viewMode === 'invoices';
   const showDeadline = !(customer.serviceStage === 'Application Submitted' || isClosed || isPreInvoice || isApproved || subMode === 'closed' || subMode === 'pre-invoice' || subMode === 'approved');
 
@@ -215,7 +217,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const availableStages = [...SERVICE_STAGES, 'Blocked'];
 
   const handleStageChange = (newStage) => {
-    if (isBlocked || isClosed || isPreInvoice || isApproved || isLocked) return;
+    if (isBlocked || isClosed || isPreInvoice || isApproved || isBDA || isPanchayat || isLocked) return;
     if (newStage === 'Blocked') { setShowRejectionModal(true); return; }
     if (newStage === CLOSING_STAGE) { setShowCloseModal(true); return; }
     if (newStage === 'eKYC Done') {
@@ -264,7 +266,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
       <div className="bg-white rounded-[2rem] border border-slate-200 overflow-hidden shadow-2xl ring-1 ring-slate-900/5">
 
         {/* Top accent bar */}
-        <div className={`h-1 w-full ${isBlocked ? 'bg-red-400' : isApproved ? 'bg-emerald-500' : isPreInvoice ? 'bg-purple-400' : isClosed ? 'bg-blue-400' : 'bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-600'}`} />
+        <div className={`h-1 w-full ${isBlocked ? 'bg-red-400' : isApproved ? 'bg-emerald-500' : isPreInvoice ? 'bg-purple-400' : isClosed ? 'bg-blue-400' : isBDA ? 'bg-cyan-400' : isPanchayat ? 'bg-teal-400' : 'bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-600'}`} />
 
         {/* Blocked Banner */}
         {isBlocked && (
@@ -376,13 +378,29 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
               <select
                 value={currentStage}
                 onChange={e => handleStageChange(e.target.value)}
-                disabled={isClosed || isPreInvoice || isApproved || isBlocked || isLocked}
+                disabled={isClosed || isPreInvoice || isApproved || isBlocked || isBDA || isPanchayat || isLocked}
                 className={`w-full px-4 py-2.5 rounded-xl border-none text-[9px] font-black uppercase tracking-widest outline-none shadow-sm transition-all ${isLocked ? 'cursor-default bg-slate-50' : 'cursor-pointer'} ${stageColors[currentStage] || 'bg-slate-100'}`}
               >
                 <option value="Blocked" disabled hidden>Blocked</option>
                 {availableStages.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              {!isBlocked && !isClosed && !isPreInvoice && <StageProgress stage={customer.serviceStage || 'Document Received'} />}
+              {!isBlocked && !isClosed && !isPreInvoice && !isApproved && customer.serviceStatus !== 'BDA' && customer.serviceStatus !== 'Panchayat' && <StageProgress stage={customer.serviceStage || 'Document Received'} />}
+
+              {/* Active → BDA / Panchayat buttons */}
+              {(subMode === 'active') && !isBlocked && !isClosed && !isPreInvoice && !isApproved && customer.serviceStatus !== 'BDA' && customer.serviceStatus !== 'Panchayat' && !isLocked && (
+                <div className="flex gap-1.5 pt-2">
+                  <button onClick={() => onUpdate('serviceStatus', 'BDA')} className="flex-1 py-2 bg-cyan-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-cyan-600 flex items-center justify-center gap-1"><span>🏛</span> Move to BDA</button>
+                  <button onClick={() => onUpdate('serviceStatus', 'Panchayat')} className="flex-1 py-2 bg-teal-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-teal-600 flex items-center justify-center gap-1"><span>🏘</span> Move to Panchayat</button>
+                </div>
+              )}
+
+              {/* BDA / Panchayat → Closed button */}
+              {(subMode === 'bda' || subMode === 'panchayat') && !isLocked && (
+                <div className="pt-2">
+                  <button onClick={() => { onUpdate('serviceStatus', 'Closed'); onUpdate('closedDate', new Date().toISOString()); }} className="w-full py-2 bg-blue-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-blue-600 flex items-center justify-center gap-1.5"><CheckCircle size={11} /> Move to Closed</button>
+                </div>
+              )}
+
               {subMode === 'closed' && isClosed && !isApproved && (
                 <div className="flex flex-col gap-1.5 pt-2">
                   <button onClick={() => setShowApproveModal(true)} className="w-full py-2 bg-purple-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-purple-600 shadow-lg shadow-purple-500/10 flex items-center justify-center gap-1.5"><FileCheck size={11} /> Move to Pre-Invoice</button>

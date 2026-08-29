@@ -3,7 +3,8 @@ import {
   BarChart2, Compass, ShoppingBag, Briefcase, FileText,
   Settings, LogOut, ChevronDown,
   Clock, PlayCircle, XCircle, CheckCircle, RefreshCw,
-  DollarSign, Bell, Calendar, Megaphone, FileCheck, Activity
+  DollarSign, Bell, Calendar, Megaphone, FileCheck, Activity,
+  Building2, Landmark
 } from 'lucide-react';
 
 const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode, setServicesSubMode, userRole }) => {
@@ -11,8 +12,10 @@ const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode,
 
   const allSubItems = [
     { id: 'pre-active', name: 'Pre-active',          icon: Clock,       color: 'text-yellow-400' },
-    { id: 'active',     name: 'Active',               icon: PlayCircle,  color: 'text-green-400'  },
-    { id: 'blocked',    name: 'Blocked',              icon: XCircle,     color: 'text-red-500'    },
+    { id: 'active',      name: 'Active',               icon: PlayCircle,  color: 'text-green-400'  },
+    { id: 'bda',         name: 'BDA',                  icon: Building2,   color: 'text-cyan-400'   },
+    { id: 'panchayat',   name: 'Panchayat',            icon: Landmark,    color: 'text-teal-400'   },
+    { id: 'blocked',     name: 'Blocked',              icon: XCircle,     color: 'text-red-500'    },
     { id: 'closed',      name: 'Closed',               icon: CheckCircle, color: 'text-blue-400'   },
     { id: 'pre-invoice', name: 'Pre-Invoice',          icon: FileCheck,   color: 'text-purple-400' },
     { id: 'retry',       name: 'Retry',                icon: RefreshCw,   color: 'text-orange-400' },

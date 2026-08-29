@@ -151,7 +151,10 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
     ]},
     apartment: { label: 'Apartment', options: [...(safePocs.apartments || [])].sort((a, b) => a.localeCompare(b)) },
     docsSubmitted: { label: 'Docs Status', options: ['Submitted', 'Pending'] },
-    ecStatus: { label: 'EC Status', options: ['Default', 'Not Applied', 'Applied', 'Generated'] }
+    ecStatus: { label: 'EC Status', options: ['Default', 'Not Applied', 'Applied', 'Generated'] },
+    authority: { label: 'Authority', options: ['Default', 'BDA', 'Panchayat'] },
+    sentToClient: { label: 'Sent to Client', options: ['Yes', 'No'] },
+    paymentStatus: { label: 'Payment Status', options: ['Payment Done', 'Payment Pending'] }
   };
 
   const commonKeys = ['priority', 'acqPOC', 'opsSpecialist', 'docSource', 'serviceAcqPOC', 'stage', 'service'];
