@@ -9,6 +9,7 @@ const AccountsDashboard = () => {
   const [customers, setCustomers] = useState([]);
   const [uploading, setUploading] = useState({});
   const [notesMap, setNotesMap] = useState({});
+  const [lightbox, setLightbox] = useState(null); // { url, name }
   const fileInputRefs = useRef({});
 
   useEffect(() => {
@@ -189,18 +190,21 @@ const AccountsDashboard = () => {
                           <AlertCircle size={10} /> Max 1MB per image
                         </span>
                       </div>
-                      <div className="flex flex-wrap gap-2 mb-2">
+                      <div className="flex flex-wrap gap-3 mb-2">
                         {files.map((f, fi) => (
-                          <div key={fi} className="relative group flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
-                            <Image size={14} className="text-slate-400 shrink-0" />
-                            <a href={f.url} target="_blank" rel="noreferrer" className="text-[10px] font-bold text-slate-600 hover:text-primary max-w-[120px] truncate">
-                              {f.name}
-                            </a>
+                          <div key={fi} className="relative group">
+                            <img
+                              src={f.url}
+                              alt={f.name}
+                              onClick={() => setLightbox(f)}
+                              className="w-20 h-20 object-cover rounded-xl border border-slate-200 cursor-pointer hover:border-primary transition-all shadow-sm"
+                            />
+                            <p className="text-[9px] font-bold text-slate-400 mt-1 max-w-[80px] truncate">{f.name}</p>
                             <button
                               onClick={() => handleRemoveFile(customer.id, f.url)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity ml-1 text-slate-300 hover:text-red-500"
+                              className="absolute -top-1.5 -right-1.5 opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow"
                             >
-                              <X size={12} />
+                              <X size={10} />
                             </button>
                           </div>
                         ))}
@@ -233,6 +237,25 @@ const AccountsDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <div className="relative max-w-3xl w-full" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setLightbox(null)}
+              className="absolute -top-10 right-0 text-white/70 hover:text-white flex items-center gap-1 text-xs font-bold"
+            >
+              <X size={16} /> Close
+            </button>
+            <img src={lightbox.url} alt={lightbox.name} className="w-full rounded-2xl shadow-2xl" />
+            <p className="text-center text-white/60 text-xs font-bold mt-3">{lightbox.name}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

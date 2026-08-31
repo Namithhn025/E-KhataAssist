@@ -1023,11 +1023,14 @@ const AdminDashboard = () => {
                                   <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-1">Attachments</p>
                                   <div className="flex flex-wrap gap-3">
                                     {customer.accountsFiles.map((f, fi) => (
-                                      <a key={fi} href={f.url} target="_blank" rel="noreferrer" className="block group">
+                                      <div key={fi} className="group cursor-pointer" onClick={() => {
+                                        const w = window.open('', '_blank');
+                                        w.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${f.url}" style="max-width:100%;max-height:100vh;object-fit:contain"/></body></html>`);
+                                      }}>
                                         <img src={f.url} alt={f.name}
                                           className="w-20 h-20 object-cover rounded-xl border border-violet-100 group-hover:border-violet-400 transition-all shadow-sm" />
                                         <p className="text-[9px] font-bold text-slate-400 mt-1 max-w-[80px] truncate">{f.name}</p>
-                                      </a>
+                                      </div>
                                     ))}
                                   </div>
                                 </div>
