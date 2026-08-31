@@ -240,19 +240,16 @@ const AccountsDashboard = () => {
 
       {/* Lightbox */}
       {lightbox && (
-        <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-          onClick={() => setLightbox(null)}
-        >
-          <div className="relative max-w-3xl w-full" onClick={e => e.stopPropagation()}>
-            <button
-              onClick={() => setLightbox(null)}
-              className="absolute -top-10 right-0 text-white/70 hover:text-white flex items-center gap-1 text-xs font-bold"
-            >
-              <X size={16} /> Close
-            </button>
-            <img src={lightbox.url} alt={lightbox.name} className="w-full rounded-2xl shadow-2xl" />
-            <p className="text-center text-white/60 text-xs font-bold mt-3">{lightbox.name}</p>
+        <div className="fixed inset-0 z-50 bg-black/85 overflow-y-auto" onClick={() => setLightbox(null)}>
+          <button onClick={() => setLightbox(null)}
+            className="fixed top-4 right-4 z-50 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 backdrop-blur-sm border border-white/20">
+            <X size={14} /> Close
+          </button>
+          <div className="min-h-full flex items-center justify-center p-16" onClick={e => e.stopPropagation()}>
+            <div className="max-w-3xl w-full">
+              <img src={lightbox.url} alt={lightbox.name} className="w-full rounded-2xl shadow-2xl" />
+              <p className="text-center text-white/50 text-xs font-bold mt-3">{lightbox.name}</p>
+            </div>
           </div>
         </div>
       )}

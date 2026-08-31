@@ -3,7 +3,7 @@ import { db } from '../firebase';
 import { collection, addDoc, onSnapshot, getDocs, getDoc, query, where, updateDoc, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ChevronRight, Phone, MessageCircle, BookOpen, Copy, Check, Filter, FileText, Plus, Search, User, Trash2, AlertTriangle } from 'lucide-react';
+import { ChevronRight, Phone, MessageCircle, BookOpen, Copy, Check, Filter, FileText, Plus, Search, User, Trash2, AlertTriangle, Upload, Image, X as XIcon, AlertCircle } from 'lucide-react';
 
 import Sidebar from './crm/Sidebar';
 import DashboardHeader from './crm/DashboardHeader';
@@ -49,6 +49,9 @@ const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const [reminderCustomer, setReminderCustomer] = useState(null);
   const [adminLightbox, setAdminLightbox] = useState(null);
+  const [invoiceUploading, setInvoiceUploading] = useState({});
+  const [invoiceUploadError, setInvoiceUploadError] = useState({});
+  const invoiceFileRefs = useRef({});
   const autoAssignRanRef = useRef(false);
 
   const handleSaveReminder = async (data) => {
@@ -220,6 +223,48 @@ const AdminDashboard = () => {
       console.error("Firestore Update Error:", field, value, error);
       alert(`Failed to update ${field}: ${error.message}`);
     }
+  };
+
+  const handleInvoiceFileUpload = async (id, files) => {
+    if (!files || files.length === 0) return;
+    setInvoiceUploadError(e => ({ ...e, [id]: null }));
+    setInvoiceUploading(u => ({ ...u, [id]: true }));
+    try {
+      const customer = customers.find(c => c.id === id);
+      const existingFiles = customer?.accountsFiles || [];
+      const newFiles = [];
+      for (const file of Array.from(files)) {
+        if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+          setInvoiceUploadError(e => ({ ...e, [id]: 'Only JPEG/PNG allowed.' }));
+          continue;
+        }
+        if (file.size > 900 * 1024) {
+          setInvoiceUploadError(e => ({ ...e, [id]: `"${file.name}" exceeds 1MB limit.` }));
+          continue;
+        }
+        const base64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        newFiles.push({ url: base64, name: file.name, uploadedAt: new Date().toISOString() });
+      }
+      if (newFiles.length > 0) {
+        await updateDoc(doc(db, 'customers', id), {
+          accountsFiles: [...existingFiles, ...newFiles],
+          updatedAt: new Date().toISOString()
+        });
+      }
+    } finally {
+      setInvoiceUploading(u => ({ ...u, [id]: false }));
+    }
+  };
+
+  const handleInvoiceRemoveFile = async (id, fileUrl) => {
+    const customer = customers.find(c => c.id === id);
+    const updated = (customer?.accountsFiles || []).filter(f => f.url !== fileUrl);
+    await updateDoc(doc(db, 'customers', id), { accountsFiles: updated, updatedAt: new Date().toISOString() });
   };
 
   const handleAddNote = async (customerId) => {
@@ -1010,31 +1055,51 @@ const AdminDashboard = () => {
                                <p className="text-[9px] text-slate-300 font-bold">Click field → type amount → press Enter or click away to save</p>
                              </div>
                           </div>
-                          {/* Accounts info strip */}
-                          {(customer.accountsNotes || (customer.accountsFiles && customer.accountsFiles.length > 0)) && (
-                            <div className="px-8 py-4 border-t border-slate-50 bg-violet-50/30 flex flex-wrap gap-4 items-start">
-                              {customer.accountsNotes && (
-                                <div>
-                                  <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-1">Accounts Notes</p>
-                                  <p className="text-xs font-bold text-slate-700">{customer.accountsNotes}</p>
-                                </div>
-                              )}
-                              {customer.accountsFiles && customer.accountsFiles.length > 0 && (
-                                <div>
-                                  <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-1">Attachments</p>
-                                  <div className="flex flex-wrap gap-3">
-                                    {customer.accountsFiles.map((f, fi) => (
-                                      <div key={fi} className="group cursor-pointer" onClick={() => setAdminLightbox(f)}>
-                                        <img src={f.url} alt={f.name}
-                                          className="w-20 h-20 object-cover rounded-xl border border-violet-100 group-hover:border-violet-400 transition-all shadow-sm" />
-                                        <p className="text-[9px] font-bold text-slate-400 mt-1 max-w-[80px] truncate">{f.name}</p>
-                                      </div>
-                                    ))}
+                          {/* Accounts info strip — always shown for admin */}
+                          <div className="px-8 py-4 border-t border-slate-50 bg-violet-50/30 flex flex-wrap gap-6 items-start">
+                            {customer.accountsNotes && (
+                              <div>
+                                <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-1">Accounts Notes</p>
+                                <p className="text-xs font-bold text-slate-700">{customer.accountsNotes}</p>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-[200px]">
+                              <div className="flex items-center gap-2 mb-2">
+                                <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest">Attachments</p>
+                                <span className="text-[9px] font-bold text-amber-500 flex items-center gap-1"><AlertCircle size={9}/> Max 1MB</span>
+                              </div>
+                              <div className="flex flex-wrap gap-3 mb-2">
+                                {(customer.accountsFiles || []).map((f, fi) => (
+                                  <div key={fi} className="relative group cursor-pointer" onClick={() => setAdminLightbox(f)}>
+                                    <img src={f.url} alt={f.name}
+                                      className="w-20 h-20 object-cover rounded-xl border border-violet-100 group-hover:border-violet-400 transition-all shadow-sm" />
+                                    <p className="text-[9px] font-bold text-slate-400 mt-1 max-w-[80px] truncate">{f.name}</p>
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleInvoiceRemoveFile(customer.id, f.url); }}
+                                      className="absolute -top-1.5 -right-1.5 opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center shadow text-[10px]"
+                                    >✕</button>
                                   </div>
-                                </div>
+                                ))}
+                              </div>
+                              {invoiceUploadError[customer.id] && (
+                                <p className="text-[10px] font-bold text-red-500 mb-2 flex items-center gap-1">
+                                  <AlertCircle size={11}/> {invoiceUploadError[customer.id]}
+                                </p>
                               )}
+                              <input
+                                ref={el => invoiceFileRefs.current[customer.id] = el}
+                                type="file" accept="image/jpeg,image/jpg,image/png" multiple className="hidden"
+                                onChange={e => handleInvoiceFileUpload(customer.id, e.target.files)}
+                              />
+                              <button
+                                onClick={() => invoiceFileRefs.current[customer.id]?.click()}
+                                disabled={invoiceUploading[customer.id]}
+                                className="flex items-center gap-2 px-4 py-2 border border-dashed border-violet-300 hover:border-violet-500 text-xs font-bold text-violet-400 hover:text-violet-600 rounded-xl transition-all disabled:opacity-50"
+                              >
+                                <Upload size={13}/> {invoiceUploading[customer.id] ? 'Saving...' : 'Upload File'}
+                              </button>
                             </div>
-                          )}
+                          </div>
                         </div>
                       );
                     })}
@@ -1836,14 +1901,16 @@ const AdminDashboard = () => {
 
       {/* Image lightbox for accounts attachments */}
       {adminLightbox && (
-        <div className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4" onClick={() => setAdminLightbox(null)}>
-          <div className="relative max-w-3xl w-full" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setAdminLightbox(null)}
-              className="absolute -top-10 right-0 text-white/70 hover:text-white flex items-center gap-1 text-xs font-bold">
-              ✕ Close
-            </button>
-            <img src={adminLightbox.url} alt={adminLightbox.name} className="w-full rounded-2xl shadow-2xl" />
-            <p className="text-center text-white/50 text-xs font-bold mt-3">{adminLightbox.name}</p>
+        <div className="fixed inset-0 z-50 bg-black/85 overflow-y-auto" onClick={() => setAdminLightbox(null)}>
+          <button onClick={() => setAdminLightbox(null)}
+            className="fixed top-4 right-4 z-50 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 backdrop-blur-sm border border-white/20">
+            ✕ Close
+          </button>
+          <div className="min-h-full flex items-center justify-center p-16" onClick={e => e.stopPropagation()}>
+            <div className="max-w-3xl w-full">
+              <img src={adminLightbox.url} alt={adminLightbox.name} className="w-full rounded-2xl shadow-2xl" />
+              <p className="text-center text-white/50 text-xs font-bold mt-3">{adminLightbox.name}</p>
+            </div>
           </div>
         </div>
       )}
