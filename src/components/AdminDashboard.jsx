@@ -1057,12 +1057,17 @@ const AdminDashboard = () => {
                           </div>
                           {/* Accounts info strip — always shown for admin */}
                           <div className="px-8 py-4 border-t border-slate-50 bg-violet-50/30 flex flex-wrap gap-6 items-start">
-                            {customer.accountsNotes && (
-                              <div>
-                                <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-1">Accounts Notes</p>
-                                <p className="text-xs font-bold text-slate-700">{customer.accountsNotes}</p>
-                              </div>
-                            )}
+                            <div className="min-w-[220px] flex-1">
+                              <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-1">Accounts Notes</p>
+                              <textarea
+                                rows={2}
+                                defaultValue={customer.accountsNotes || ''}
+                                onBlur={(e) => handlePOCUpdate(customer.id, 'accountsNotes', e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) e.target.blur(); }}
+                                placeholder="Add accounts notes..."
+                                className="w-full px-3 py-2 text-xs font-bold text-slate-700 bg-white border border-violet-100 rounded-xl outline-none resize-none focus:border-violet-300 focus:ring-2 focus:ring-violet-100 transition-all"
+                              />
+                            </div>
                             <div className="flex-1 min-w-[200px]">
                               <div className="flex items-center gap-2 mb-2">
                                 <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest">Attachments</p>
