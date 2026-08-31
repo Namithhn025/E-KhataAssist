@@ -48,6 +48,7 @@ const AdminDashboard = () => {
   const rowsPerPage = 20;
   const { user, logout } = useAuth();
   const [reminderCustomer, setReminderCustomer] = useState(null);
+  const [adminLightbox, setAdminLightbox] = useState(null);
   const autoAssignRanRef = useRef(false);
 
   const handleSaveReminder = async (data) => {
@@ -1023,10 +1024,7 @@ const AdminDashboard = () => {
                                   <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-1">Attachments</p>
                                   <div className="flex flex-wrap gap-3">
                                     {customer.accountsFiles.map((f, fi) => (
-                                      <div key={fi} className="group cursor-pointer" onClick={() => {
-                                        const w = window.open('', '_blank');
-                                        w.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${f.url}" style="max-width:100%;max-height:100vh;object-fit:contain"/></body></html>`);
-                                      }}>
+                                      <div key={fi} className="group cursor-pointer" onClick={() => setAdminLightbox(f)}>
                                         <img src={f.url} alt={f.name}
                                           className="w-20 h-20 object-cover rounded-xl border border-violet-100 group-hover:border-violet-400 transition-all shadow-sm" />
                                         <p className="text-[9px] font-bold text-slate-400 mt-1 max-w-[80px] truncate">{f.name}</p>
@@ -1835,6 +1833,20 @@ const AdminDashboard = () => {
           prefilledCustomer={reminderCustomer}
         />
       </div>
+
+      {/* Image lightbox for accounts attachments */}
+      {adminLightbox && (
+        <div className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4" onClick={() => setAdminLightbox(null)}>
+          <div className="relative max-w-3xl w-full" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setAdminLightbox(null)}
+              className="absolute -top-10 right-0 text-white/70 hover:text-white flex items-center gap-1 text-xs font-bold">
+              ✕ Close
+            </button>
+            <img src={adminLightbox.url} alt={adminLightbox.name} className="w-full rounded-2xl shadow-2xl" />
+            <p className="text-center text-white/50 text-xs font-bold mt-3">{adminLightbox.name}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
