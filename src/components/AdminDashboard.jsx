@@ -1021,11 +1021,12 @@ const AdminDashboard = () => {
                               {customer.accountsFiles && customer.accountsFiles.length > 0 && (
                                 <div>
                                   <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-1">Attachments</p>
-                                  <div className="flex flex-wrap gap-2">
+                                  <div className="flex flex-wrap gap-3">
                                     {customer.accountsFiles.map((f, fi) => (
-                                      <a key={fi} href={f.url} target="_blank" rel="noreferrer"
-                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-violet-100 rounded-xl text-[10px] font-bold text-violet-700 hover:border-violet-300 transition-all">
-                                        🖼 {f.name}
+                                      <a key={fi} href={f.url} target="_blank" rel="noreferrer" className="block group">
+                                        <img src={f.url} alt={f.name}
+                                          className="w-20 h-20 object-cover rounded-xl border border-violet-100 group-hover:border-violet-400 transition-all shadow-sm" />
+                                        <p className="text-[9px] font-bold text-slate-400 mt-1 max-w-[80px] truncate">{f.name}</p>
                                       </a>
                                     ))}
                                   </div>

@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { db, storage } from '../firebase';
+import { db } from '../firebase';
 import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '../contexts/AuthContext';
-import { FileText, LogOut, Upload, CheckCircle, X, Image, ExternalLink } from 'lucide-react';
+import { FileText, LogOut, Upload, CheckCircle, X, Image, ExternalLink, AlertCircle } from 'lucide-react';
 
 const AccountsDashboard = () => {
   const { logout } = useAuth();
@@ -36,24 +35,39 @@ const AccountsDashboard = () => {
     }
   };
 
+  const [uploadError, setUploadError] = useState({});
+
   const handleFileUpload = async (id, files) => {
     if (!files || files.length === 0) return;
+    setUploadError(e => ({ ...e, [id]: null }));
     setUploading(u => ({ ...u, [id]: true }));
     try {
       const customer = customers.find(c => c.id === id);
       const existingFiles = customer?.accountsFiles || [];
       const newFiles = [];
       for (const file of Array.from(files)) {
-        if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) continue;
-        const storageRef = ref(storage, `accounts/${id}/${Date.now()}_${file.name}`);
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
-        newFiles.push({ url, name: file.name, uploadedAt: new Date().toISOString() });
+        if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+          setUploadError(e => ({ ...e, [id]: 'Only JPEG/PNG files allowed.' }));
+          continue;
+        }
+        if (file.size > 900 * 1024) {
+          setUploadError(e => ({ ...e, [id]: `"${file.name}" is too large. Please upload images under 1MB.` }));
+          continue;
+        }
+        const base64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        newFiles.push({ url: base64, name: file.name, uploadedAt: new Date().toISOString() });
       }
-      await updateDoc(doc(db, 'customers', id), {
-        accountsFiles: [...existingFiles, ...newFiles],
-        updatedAt: new Date().toISOString()
-      });
+      if (newFiles.length > 0) {
+        await updateDoc(doc(db, 'customers', id), {
+          accountsFiles: [...existingFiles, ...newFiles],
+          updatedAt: new Date().toISOString()
+        });
+      }
     } finally {
       setUploading(u => ({ ...u, [id]: false }));
     }
@@ -169,13 +183,18 @@ const AccountsDashboard = () => {
 
                     {/* File Upload */}
                     <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Attachments (JPEG / PNG)</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Attachments (JPEG / PNG)</p>
+                        <span className="text-[9px] font-bold text-amber-500 flex items-center gap-1">
+                          <AlertCircle size={10} /> Max 1MB per image
+                        </span>
+                      </div>
                       <div className="flex flex-wrap gap-2 mb-2">
                         {files.map((f, fi) => (
                           <div key={fi} className="relative group flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
                             <Image size={14} className="text-slate-400 shrink-0" />
-                            <a href={f.url} target="_blank" rel="noreferrer" className="text-[10px] font-bold text-slate-600 hover:text-primary flex items-center gap-1 max-w-[120px] truncate">
-                              {f.name} <ExternalLink size={9} />
+                            <a href={f.url} target="_blank" rel="noreferrer" className="text-[10px] font-bold text-slate-600 hover:text-primary max-w-[120px] truncate">
+                              {f.name}
                             </a>
                             <button
                               onClick={() => handleRemoveFile(customer.id, f.url)}
@@ -186,6 +205,11 @@ const AccountsDashboard = () => {
                           </div>
                         ))}
                       </div>
+                      {uploadError[customer.id] && (
+                        <p className="text-[10px] font-bold text-red-500 mb-2 flex items-center gap-1">
+                          <AlertCircle size={11} /> {uploadError[customer.id]}
+                        </p>
+                      )}
                       <input
                         ref={el => fileInputRefs.current[customer.id] = el}
                         type="file"
@@ -199,7 +223,7 @@ const AccountsDashboard = () => {
                         disabled={uploading[customer.id]}
                         className="flex items-center gap-2 px-4 py-2 border border-dashed border-slate-300 hover:border-primary text-xs font-bold text-slate-400 hover:text-primary rounded-xl transition-all disabled:opacity-50"
                       >
-                        <Upload size={13} /> {uploading[customer.id] ? 'Uploading...' : 'Upload File'}
+                        <Upload size={13} /> {uploading[customer.id] ? 'Saving...' : 'Upload File'}
                       </button>
                     </div>
                   </div>
