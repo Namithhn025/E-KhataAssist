@@ -16,6 +16,7 @@ import Login from './components/Login';
 import AdminDashboard from './components/AdminDashboard';
 import WorkerDashboard from './components/WorkerDashboard';
 import MarketingDashboard from './components/crm/MarketingDashboard';
+import AccountsDashboard from './components/AccountsDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
 class ErrorBoundary extends React.Component {
@@ -56,7 +57,7 @@ class ErrorBoundary extends React.Component {
 
 function App() {
   const location = useLocation();
-  const isCRM = location.pathname.startsWith('/admin') || location.pathname.startsWith('/worker') || location.pathname.startsWith('/marketing') || location.pathname === '/login';
+  const isCRM = location.pathname.startsWith('/admin') || location.pathname.startsWith('/worker') || location.pathname.startsWith('/marketing') || location.pathname.startsWith('/accounts') || location.pathname === '/login';
 
   // Scroll to top on every route change
   useEffect(() => {
@@ -114,7 +115,12 @@ function App() {
                 <MarketingDashboard />
               </ProtectedRoute>
             } />
-            
+            <Route path="/accounts" element={
+              <ProtectedRoute allowedRoles={['accounts', 'admin']}>
+                <AccountsDashboard />
+              </ProtectedRoute>
+            } />
+
             {/* Landing Page Route */}
             <Route path="/" element={
             <>

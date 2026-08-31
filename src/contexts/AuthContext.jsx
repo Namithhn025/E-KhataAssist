@@ -28,7 +28,8 @@ export const AuthProvider = ({ children }) => {
                                    firebaseUser.email?.toLowerCase() === 'namaproptech2026@gmail.com' ||
                                    firebaseUser.email?.toLowerCase() === 'namaproptech2026@ekhataassist.com') ? 'admin' :
                                    (firebaseUser.email?.toLowerCase() === 'marketing@ekhataassist.com' ||
-                                    firebaseUser.email?.toLowerCase().includes('marketing')) ? 'marketing' : 'worker';
+                                    firebaseUser.email?.toLowerCase().includes('marketing')) ? 'marketing' :
+                                   firebaseUser.email?.toLowerCase() === 'accounts@ekhataassist.com' ? 'accounts' : 'worker';
               setRole(defaultRole);
               localStorage.setItem('crm_role', defaultRole);
             }

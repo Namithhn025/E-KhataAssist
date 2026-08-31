@@ -862,6 +862,7 @@ const AdminDashboard = () => {
             const allApprovedSorted = [...baseApprovedLeads].sort(
               (a, b) => new Date(a.approvedDate || a.createdAt || 0) - new Date(b.approvedDate || b.createdAt || 0)
             );
+            const inAccountsCount = baseApprovedLeads.filter(c => c.inAccounts === true && c.paymentStatus !== 'Done').length;
             return (
               <div className="px-8 pb-20 pt-4">
                 {/* Summary Banner */}
@@ -873,6 +874,15 @@ const AdminDashboard = () => {
                     <div>
                       <p className="text-2xl font-black text-emerald-700">{filteredCustomers.length}</p>
                       <p className="text-xs font-bold text-emerald-500 uppercase tracking-widest">Total Invoices</p>
+                    </div>
+                  </div>
+                  <div className="flex-1 bg-violet-50 border border-violet-100 rounded-2xl px-6 py-4 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center">
+                      <FileText size={22} className="text-violet-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-black text-violet-700">{inAccountsCount}</p>
+                      <p className="text-xs font-bold text-violet-500 uppercase tracking-widest">In Accounts</p>
                     </div>
                   </div>
                     <div className="flex-1 bg-blue-50 border border-blue-100 rounded-2xl px-6 py-4 flex items-center gap-4">
@@ -941,6 +951,18 @@ const AdminDashboard = () => {
                               <span className="px-3 py-1.5 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-200">
                                 ✓ Approved
                               </span>
+                              {customer.paymentStatus !== 'Done' && (
+                                <button
+                                  onClick={() => handlePOCUpdate(customer.id, 'inAccounts', !customer.inAccounts)}
+                                  className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
+                                    customer.inAccounts
+                                      ? 'bg-violet-500 text-white hover:bg-violet-600'
+                                      : 'bg-slate-100 text-slate-600 hover:bg-violet-50 hover:text-violet-700 border border-slate-200'
+                                  }`}
+                                >
+                                  {customer.inAccounts ? '✓ In Accounts' : 'Send to Accounts'}
+                                </button>
+                              )}
                               <button
                                 onClick={() => window.print()}
                                 className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all"
@@ -987,6 +1009,30 @@ const AdminDashboard = () => {
                                <p className="text-[9px] text-slate-300 font-bold">Click field → type amount → press Enter or click away to save</p>
                              </div>
                           </div>
+                          {/* Accounts info strip */}
+                          {(customer.accountsNotes || (customer.accountsFiles && customer.accountsFiles.length > 0)) && (
+                            <div className="px-8 py-4 border-t border-slate-50 bg-violet-50/30 flex flex-wrap gap-4 items-start">
+                              {customer.accountsNotes && (
+                                <div>
+                                  <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-1">Accounts Notes</p>
+                                  <p className="text-xs font-bold text-slate-700">{customer.accountsNotes}</p>
+                                </div>
+                              )}
+                              {customer.accountsFiles && customer.accountsFiles.length > 0 && (
+                                <div>
+                                  <p className="text-[9px] font-black text-violet-400 uppercase tracking-widest mb-1">Attachments</p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {customer.accountsFiles.map((f, fi) => (
+                                      <a key={fi} href={f.url} target="_blank" rel="noreferrer"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-violet-100 rounded-xl text-[10px] font-bold text-violet-700 hover:border-violet-300 transition-all">
+                                        🖼 {f.name}
+                                      </a>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       );
                     })}

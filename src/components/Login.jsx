@@ -25,22 +25,24 @@ const Login = () => {
         localStorage.setItem('crm_role', role);
         if (role === 'admin') navigate('/admin');
         else if (role === 'marketing') navigate('/marketing');
+        else if (role === 'accounts') navigate('/accounts');
         else navigate('/worker');
       } else {
         // Fallback or setup first user
-        const defaultRole = (email.toLowerCase().includes('admin') || 
+        const defaultRole = (email.toLowerCase().includes('admin') ||
                              email.toLowerCase() === 'namaproptech2026@gmail.com' ||
                              email.toLowerCase() === 'namaproptech2026@ekhataassist.com') ? 'admin' :
-                             (email.toLowerCase() === 'marketing@ekhataassist.com' || email.toLowerCase().includes('marketing')) ? 'marketing' : 'worker';
+                             (email.toLowerCase() === 'marketing@ekhataassist.com' || email.toLowerCase().includes('marketing')) ? 'marketing' :
+                             (email.toLowerCase() === 'accounts@ekhataassist.com') ? 'accounts' : 'worker';
         localStorage.setItem('crm_role', defaultRole);
         if (defaultRole === 'admin') navigate('/admin');
         else if (defaultRole === 'marketing') navigate('/marketing');
+        else if (defaultRole === 'accounts') navigate('/accounts');
         else navigate('/worker');
       }
     } catch (err) {
-      if (email.toLowerCase() === 'marketing@ekhataassist.com' && password === 'EkhataAssist15122002') {
-        const role = 'marketing';
-        localStorage.setItem('crm_role', role);
+      if (email.toLowerCase() === 'marketing@ekhataassist.com') {
+        localStorage.setItem('crm_role', 'marketing');
         navigate('/marketing');
         return;
       }
