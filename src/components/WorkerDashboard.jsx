@@ -160,7 +160,7 @@ const WorkerDashboard = () => {
   };
 
   // Metrics (Mirror Admin)
-  const serviceLeads = customers.filter(c => c.serviceType || c.serviceRequested || c.service);
+  const serviceLeads = customers.filter(c => (c.serviceType || c.serviceRequested || c.service) && !c.isMarketingData);
   const metrics = {
     total:     customers.length,
     qualified: customers.filter(c => c.status === 'Approved').length,

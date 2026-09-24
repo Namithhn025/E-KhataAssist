@@ -407,7 +407,7 @@ const AdminDashboard = () => {
   };
 
   // ─── Master metrics computed from real Firestore data ─────────────────────
-  const serviceLeads = customers.filter(c => c.serviceType || c.serviceRequested || c.service);
+  const serviceLeads = customers.filter(c => (c.serviceType || c.serviceRequested || c.service) && !c.isMarketingData);
 
   const metrics = {
     // Sales metrics
