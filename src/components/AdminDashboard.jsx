@@ -453,7 +453,8 @@ const AdminDashboard = () => {
       c.ec?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.generatedEC?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.specialNotes?.toLowerCase().includes(searchQuery.toLowerCase());
+      c.specialNotes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.accountsNotes?.toLowerCase().includes(searchQuery.toLowerCase());
     
     // View Filtering
     if (selectedSource === 'nexus') {
