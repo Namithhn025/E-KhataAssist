@@ -205,7 +205,7 @@ const WorkerDashboard = () => {
     
     if (selectedSource === 'services') {
        const hasService = c.serviceType || c.serviceRequested || c.service;
-       if (!hasService) return false;
+       if (!hasService || c.isMarketingData) return false;
        
         const terminalStatuses = ['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'];
         const isBlocked    = c.serviceStatus === 'Blocked';
