@@ -35,7 +35,8 @@ const AccountsDashboard = () => {
         (c.customerName || '').toLowerCase().includes(q) ||
         (c.phone || '').includes(q) ||
         (c.apartment || c.society || '').toLowerCase().includes(q) ||
-        (c.serviceRequested || c.service || c.serviceType || '').toLowerCase().includes(q)
+        (c.serviceRequested || c.service || c.serviceType || '').toLowerCase().includes(q) ||
+        (c.accountsNotes || '').toLowerCase().includes(q)
       )
     : accountsLeads;
 
