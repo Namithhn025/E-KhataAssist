@@ -477,8 +477,8 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                 </div>
               )}
 
-              {/* Move to Correction button for active and closed */}
-              {(subMode === 'active' || subMode === 'closed') && !isLocked && (
+              {/* Move to Correction button for active, closed, and approved (invoice) */}
+              {(subMode === 'active' || subMode === 'closed' || subMode === 'approved') && !isLocked && (
                 <div className="pt-2">
                   <button onClick={() => setShowCorrectionModal(true)} className="w-full py-2 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-amber-100 flex items-center justify-center gap-1.5"><RotateCcw size={11} /> Move to Correction</button>
                 </div>
