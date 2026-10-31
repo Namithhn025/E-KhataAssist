@@ -4,7 +4,7 @@ import {
   Settings, LogOut, ChevronDown,
   Clock, PlayCircle, XCircle, CheckCircle, RefreshCw,
   DollarSign, Bell, Calendar, Megaphone, FileCheck, Activity,
-  Building2, Landmark
+  Building2, Landmark, RotateCcw
 } from 'lucide-react';
 
 const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode, setServicesSubMode, userRole }) => {
@@ -19,6 +19,7 @@ const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode,
     { id: 'closed',      name: 'Closed',               icon: CheckCircle, color: 'text-blue-400'   },
     { id: 'pre-invoice', name: 'Pre-Invoice',          icon: FileCheck,   color: 'text-purple-400' },
     { id: 'retry',       name: 'Retry',                icon: RefreshCw,   color: 'text-orange-400' },
+    { id: 'correction',  name: 'Correction',           icon: RotateCcw,   color: 'text-amber-400'  },
   ];
 
   const menuItems = [

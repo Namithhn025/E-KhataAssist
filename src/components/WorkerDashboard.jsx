@@ -171,15 +171,15 @@ const WorkerDashboard = () => {
     totalSRs:  serviceLeads.length,
     preActive: serviceLeads.filter(c =>
       (!c.docsSubmitted || !c.docSource) &&
-      !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'].includes(c.serviceStatus)
+      !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat','Correction'].includes(c.serviceStatus)
     ).length,
     active: serviceLeads.filter(c =>
       c.docsSubmitted && c.docSource &&
-      !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'].includes(c.serviceStatus)
+      !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat','Correction'].includes(c.serviceStatus)
     ).length,
     deadlines: serviceLeads.filter(c =>
       c.docsSubmitted && c.serviceStage !== 'Application Submitted' &&
-      !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'].includes(c.serviceStatus)
+      !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat','Correction'].includes(c.serviceStatus)
     ).length,
     bda:        serviceLeads.filter(c => c.serviceStatus === 'BDA').length,
     panchayat:  serviceLeads.filter(c => c.serviceStatus === 'Panchayat').length,
@@ -188,6 +188,7 @@ const WorkerDashboard = () => {
     preInvoice: serviceLeads.filter(c => c.serviceStatus === 'Pre-Invoice').length,
     retry:      serviceLeads.filter(c => c.serviceStatus === 'Retry').length,
     approved:   serviceLeads.filter(c => c.serviceStatus === 'Approved').length,
+    correction: serviceLeads.filter(c => c.serviceStatus === 'Correction').length,
   };
 
   const filteredCustomers = customers.filter(c => {
@@ -207,7 +208,7 @@ const WorkerDashboard = () => {
        const hasService = c.serviceType || c.serviceRequested || c.service;
        if (!hasService || c.isMarketingData) return false;
        
-        const terminalStatuses = ['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'];
+        const terminalStatuses = ['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat','Correction'];
         const isBlocked    = c.serviceStatus === 'Blocked';
         const isClosed     = c.serviceStatus === 'Closed';
         const isPreInvoice = c.serviceStatus === 'Pre-Invoice';
@@ -215,6 +216,7 @@ const WorkerDashboard = () => {
         const isApproved   = c.serviceStatus === 'Approved';
         const isBDA        = c.serviceStatus === 'BDA';
         const isPanchayat  = c.serviceStatus === 'Panchayat';
+        const isCorrection = c.serviceStatus === 'Correction';
         const isPreActive = (!c.docsSubmitted || !c.docSource) && !terminalStatuses.includes(c.serviceStatus);
         const isActive    = c.docsSubmitted && c.docSource && !terminalStatuses.includes(c.serviceStatus);
         const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !terminalStatuses.includes(c.serviceStatus);
@@ -229,10 +231,11 @@ const WorkerDashboard = () => {
         if (servicesSubMode === 'approved'    && !isApproved)   return false;
         if (servicesSubMode === 'bda'         && !isBDA)        return false;
         if (servicesSubMode === 'panchayat'   && !isPanchayat)  return false;
+        if (servicesSubMode === 'correction'  && !isCorrection) return false;
     } else if (selectedSource === 'deadlines') {
         const hasService = c.serviceType || c.serviceRequested || c.service;
         if (!hasService) return false;
-        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat'].includes(c.serviceStatus);
+        const isDeadlines = c.docsSubmitted && c.serviceStage !== 'Application Submitted' && !['Blocked','Closed','Pre-Invoice','Retry','Approved','BDA','Panchayat','Correction'].includes(c.serviceStatus);
         if (!isDeadlines) return false;
     } else if (selectedSource === 'sales') {
         if (c.sourceVault && c.sourceVault !== 'sales' && !(c.sourceVault === 'marketing' && (!c.isMarketingData || c.marketingMovedDate))) return false;

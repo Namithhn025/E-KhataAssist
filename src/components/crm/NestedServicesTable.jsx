@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { arrayUnion } from 'firebase/firestore';
 import AssignmentHistoryModal from './AssignmentHistoryModal';
-import { Phone, Clock, MessageSquare, AlertTriangle, CheckCircle, XCircle, Lock, RefreshCw, BadgeCheck, Globe, Edit2, ChevronRight, FileCheck, Send } from 'lucide-react';
+import { Phone, Clock, MessageSquare, AlertTriangle, CheckCircle, XCircle, Lock, RefreshCw, BadgeCheck, Globe, Edit2, ChevronRight, FileCheck, Send, RotateCcw } from 'lucide-react';
 import SearchableSelect from './SearchableSelect';
 
 const SERVICE_STAGES = [
@@ -62,6 +62,36 @@ const CloseConfirmModal = ({ open, onConfirm, onCancel }) => {
         <div className="flex gap-3">
           <button onClick={onCancel} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200">Cancel</button>
           <button onClick={onConfirm} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-200">✓ Confirm Close</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CorrectionModal = ({ open, onConfirm, onCancel }) => {
+  const [stage, setStage] = useState('Application Submitted');
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center"><RotateCcw size={22} className="text-amber-500" /></div>
+          <div><h3 className="text-lg font-black text-slate-900">Move to Correction</h3><p className="text-xs text-slate-400 font-medium">Select the correction stage.</p></div>
+        </div>
+        <div className="space-y-2">
+          {['Application Submitted', 'Refile', 'Approved'].map(opt => (
+            <button
+              key={opt}
+              onClick={() => setStage(opt)}
+              className={`w-full py-3 px-4 rounded-2xl text-xs font-black text-left transition-all border ${stage === opt ? (opt === 'Approved' ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-amber-500 text-white border-amber-500') : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'}`}
+            >
+              {opt === 'Approved' ? '✓ Approved → Move to Pre-Invoice' : opt}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200">Cancel</button>
+          <button onClick={() => { onConfirm(stage); }} className={`flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white shadow-lg ${stage === 'Approved' ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200' : 'bg-amber-500 hover:bg-amber-600 shadow-amber-200'}`}>Confirm</button>
         </div>
       </div>
     </div>
@@ -169,6 +199,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const [showRetryModal, setShowRetryModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [pendingPOC, setPendingPOC] = useState(null);
+  const [showCorrectionModal, setShowCorrectionModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [historyLead, setHistoryLead] = useState(null);
   const [isEditingPhone, setIsEditingPhone] = useState(false);
@@ -184,8 +215,9 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const isApproved = customer.serviceStatus === 'Approved';
   const isBDA = customer.serviceStatus === 'BDA';
   const isPanchayat = customer.serviceStatus === 'Panchayat';
+  const isCorrection = customer.serviceStatus === 'Correction';
   const showAmount = viewMode === 'invoices';
-  const showDeadline = !(customer.serviceStage === 'Application Submitted' || isClosed || isPreInvoice || isApproved || subMode === 'closed' || subMode === 'pre-invoice' || subMode === 'approved');
+  const showDeadline = !(customer.serviceStage === 'Application Submitted' || isClosed || isPreInvoice || isApproved || isCorrection || subMode === 'closed' || subMode === 'pre-invoice' || subMode === 'approved' || subMode === 'correction');
 
   React.useEffect(() => {
     const defaults = pocs.defaults || {};
@@ -217,7 +249,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const availableStages = [...SERVICE_STAGES, 'Blocked'];
 
   const handleStageChange = (newStage) => {
-    if (isBlocked || isClosed || isPreInvoice || isApproved || isBDA || isPanchayat || isLocked) return;
+    if (isBlocked || isClosed || isPreInvoice || isApproved || isBDA || isPanchayat || isCorrection || isLocked) return;
     if (newStage === 'Blocked') { setShowRejectionModal(true); return; }
     if (newStage === CLOSING_STAGE) { setShowCloseModal(true); return; }
     if (newStage === 'eKYC Done') {
@@ -243,6 +275,18 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const handleConfirmPreInvoice = () => { setShowApproveModal(false); onUpdate('serviceStatus', 'Pre-Invoice'); onUpdate('preInvoiceDate', new Date().toISOString()); };
   const handleMoveToInvoice = () => { onUpdate('serviceStatus', 'Approved'); onUpdate('approvedDate', new Date().toISOString()); };
   const handleConfirmRejection = (reason) => { setShowRejectionModal(false); onUpdate('serviceStage', 'Blocked'); onUpdate('serviceStatus', 'Blocked'); onUpdate('blockerReason', reason); onUpdate('blockedDate', new Date().toISOString()); };
+  const handleConfirmCorrection = (stage) => {
+    setShowCorrectionModal(false);
+    if (stage === 'Approved') {
+      onUpdate('serviceStatus', 'Pre-Invoice');
+      onUpdate('preInvoiceDate', new Date().toISOString());
+      onUpdate('internalNotes', arrayUnion({ text: 'Customer requested for correction and it is approved', author: 'System', timestamp: new Date().toISOString() }));
+    } else {
+      onUpdate('serviceStatus', 'Correction');
+      onUpdate('correctionStage', stage);
+      onUpdate('correctionDate', new Date().toISOString());
+    }
+  };
 
   const calculateAge = (startDate) => {
     if (!startDate) return '0d';
@@ -256,6 +300,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
 
   return (
     <>
+      <CorrectionModal open={showCorrectionModal} onConfirm={handleConfirmCorrection} onCancel={() => setShowCorrectionModal(false)} />
       <RejectionModal open={showRejectionModal} onConfirm={handleConfirmRejection} onCancel={() => setShowRejectionModal(false)} />
       <CloseConfirmModal open={showCloseModal} onConfirm={handleConfirmClose} onCancel={() => setShowCloseModal(false)} />
       <ActiveConfirmModal open={showActiveModal} onConfirm={handleConfirmActive} onCancel={() => setShowActiveModal(false)} customerName={customer.customerName} initialDocSource={customer.docSource} />
@@ -428,6 +473,24 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                   {!customer.sentToClient && (
                     <p className="text-[9px] text-purple-400 font-bold text-center">Toggle "Doc Sent to Client" to enable invoicing</p>
                   )}
+                  <button onClick={() => setShowCorrectionModal(true)} className="w-full py-2 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-amber-100 flex items-center justify-center gap-1.5"><RotateCcw size={11} /> Move to Correction</button>
+                </div>
+              )}
+
+              {/* Move to Correction button for active and closed */}
+              {(subMode === 'active' || subMode === 'closed') && !isLocked && (
+                <div className="pt-2">
+                  <button onClick={() => setShowCorrectionModal(true)} className="w-full py-2 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-amber-100 flex items-center justify-center gap-1.5"><RotateCcw size={11} /> Move to Correction</button>
+                </div>
+              )}
+
+              {/* Correction subMode UI */}
+              {subMode === 'correction' && isCorrection && (
+                <div className="flex flex-col gap-1.5 pt-2">
+                  <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Correction Stage: {customer.correctionStage || 'N/A'}</p>
+                  <button onClick={() => { onUpdate('correctionStage', 'Application Submitted'); onUpdate('correctionDate', new Date().toISOString()); }} className={`w-full py-2 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 border ${customer.correctionStage === 'Application Submitted' ? 'bg-amber-500 text-white border-amber-500' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600'}`}><FileCheck size={11} /> Application Submitted</button>
+                  <button onClick={() => { onUpdate('correctionStage', 'Refile'); onUpdate('correctionDate', new Date().toISOString()); }} className={`w-full py-2 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 border ${customer.correctionStage === 'Refile' ? 'bg-amber-500 text-white border-amber-500' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600'}`}><RefreshCw size={11} /> Refile</button>
+                  <button onClick={() => handleConfirmCorrection('Approved')} className="w-full py-2 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-1.5"><BadgeCheck size={11} /> Approved → Pre-Invoice</button>
                 </div>
               )}
             </Field>
