@@ -18,7 +18,7 @@ import ExpensesSection from './crm/ExpensesSection';
 import RemindersSection, { ReminderModal } from './crm/RemindersSection';
 import DailyMovementView from './crm/DailyMovementView';
 import { setDoc, arrayUnion, Timestamp } from 'firebase/firestore';
-import { ChevronDown, MessageSquare, DollarSign, Bell, X, Edit2, CopyPlus } from 'lucide-react';
+import { ChevronDown, MessageSquare, DollarSign, Bell, X, Edit2, CopyPlus, RotateCcw } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [selectedSource, setSelectedSource] = useState('sales');
@@ -49,6 +49,7 @@ const AdminDashboard = () => {
   const { user, logout } = useAuth();
   const [reminderCustomer, setReminderCustomer] = useState(null);
   const [adminLightbox, setAdminLightbox] = useState(null);
+  const [invoiceCorrectionCustomer, setInvoiceCorrectionCustomer] = useState(null);
   const [invoiceUploading, setInvoiceUploading] = useState({});
   const [invoiceUploadError, setInvoiceUploadError] = useState({});
   const invoiceFileRefs = useRef({});
@@ -1014,6 +1015,12 @@ const AdminDashboard = () => {
                                 </button>
                               )}
                               <button
+                                onClick={() => setInvoiceCorrectionCustomer(customer)}
+                                className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-600 border border-amber-200 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-100 transition-all"
+                              >
+                                <RotateCcw size={12} /> Correction
+                              </button>
+                              <button
                                 onClick={() => window.print()}
                                 className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-800 transition-all"
                               >
@@ -1920,6 +1927,40 @@ const AdminDashboard = () => {
               <img src={adminLightbox.url} alt={adminLightbox.name} className="w-full rounded-2xl shadow-2xl" />
               <p className="text-center text-white/50 text-xs font-bold mt-3">{adminLightbox.name}</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invoice → Correction modal */}
+      {invoiceCorrectionCustomer && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center"><RotateCcw size={22} className="text-amber-500" /></div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900">Move to Correction</h3>
+                <p className="text-xs text-slate-400 font-medium">{invoiceCorrectionCustomer.customerName}</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {['Application Submitted', 'Refile'].map(opt => (
+                <button key={opt} onClick={async () => {
+                  const { arrayUnion } = await import('firebase/firestore');
+                  await handlePOCUpdate(invoiceCorrectionCustomer.id, 'serviceStatus', 'Correction');
+                  await handlePOCUpdate(invoiceCorrectionCustomer.id, 'correctionStage', opt);
+                  await handlePOCUpdate(invoiceCorrectionCustomer.id, 'correctionDate', new Date().toISOString());
+                  setInvoiceCorrectionCustomer(null);
+                }} className="w-full py-3 px-4 rounded-2xl text-xs font-black text-left bg-slate-50 text-slate-600 border border-slate-200 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600 transition-all">{opt}</button>
+              ))}
+              <button onClick={async () => {
+                const { arrayUnion } = await import('firebase/firestore');
+                await handlePOCUpdate(invoiceCorrectionCustomer.id, 'serviceStatus', 'Pre-Invoice');
+                await handlePOCUpdate(invoiceCorrectionCustomer.id, 'preInvoiceDate', new Date().toISOString());
+                await handlePOCUpdate(invoiceCorrectionCustomer.id, 'internalNotes', arrayUnion({ text: 'Customer requested for correction and it is approved', author: 'System', timestamp: new Date().toISOString() }));
+                setInvoiceCorrectionCustomer(null);
+              }} className="w-full py-3 px-4 rounded-2xl text-xs font-black text-left bg-emerald-500 text-white border border-emerald-500 hover:bg-emerald-600 transition-all">✓ Approved → Move to Pre-Invoice</button>
+            </div>
+            <button onClick={() => setInvoiceCorrectionCustomer(null)} className="w-full py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200">Cancel</button>
           </div>
         </div>
       )}
