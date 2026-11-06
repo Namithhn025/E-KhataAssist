@@ -425,16 +425,22 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
             </Field>
 
             {/* Stage */}
-            <Field label="Live Lifecycle Stage">
-              <select
-                value={currentStage}
-                onChange={e => handleStageChange(e.target.value)}
-                disabled={isClosed || isPreInvoice || isApproved || isBlocked || isBDA || isPanchayat || isLocked}
-                className={`w-full px-4 py-2.5 rounded-xl border-none text-[9px] font-black uppercase tracking-widest outline-none shadow-sm transition-all ${isLocked ? 'cursor-default bg-slate-50' : 'cursor-pointer'} ${stageColors[currentStage] || 'bg-slate-100'}`}
-              >
-                <option value="Blocked" disabled hidden>Blocked</option>
-                {availableStages.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+            <Field label={isCorrection ? 'Correction Stage' : 'Live Lifecycle Stage'}>
+              {isCorrection ? (
+                <div className="w-full px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[9px] font-black uppercase tracking-widest text-amber-700">
+                  {customer.correctionStage || 'Apply'}
+                </div>
+              ) : (
+                <select
+                  value={currentStage}
+                  onChange={e => handleStageChange(e.target.value)}
+                  disabled={isClosed || isPreInvoice || isApproved || isBlocked || isBDA || isPanchayat || isLocked}
+                  className={`w-full px-4 py-2.5 rounded-xl border-none text-[9px] font-black uppercase tracking-widest outline-none shadow-sm transition-all ${isLocked ? 'cursor-default bg-slate-50' : 'cursor-pointer'} ${stageColors[currentStage] || 'bg-slate-100'}`}
+                >
+                  <option value="Blocked" disabled hidden>Blocked</option>
+                  {availableStages.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              )}
               {!isBlocked && !isClosed && !isPreInvoice && !isApproved && !isCorrection && customer.serviceStatus !== 'BDA' && customer.serviceStatus !== 'Panchayat' && <StageProgress stage={customer.serviceStage || 'Document Received'} />}
 
               {/* Active → BDA / Panchayat buttons */}
