@@ -143,42 +143,7 @@ const AdminDashboard = () => {
     return unsubscribe;
   }, []);
 
-  // Auto-assign default specialists — runs ONCE at login via getDocs (not on every snapshot)
-  useEffect(() => {
-    if (autoAssignRanRef.current) return;
-    if (!pocs.defaults) return;
-    const defaults = pocs.defaults;
-    if (!defaults.epidAndEsignSpecialist && !defaults.ekycSpecialist && !defaults.addressSpecialist) return;
-
-    autoAssignRanRef.current = true;
-
-    const runAutoAssign = async () => {
-      try {
-        const snap = await getDocs(
-          query(collection(db, 'customers'), where('marketingMovedDate', '!=', null), where('isMarketingData', '==', false))
-        );
-        snap.docs.forEach(async (d) => {
-          const c = d.data();
-          const updates = {};
-          if (!c.epidAndEsignSpecialist && defaults.epidAndEsignSpecialist)
-            updates.epidAndEsignSpecialist = defaults.epidAndEsignSpecialist;
-          if (!c.ekycSpecialist && defaults.ekycSpecialist)
-            updates.ekycSpecialist = defaults.ekycSpecialist;
-          if (!c.addressSpecialist && defaults.addressSpecialist)
-            updates.addressSpecialist = defaults.addressSpecialist;
-          if (Object.keys(updates).length > 0) {
-            try { await updateDoc(doc(db, 'customers', d.id), updates); }
-            catch (e) { console.error('Auto-assign failed for', d.id, e); }
-          }
-        });
-      } catch (e) {
-        console.error('Auto-assign getDocs failed:', e);
-        autoAssignRanRef.current = false; // allow retry on next mount if it errored
-      }
-    };
-
-    runAutoAssign();
-  }, [pocs.defaults]); // only re-evaluates if defaults change (admin saves new settings)
+  // Auto-assign removed — POC is now manually assigned by admin
 
   // Load Campaigns & Expenses once for Overview metrics — not real-time, changes are infrequent
   useEffect(() => {
@@ -1932,38 +1897,40 @@ const AdminDashboard = () => {
       )}
 
       {/* Invoice → Correction modal */}
-      {invoiceCorrectionCustomer && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center"><RotateCcw size={22} className="text-amber-500" /></div>
-              <div>
-                <h3 className="text-lg font-black text-slate-900">Move to Correction</h3>
-                <p className="text-xs text-slate-400 font-medium">{invoiceCorrectionCustomer.customerName}</p>
+      {invoiceCorrectionCustomer && (() => {
+        const InvoiceCorrectionModal = () => {
+          const [desc, setDesc] = React.useState('');
+          const [err, setErr] = React.useState(false);
+          const handleMove = async () => {
+            if (!desc.trim()) { setErr(true); return; }
+            const { arrayUnion } = await import('firebase/firestore');
+            await handlePOCUpdate(invoiceCorrectionCustomer.id, 'serviceStatus', 'Correction');
+            await handlePOCUpdate(invoiceCorrectionCustomer.id, 'correctionStage', 'Apply');
+            await handlePOCUpdate(invoiceCorrectionCustomer.id, 'correctionDate', new Date().toISOString());
+            await handlePOCUpdate(invoiceCorrectionCustomer.id, 'internalNotes', arrayUnion({ text: `Correction: ${desc.trim()}`, author: 'System', timestamp: new Date().toISOString() }));
+            setInvoiceCorrectionCustomer(null);
+          };
+          return (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center"><RotateCcw size={22} className="text-amber-500" /></div>
+                  <div><h3 className="text-lg font-black text-slate-900">Move to Correction</h3><p className="text-xs text-slate-400 font-medium">{invoiceCorrectionCustomer.customerName} — description mandatory</p></div>
+                </div>
+                <div>
+                  <textarea autoFocus value={desc} onChange={e => { setDesc(e.target.value); setErr(false); }} placeholder="Describe the correction reason..." className={`w-full p-4 rounded-2xl bg-slate-50 border ${err ? 'border-red-400 ring-4 ring-red-500/10' : 'border-slate-200'} focus:bg-white focus:ring-4 focus:ring-amber-500/10 focus:border-amber-400 outline-none transition-all text-sm font-medium min-h-[100px] resize-none`} />
+                  {err && <p className="text-xs text-red-500 font-bold mt-1">Please enter a description.</p>}
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setInvoiceCorrectionCustomer(null)} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200">Cancel</button>
+                  <button onClick={handleMove} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-200">Move to Correction</button>
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
-              {['Application Submitted', 'Refile'].map(opt => (
-                <button key={opt} onClick={async () => {
-                  const { arrayUnion } = await import('firebase/firestore');
-                  await handlePOCUpdate(invoiceCorrectionCustomer.id, 'serviceStatus', 'Correction');
-                  await handlePOCUpdate(invoiceCorrectionCustomer.id, 'correctionStage', opt);
-                  await handlePOCUpdate(invoiceCorrectionCustomer.id, 'correctionDate', new Date().toISOString());
-                  setInvoiceCorrectionCustomer(null);
-                }} className="w-full py-3 px-4 rounded-2xl text-xs font-black text-left bg-slate-50 text-slate-600 border border-slate-200 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600 transition-all">{opt}</button>
-              ))}
-              <button onClick={async () => {
-                const { arrayUnion } = await import('firebase/firestore');
-                await handlePOCUpdate(invoiceCorrectionCustomer.id, 'serviceStatus', 'Pre-Invoice');
-                await handlePOCUpdate(invoiceCorrectionCustomer.id, 'preInvoiceDate', new Date().toISOString());
-                await handlePOCUpdate(invoiceCorrectionCustomer.id, 'internalNotes', arrayUnion({ text: 'Customer requested for correction and it is approved', author: 'System', timestamp: new Date().toISOString() }));
-                setInvoiceCorrectionCustomer(null);
-              }} className="w-full py-3 px-4 rounded-2xl text-xs font-black text-left bg-emerald-500 text-white border border-emerald-500 hover:bg-emerald-600 transition-all">✓ Approved → Move to Pre-Invoice</button>
-            </div>
-            <button onClick={() => setInvoiceCorrectionCustomer(null)} className="w-full py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200">Cancel</button>
-          </div>
-        </div>
-      )}
+          );
+        };
+        return <InvoiceCorrectionModal />;
+      })()}
     </div>
   );
 };

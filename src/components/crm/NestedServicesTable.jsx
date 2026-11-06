@@ -69,29 +69,35 @@ const CloseConfirmModal = ({ open, onConfirm, onCancel }) => {
 };
 
 const CorrectionModal = ({ open, onConfirm, onCancel }) => {
-  const [stage, setStage] = useState('Application Submitted');
+  const [description, setDescription] = useState('');
+  const [descError, setDescError] = useState(false);
   if (!open) return null;
+  const handleConfirm = () => {
+    if (!description.trim()) { setDescError(true); return; }
+    onConfirm(description.trim());
+    setDescription('');
+    setDescError(false);
+  };
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 space-y-6">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center"><RotateCcw size={22} className="text-amber-500" /></div>
-          <div><h3 className="text-lg font-black text-slate-900">Move to Correction</h3><p className="text-xs text-slate-400 font-medium">Select the correction stage.</p></div>
+          <div><h3 className="text-lg font-black text-slate-900">Move to Correction</h3><p className="text-xs text-slate-400 font-medium">Description is mandatory.</p></div>
         </div>
         <div className="space-y-2">
-          {['Application Submitted', 'Refile', 'Approved'].map(opt => (
-            <button
-              key={opt}
-              onClick={() => setStage(opt)}
-              className={`w-full py-3 px-4 rounded-2xl text-xs font-black text-left transition-all border ${stage === opt ? (opt === 'Approved' ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-amber-500 text-white border-amber-500') : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'}`}
-            >
-              {opt === 'Approved' ? '✓ Approved → Move to Pre-Invoice' : opt}
-            </button>
-          ))}
+          <textarea
+            autoFocus
+            value={description}
+            onChange={e => { setDescription(e.target.value); setDescError(false); }}
+            placeholder="Describe the correction reason..."
+            className={`w-full p-4 rounded-2xl bg-slate-50 border ${descError ? 'border-red-400 ring-4 ring-red-500/10' : 'border-slate-200'} focus:bg-white focus:ring-4 focus:ring-amber-500/10 focus:border-amber-400 outline-none transition-all text-sm font-medium min-h-[100px] resize-none`}
+          />
+          {descError && <p className="text-xs text-red-500 font-bold">Please enter a description before confirming.</p>}
         </div>
         <div className="flex gap-3">
-          <button onClick={onCancel} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200">Cancel</button>
-          <button onClick={() => { onConfirm(stage); }} className={`flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white shadow-lg ${stage === 'Approved' ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200' : 'bg-amber-500 hover:bg-amber-600 shadow-amber-200'}`}>Confirm</button>
+          <button onClick={() => { onCancel(); setDescription(''); setDescError(false); }} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 border border-slate-200">Cancel</button>
+          <button onClick={handleConfirm} className="flex-1 py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white shadow-lg bg-amber-500 hover:bg-amber-600 shadow-amber-200">Move to Correction</button>
         </div>
       </div>
     </div>
@@ -219,15 +225,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const showAmount = viewMode === 'invoices';
   const showDeadline = !(customer.serviceStage === 'Application Submitted' || isClosed || isPreInvoice || isApproved || isCorrection || subMode === 'closed' || subMode === 'pre-invoice' || subMode === 'approved' || subMode === 'correction');
 
-  React.useEffect(() => {
-    const defaults = pocs.defaults || {};
-    if (!defaults.epidAndEsignSpecialist && !defaults.ekycSpecialist && !defaults.addressSpecialist) return;
-    if (!customer.docsSubmitted && !customer.epidAndEsignSpecialist && defaults.epidAndEsignSpecialist) onUpdate && onUpdate('epidAndEsignSpecialist', defaults.epidAndEsignSpecialist);
-    if (customer.docsSubmitted && !customer.ekycSpecialist && defaults.ekycSpecialist) onUpdate && onUpdate('ekycSpecialist', defaults.ekycSpecialist);
-    if (customer.docsSubmitted && !customer.epidAndEsignSpecialist && defaults.epidAndEsignSpecialist) onUpdate && onUpdate('epidAndEsignSpecialist', defaults.epidAndEsignSpecialist);
-    if (customer.serviceStage === 'eKYC Done' && !customer.addressSpecialist && defaults.addressSpecialist) onUpdate && onUpdate('addressSpecialist', defaults.addressSpecialist);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customer.id, customer.docsSubmitted, customer.serviceStage, pocs.defaults]);
+  // Auto-assign removed — POC is now manually assigned by admin as a single field
 
   const getDeadlineInfo = () => {
     if (!customer.docsSubmitted && !customer.isMarketingData && subMode !== 'pre-active') return null;
@@ -252,13 +250,26 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
     if (isBlocked || isClosed || isPreInvoice || isApproved || isBDA || isPanchayat || isCorrection || isLocked) return;
     if (newStage === 'Blocked') { setShowRejectionModal(true); return; }
     if (newStage === CLOSING_STAGE) { setShowCloseModal(true); return; }
-    if (newStage === 'eKYC Done') {
-      onUpdate('assignedSpecialistRole', 'Address Specialist');
-      if (pocs.defaults?.addressSpecialist) { onUpdate('assignedSpecialist', pocs.defaults.addressSpecialist); onUpdate('serviceAcqPOC', pocs.defaults.addressSpecialist); onUpdate('assignmentHistory', arrayUnion({ timestamp: new Date().toISOString(), specialistRole: 'Address Specialist', assignedTo: pocs.defaults.addressSpecialist, note: 'Auto-assigned on stage change' })); }
-    } else if (newStage === 'Ready to eSign') {
-      onUpdate('assignedSpecialistRole', 'EPID & E-Sign Specialist');
-      if (pocs.defaults?.epidAndEsignSpecialist) { onUpdate('assignedSpecialist', pocs.defaults.epidAndEsignSpecialist); onUpdate('serviceAcqPOC', pocs.defaults.epidAndEsignSpecialist); onUpdate('assignmentHistory', arrayUnion({ timestamp: new Date().toISOString(), specialistRole: 'EPID & E-Sign Specialist', assignedTo: pocs.defaults.epidAndEsignSpecialist, note: 'Auto-assigned on stage change' })); }
+
+    const currentStageVal = customer.serviceStage || 'Document Received';
+    const hasPOC = !!(customer.serviceAcqPOC);
+    const hasEPID = !!(customer.ePID);
+
+    // Validate stage transitions from Doc Received
+    if (currentStageVal === 'Document Received') {
+      if (newStage === 'eKYC Pending' || newStage === 'eKYC Done') {
+        if (!hasPOC && !hasEPID) { alert('POC must be assigned and ePID must be filled to move to ' + newStage + '.'); return; }
+        if (!hasPOC) { alert('POC must be assigned to move to ' + newStage + '.'); return; }
+        if (!hasEPID) { alert('ePID must be filled to move to ' + newStage + '.'); return; }
+      }
+      if (newStage === 'Ready to eSign') {
+        if (!hasPOC) { alert('POC must be assigned to move directly to Ready to eSign.'); return; }
+      }
+      if (newStage === 'Application Submitted') {
+        if (!hasEPID) { alert('ePID must be filled to move directly to Application Submitted.'); return; }
+      }
     }
+
     onUpdate('serviceStage', newStage);
   };
 
@@ -275,17 +286,12 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
   const handleConfirmPreInvoice = () => { setShowApproveModal(false); onUpdate('serviceStatus', 'Pre-Invoice'); onUpdate('preInvoiceDate', new Date().toISOString()); };
   const handleMoveToInvoice = () => { onUpdate('serviceStatus', 'Approved'); onUpdate('approvedDate', new Date().toISOString()); };
   const handleConfirmRejection = (reason) => { setShowRejectionModal(false); onUpdate('serviceStage', 'Blocked'); onUpdate('serviceStatus', 'Blocked'); onUpdate('blockerReason', reason); onUpdate('blockedDate', new Date().toISOString()); };
-  const handleConfirmCorrection = (stage) => {
+  const handleConfirmCorrection = (description) => {
     setShowCorrectionModal(false);
-    if (stage === 'Approved') {
-      onUpdate('serviceStatus', 'Pre-Invoice');
-      onUpdate('preInvoiceDate', new Date().toISOString());
-      onUpdate('internalNotes', arrayUnion({ text: 'Customer requested for correction and it is approved', author: 'System', timestamp: new Date().toISOString() }));
-    } else {
-      onUpdate('serviceStatus', 'Correction');
-      onUpdate('correctionStage', stage);
-      onUpdate('correctionDate', new Date().toISOString());
-    }
+    onUpdate('serviceStatus', 'Correction');
+    onUpdate('correctionStage', 'Apply');
+    onUpdate('correctionDate', new Date().toISOString());
+    onUpdate('internalNotes', arrayUnion({ text: `Correction: ${description}`, author: 'System', timestamp: new Date().toISOString() }));
   };
 
   const calculateAge = (startDate) => {
@@ -477,8 +483,8 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                 </div>
               )}
 
-              {/* Move to Correction button for active, closed, and approved (invoice) */}
-              {(subMode === 'active' || subMode === 'closed' || subMode === 'approved') && !isLocked && (
+              {/* Move to Correction button for active, closed, blocked, and approved (invoice) */}
+              {(subMode === 'active' || subMode === 'closed' || subMode === 'blocked' || subMode === 'approved') && !isLocked && (
                 <div className="pt-2">
                   <button onClick={() => setShowCorrectionModal(true)} className="w-full py-2 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-amber-100 flex items-center justify-center gap-1.5"><RotateCcw size={11} /> Move to Correction</button>
                 </div>
@@ -487,10 +493,19 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
               {/* Correction subMode UI */}
               {subMode === 'correction' && isCorrection && (
                 <div className="flex flex-col gap-1.5 pt-2">
-                  <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Correction Stage: {customer.correctionStage || 'N/A'}</p>
-                  <button onClick={() => { onUpdate('correctionStage', 'Application Submitted'); onUpdate('correctionDate', new Date().toISOString()); }} className={`w-full py-2 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 border ${customer.correctionStage === 'Application Submitted' ? 'bg-amber-500 text-white border-amber-500' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600'}`}><FileCheck size={11} /> Application Submitted</button>
-                  <button onClick={() => { onUpdate('correctionStage', 'Refile'); onUpdate('correctionDate', new Date().toISOString()); }} className={`w-full py-2 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 border ${customer.correctionStage === 'Refile' ? 'bg-amber-500 text-white border-amber-500' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600'}`}><RefreshCw size={11} /> Refile</button>
-                  <button onClick={() => handleConfirmCorrection('Approved')} className="w-full py-2 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-1.5"><BadgeCheck size={11} /> Approved → Pre-Invoice</button>
+                  <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Correction Stage: {customer.correctionStage || 'Apply'}</p>
+                  {['Apply', 'Applied', 'Reapplied'].map(s => (
+                    <button key={s} onClick={() => { onUpdate('correctionStage', s); onUpdate('correctionDate', new Date().toISOString()); }}
+                      className={`w-full py-2 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 border transition-all ${(customer.correctionStage || 'Apply') === s ? 'bg-amber-500 text-white border-amber-500' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600'}`}>
+                      <RotateCcw size={11} /> {s}
+                    </button>
+                  ))}
+                  <button onClick={() => {
+                    onUpdate('serviceStatus', 'Pre-Invoice');
+                    onUpdate('correctionStage', 'Approved');
+                    onUpdate('preInvoiceDate', new Date().toISOString());
+                    onUpdate('internalNotes', arrayUnion({ text: 'Customer requested for correction and it is approved', author: 'System', timestamp: new Date().toISOString() }));
+                  }} className="w-full py-2 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-1.5"><BadgeCheck size={11} /> Approved → Pre-Invoice</button>
                 </div>
               )}
             </Field>
@@ -506,12 +521,15 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
               </select>
             </Field>
 
-            <Field label="Ops Specialists">
-              <div className="space-y-2">
-                <SearchableSelect options={pocs.epidAndEsignSpecialist || pocs.serviceAcquisition || []} value={customer.epidAndEsignSpecialist || ''} onChange={val => onUpdate('epidAndEsignSpecialist', val)} placeholder="EPID & E-SIGN: Unassigned" disabled={!isAdmin || isLocked} size="sm" />
-                <SearchableSelect options={pocs.ekycSpecialist || pocs.serviceAcquisition || []} value={customer.ekycSpecialist || ''} onChange={val => onUpdate('ekycSpecialist', val)} placeholder="EKYC: Unassigned" disabled={!isAdmin || isLocked} size="sm" />
-                <SearchableSelect options={pocs.addressSpecialist || pocs.serviceAcquisition || []} value={customer.addressSpecialist || ''} onChange={val => onUpdate('addressSpecialist', val)} placeholder="ADDRESS: Unassigned" disabled={!isAdmin || isLocked} size="sm" />
-              </div>
+            <Field label="POC">
+              <SearchableSelect
+                options={pocs.serviceAcquisition || pocs.epidAndEsignSpecialist || []}
+                value={customer.serviceAcqPOC || ''}
+                onChange={val => onUpdate('serviceAcqPOC', val)}
+                placeholder="Assign POC..."
+                disabled={!isAdmin || isLocked}
+                size="sm"
+              />
             </Field>
 
             <Field label="EC Number">
