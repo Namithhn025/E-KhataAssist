@@ -76,6 +76,10 @@ const AddLeadModal = ({ isOpen, onClose, onAdd, pocs = {} }) => {
       alert('Please select at least one service.');
       return;
     }
+    if (formData.services.includes('Correction') && !formData.notes.trim()) {
+      alert('Notes / description is mandatory when Correction is selected as a service.');
+      return;
+    }
     // For backward compatibility and multiple services support
     const serviceRequested = formData.services.includes('Others') 
       ? [...formData.services.filter(s => s !== 'Others'), formData.otherService].filter(Boolean).join(', ')
@@ -295,7 +299,7 @@ const AddLeadModal = ({ isOpen, onClose, onAdd, pocs = {} }) => {
                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {[
                         'Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)',
-                        'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration', 'Others'
+                        'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration', 'Correction', 'Others'
                       ].map(service => (
                         <button
                           key={service}
@@ -412,14 +416,14 @@ const AddLeadModal = ({ isOpen, onClose, onAdd, pocs = {} }) => {
 
                 <div className="space-y-2">
                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      <MessageSquare size={10} /> Notes (Optional)
+                      <MessageSquare size={10} /> Notes {formData.services.includes('Correction') ? <span className="text-red-500">* Required for Correction</span> : '(Optional)'}
                    </label>
-                   <textarea 
+                   <textarea
                       name="notes"
                       value={formData.notes}
                       onChange={handleChange}
-                      className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:bg-white focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none transition-all font-bold text-slate-900 min-h-[100px] resize-none"
-                      placeholder="Add any specific requirements or context..."
+                      className={`w-full px-6 py-4 rounded-2xl bg-slate-50 border ${formData.services.includes('Correction') ? 'border-amber-300 focus:ring-amber-500/10 focus:border-amber-500' : 'border-slate-100 focus:ring-purple-500/10 focus:border-purple-500'} focus:bg-white focus:ring-4 outline-none transition-all font-bold text-slate-900 min-h-[100px] resize-none`}
+                      placeholder={formData.services.includes('Correction') ? 'Describe the correction required (mandatory)...' : 'Add any specific requirements or context...'}
                    />
                 </div>
              </div>

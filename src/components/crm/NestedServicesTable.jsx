@@ -435,7 +435,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                 <option value="Blocked" disabled hidden>Blocked</option>
                 {availableStages.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              {!isBlocked && !isClosed && !isPreInvoice && !isApproved && customer.serviceStatus !== 'BDA' && customer.serviceStatus !== 'Panchayat' && <StageProgress stage={customer.serviceStage || 'Document Received'} />}
+              {!isBlocked && !isClosed && !isPreInvoice && !isApproved && !isCorrection && customer.serviceStatus !== 'BDA' && customer.serviceStatus !== 'Panchayat' && <StageProgress stage={customer.serviceStage || 'Document Received'} />}
 
               {/* Active → BDA / Panchayat buttons */}
               {(subMode === 'active') && !isBlocked && !isClosed && !isPreInvoice && !isApproved && customer.serviceStatus !== 'BDA' && customer.serviceStatus !== 'Panchayat' && !isLocked && (
@@ -494,7 +494,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
               {subMode === 'correction' && isCorrection && (
                 <div className="flex flex-col gap-1.5 pt-2">
                   <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Correction Stage: {customer.correctionStage || 'Apply'}</p>
-                  {['Apply', 'Applied', 'Reapplied'].map(s => (
+                  {['Apply', 'Applied', 'Reapply'].map(s => (
                     <button key={s} onClick={() => { onUpdate('correctionStage', s); onUpdate('correctionDate', new Date().toISOString()); }}
                       className={`w-full py-2 rounded-lg text-[8px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 border transition-all ${(customer.correctionStage || 'Apply') === s ? 'bg-amber-500 text-white border-amber-500' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600'}`}>
                       <RotateCcw size={11} /> {s}
@@ -527,9 +527,12 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                 value={customer.serviceAcqPOC || ''}
                 onChange={val => onUpdate('serviceAcqPOC', val)}
                 placeholder="Assign POC..."
-                disabled={!isAdmin || isLocked}
+                disabled={isLocked || (!isAdmin && !!customer.serviceAcqPOC)}
                 size="sm"
               />
+              {!isAdmin && !!customer.serviceAcqPOC && (
+                <p className="text-[8px] text-slate-400 font-bold mt-1 flex items-center gap-1"><Lock size={8} /> POC can only be changed by admin</p>
+              )}
             </Field>
 
             <Field label="EC Number">
