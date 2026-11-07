@@ -183,7 +183,9 @@ const AdminDashboard = () => {
   const handlePOCUpdate = async (customerId, field, value) => {
     try {
       if (!field || !customerId) return;
-      const cleanVal = value === undefined ? '' : value;
+      // If value is a Firestore FieldValue (e.g. arrayUnion), pass it directly
+      const isFieldValue = value && typeof value === 'object' && value._methodName;
+      const cleanVal = isFieldValue ? value : (value === undefined ? '' : value);
       await updateDoc(doc(db, 'customers', customerId), { [field]: cleanVal, updatedAt: new Date().toISOString() });
     } catch (error) {
       console.error("Firestore Update Error:", field, value, error);
