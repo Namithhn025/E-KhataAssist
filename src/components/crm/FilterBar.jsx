@@ -146,9 +146,10 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
       'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration', 'Others'
     ]},
     stage: { label: 'Service Stage', options: [
-      'Document Received', 'eKYC Pending', 'eKYC Done', 
+      'Document Received', 'eKYC Pending', 'eKYC Done',
       'Ready to eSign', 'Application Submitted', 'Approved', 'Rejected'
     ]},
+    correctionStage: { label: 'Correction Stage', options: ['Apply', 'Applied', 'Reapply'] },
     apartment: { label: 'Apartment', options: [...(safePocs.apartments || [])].sort((a, b) => a.localeCompare(b)) },
     docsSubmitted: { label: 'Docs Status', options: ['Submitted', 'Pending'] },
     ecStatus: { label: 'EC Status', options: ['Default', 'Not Applied', 'Applied', 'Generated'] },
@@ -157,7 +158,7 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
     paymentStatus: { label: 'Payment Status', options: ['Payment Done', 'Payment Pending'] }
   };
 
-  const commonKeys = ['priority', 'acqPOC', 'opsSpecialist', 'docSource', 'serviceAcqPOC', 'stage', 'service'];
+  const commonKeys = ['priority', 'acqPOC', 'opsSpecialist', 'docSource', 'serviceAcqPOC', 'stage', 'service', 'correctionStage'];
   
   const handleAddFilter = (key) => {
     if (!visibleFilters.includes(key)) {

@@ -512,6 +512,7 @@ const NestedServicesTable = ({ customer, onUpdate, pocs = {}, viewMode, subMode 
                     onUpdate('preInvoiceDate', new Date().toISOString());
                     onUpdate('internalNotes', arrayUnion({ text: 'Customer requested for correction and it is approved', author: 'System', timestamp: new Date().toISOString() }));
                   }} className="w-full py-2 bg-emerald-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-1.5"><BadgeCheck size={11} /> Approved → Pre-Invoice</button>
+                  <button onClick={() => setShowRejectionModal(true)} className="w-full py-2 bg-red-50 text-red-500 border border-red-200 rounded-lg text-[8px] font-black uppercase tracking-widest hover:bg-red-100 flex items-center justify-center gap-1.5"><XCircle size={11} /> Move to Blocked</button>
                 </div>
               )}
             </Field>

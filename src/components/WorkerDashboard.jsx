@@ -245,6 +245,7 @@ const WorkerDashboard = () => {
     
     const matchesPriority = !activeFilters.priority || c.priority === activeFilters.priority;
     const matchesStage = !activeFilters.stage || (c.serviceStage === activeFilters.stage);
+    const matchesCorrectionStage = !activeFilters.correctionStage || (c.correctionStage === activeFilters.correctionStage);
     const matchesService = !activeFilters.service || (() => {
       const standardServices = ['Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)', 'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration'];
       const leadServices = c.serviceRequested ? c.serviceRequested.split(/,\s*/).map(s => s.trim()) : [];
@@ -279,7 +280,7 @@ const WorkerDashboard = () => {
       activeFilters.sentToClient === 'Yes' ? c.sentToClient === true : !c.sentToClient
     );
 
-    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesAcqPOC && matchesServiceAcqPOC && matchesApartment && matchesSource && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource && matchesEcStatus && matchesAuthority && matchesSentToClient;
+    return matchesSearch && matchesPriority && matchesStage && matchesCorrectionStage && matchesService && matchesAcqPOC && matchesServiceAcqPOC && matchesApartment && matchesSource && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource && matchesEcStatus && matchesAuthority && matchesSentToClient;
   }).sort((a, b) => {
     if (sortBy === 'Deadline (Ascending)' || sortBy === 'Deadline (Descending)') {
       const getDaysLeft = (c) => {

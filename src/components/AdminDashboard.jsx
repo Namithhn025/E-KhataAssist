@@ -483,6 +483,7 @@ const AdminDashboard = () => {
     const matchesServiceAcqPOC = !activeFilters.serviceAcqPOC || (activeFilters.serviceAcqPOC === 'Unassigned' ? !c.serviceAcqPOC : c.serviceAcqPOC === activeFilters.serviceAcqPOC);
     const matchesPriority = !activeFilters.priority || c.priority === activeFilters.priority;
     const matchesStage = !activeFilters.stage || (c.serviceStage === activeFilters.stage);
+    const matchesCorrectionStage = !activeFilters.correctionStage || (c.correctionStage === activeFilters.correctionStage);
     const matchesService = !activeFilters.service || (() => {
       const standardServices = ['Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)', 'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration'];
       const leadServices = c.serviceRequested ? c.serviceRequested.split(/,\s*/).map(s => s.trim()) : [];
@@ -519,7 +520,7 @@ const AdminDashboard = () => {
       activeFilters.paymentStatus === 'Payment Done' ? c.paymentStatus === 'Done' : (c.paymentStatus !== 'Done')
     );
 
-    return matchesSearch && matchesPriority && matchesStage && matchesService && matchesApartment && matchesSource && matchesAcqPOC && matchesServiceAcqPOC && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource && matchesEcStatus && matchesAuthority && matchesSentToClient && matchesPaymentStatus;
+    return matchesSearch && matchesPriority && matchesStage && matchesCorrectionStage && matchesService && matchesApartment && matchesSource && matchesAcqPOC && matchesServiceAcqPOC && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource && matchesEcStatus && matchesAuthority && matchesSentToClient && matchesPaymentStatus;
   }).sort((a, b) => {
     if (sortBy === 'Deadline (Ascending)' || sortBy === 'Deadline (Descending)') {
       const getDaysLeft = (c) => {
