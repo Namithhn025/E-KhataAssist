@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, updateDoc, doc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Plus, Search, X, ChevronDown, ChevronUp, Building2, Users2, Filter } from 'lucide-react';
 
@@ -26,6 +26,7 @@ const Field = ({ label, children }) => (
 const AddCollaboratorModal = ({ open, onClose, onAdd, pocs }) => {
   const [form, setForm] = useState({ company: '', customerName: '', scope: 'BBMP', services: [], docReceived: false, notes: '', epid: '', poc: '', status: 'Doc Sent', amount: '' });
   const [amountError, setAmountError] = useState(false);
+  const [customService, setCustomService] = useState('');
 
   if (!open) return null;
 
@@ -85,6 +86,16 @@ const AddCollaboratorModal = ({ open, onClose, onAdd, pocs }) => {
                 </button>
               ))}
             </div>
+            {form.services.includes('Others') && (
+              <div className="flex gap-2 items-center mt-1">
+                <input value={customService} onChange={e => setCustomService(e.target.value)} placeholder="Specify custom service..." className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium outline-none focus:ring-2 focus:ring-indigo-300" />
+                <button type="button" onClick={() => {
+                  if (!customService.trim()) return;
+                  setForm(p => ({ ...p, services: [...p.services.filter(x => x !== 'Others'), customService.trim()] }));
+                  setCustomService('');
+                }} className="px-3 py-2 bg-indigo-500 text-white rounded-xl text-[9px] font-black uppercase">Add</button>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -140,26 +151,30 @@ const CollaboratorRow = ({ collab, pocs, onUpdate }) => {
   const handleAmountSave = async () => {
     if (!amountVal.trim()) { setAmountError(true); return; }
     setAmountError(false);
-    await onUpdate(collab.id, 'amount', amountVal.trim());
-    // Create invoice entry in customers collection so it appears in Invoices view
-    const srId = 'COL' + Math.random().toString(36).substring(2, 7).toUpperCase();
-    await addDoc(collection(db, 'customers'), {
-      srId,
-      name: collab.customerName,
+    const invoiceData = {
+      customerName: collab.customerName,
       company: collab.company,
       serviceRequested: (collab.services || []).join(', '),
       serviceStatus: 'Approved',
-      approvedDate: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
+      approvedDate: collab.approvedDate || new Date().toISOString(),
+      createdAt: collab.createdAt || new Date().toISOString(),
       serviceAcqPOC: collab.poc || '',
       scope: collab.scope || '',
       ePID: collab.epid || '',
       amount: amountVal.trim(),
       paymentStatus: 'Payment Received',
-      internalNotes: [{ text: `Collaborator payment received. Amount: ₹${amountVal.trim()}. Company: ${collab.company}`, author: 'System', timestamp: new Date().toISOString() }],
       isCollaboratorEntry: true,
       collaboratorId: collab.id,
-    });
+    };
+    // If invoice record already exists, update it; otherwise create once and store the id back
+    if (collab.invoiceCustomerId) {
+      await updateDoc(doc(db, 'customers', collab.invoiceCustomerId), { amount: amountVal.trim(), updatedAt: new Date().toISOString() });
+    } else {
+      const srId = 'COL' + Math.random().toString(36).substring(2, 7).toUpperCase();
+      const ref = await addDoc(collection(db, 'customers'), { ...invoiceData, srId });
+      await onUpdate(collab.id, 'invoiceCustomerId', ref.id);
+    }
+    await onUpdate(collab.id, 'amount', amountVal.trim());
   };
 
   return (
