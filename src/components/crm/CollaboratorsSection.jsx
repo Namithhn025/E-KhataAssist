@@ -141,17 +141,24 @@ const CollaboratorRow = ({ collab, pocs, onUpdate }) => {
     if (!amountVal.trim()) { setAmountError(true); return; }
     setAmountError(false);
     await onUpdate(collab.id, 'amount', amountVal.trim());
-    // Create invoice entry in customers collection
-    await addDoc(collection(db, 'collaboratorInvoices'), {
-      collaboratorId: collab.id,
+    // Create invoice entry in customers collection so it appears in Invoices view
+    const srId = 'COL' + Math.random().toString(36).substring(2, 7).toUpperCase();
+    await addDoc(collection(db, 'customers'), {
+      srId,
+      name: collab.customerName,
       company: collab.company,
-      customerName: collab.customerName,
-      amount: amountVal.trim(),
-      serviceRequested: collab.services?.join(', ') || '',
-      scope: collab.scope,
-      poc: collab.poc,
-      paymentReceived: true,
+      serviceRequested: (collab.services || []).join(', '),
+      serviceStatus: 'Approved',
+      approvedDate: new Date().toISOString(),
       createdAt: new Date().toISOString(),
+      serviceAcqPOC: collab.poc || '',
+      scope: collab.scope || '',
+      ePID: collab.epid || '',
+      amount: amountVal.trim(),
+      paymentStatus: 'Payment Received',
+      internalNotes: [{ text: `Collaborator payment received. Amount: ₹${amountVal.trim()}. Company: ${collab.company}`, author: 'System', timestamp: new Date().toISOString() }],
+      isCollaboratorEntry: true,
+      collaboratorId: collab.id,
     });
   };
 
