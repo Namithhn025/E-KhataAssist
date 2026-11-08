@@ -159,7 +159,7 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
     collaboratorEntry: { label: 'Entry Type', options: ['Collaborator', 'Regular'] }
   };
 
-  const commonKeys = ['priority', 'acqPOC', 'opsSpecialist', 'docSource', 'serviceAcqPOC', 'stage', 'service', 'correctionStage'];
+  const commonKeys = ['priority', 'acqPOC', 'opsSpecialist', 'docSource', 'serviceAcqPOC', 'stage', 'service', 'correctionStage', 'collaboratorEntry'];
   
   const handleAddFilter = (key) => {
     if (!visibleFilters.includes(key)) {

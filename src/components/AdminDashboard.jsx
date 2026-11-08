@@ -43,7 +43,7 @@ const AdminDashboard = () => {
   const [customerToDelete, setCustomerToDelete] = useState(null);
   const [servicesSubMode, setServicesSubMode] = useState('active');
   const [showCorrupted, setShowCorrupted] = useState(false);
-  const [visibleFilters, setVisibleFilters] = useState(['priority', 'acqPOC', 'opsSpecialist', 'docSource', 'serviceAcqPOC', 'stage', 'service']);
+  const [visibleFilters, setVisibleFilters] = useState(['priority', 'acqPOC', 'opsSpecialist', 'docSource', 'serviceAcqPOC', 'stage', 'service', 'collaboratorEntry']);
   const [currentPage, setCurrentPage] = useState(1);
   const [isMassUploadOpen, setIsMassUploadOpen] = useState(false);
   const rowsPerPage = 20;
@@ -945,9 +945,16 @@ const AdminDashboard = () => {
                       const stableIndex = allApprovedSorted.findIndex(c => c.id === customer.id);
                       const invoiceNum = stableIndex !== -1 ? stableIndex + 1 : idx + 1;
                       return (
-                        <div key={customer.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all overflow-hidden">
+                        <div key={customer.id} className={`bg-white rounded-3xl border shadow-sm hover:shadow-md transition-all overflow-hidden ${customer.isCollaboratorEntry ? 'border-indigo-200' : 'border-slate-100'}`}>
+                          {/* Collaborator banner */}
+                          {customer.isCollaboratorEntry && (
+                            <div className="px-8 py-2 bg-indigo-500 flex items-center gap-2">
+                              <span className="text-[9px] font-black text-white uppercase tracking-widest">🤝 Collaborator Entry</span>
+                              {customer.company && <span className="text-[9px] text-indigo-200 font-bold">— {customer.company}</span>}
+                            </div>
+                          )}
                           {/* Invoice Header */}
-                          <div className="flex items-center justify-between px-8 py-5 border-b border-slate-50 bg-emerald-50/30">
+                          <div className={`flex items-center justify-between px-8 py-5 border-b border-slate-50 ${customer.isCollaboratorEntry ? 'bg-indigo-50/40' : 'bg-emerald-50/30'}`}>
                             <div className="flex items-center gap-4">
                               <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
                                 <FileText size={18} className="text-emerald-600" />
