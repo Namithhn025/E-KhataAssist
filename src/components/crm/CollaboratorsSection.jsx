@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, addDoc, updateDoc, doc, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, updateDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import { Plus, Search, X, ChevronDown, ChevronUp, Building2, Users2, Filter } from 'lucide-react';
+import { Plus, Search, X, ChevronDown, ChevronUp, Building2, Users2, Filter, Trash2 } from 'lucide-react';
 
 const SCOPES = ['BBMP', 'Panchayat', 'TMC'];
 const SERVICES = ['Ekatha', 'Katha Transfer (Combo)', 'New Katha (Combo)', 'Bescom', 'MOU', 'MODT Cancellation', 'Property Registration', 'Correction', 'Others'];
@@ -135,7 +135,7 @@ const AddCollaboratorModal = ({ open, onClose, onAdd, pocs }) => {
   );
 };
 
-const CollaboratorRow = ({ collab, pocs, onUpdate }) => {
+const CollaboratorRow = ({ collab, pocs, onUpdate, onDelete }) => {
   const [expanded, setExpanded] = useState(false);
   const [amountVal, setAmountVal] = useState(collab.amount || '');
   const [amountError, setAmountError] = useState(false);
@@ -206,6 +206,7 @@ const CollaboratorRow = ({ collab, pocs, onUpdate }) => {
           <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${statusColors[collab.status] || 'bg-slate-100 text-slate-500 border-slate-200'}`}>{collab.status || 'Doc Sent'}</span>
           <span className="px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest border border-indigo-100">{collab.scope || 'BBMP'}</span>
           {collab.docReceived && <span className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest border border-emerald-100">Docs ✓</span>}
+          <button onClick={e => { e.stopPropagation(); onDelete(collab); }} className="p-1.5 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-colors"><Trash2 size={14} /></button>
           {expanded ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
         </div>
       </div>
@@ -331,6 +332,11 @@ const CollaboratorsSection = ({ pocs = {} }) => {
     await updateDoc(doc(db, 'collaborators', id), { [field]: value, updatedAt: new Date().toISOString() });
   };
 
+  const handleDelete = async (collab) => {
+    if (!window.confirm(`Delete collaborator "${collab.company} — ${collab.customerName}"? This cannot be undone.`)) return;
+    await deleteDoc(doc(db, 'collaborators', collab.id));
+  };
+
   const q = search.toLowerCase().trim();
   const filtered = collabs.filter(c => {
     if (q && !(
@@ -407,7 +413,7 @@ const CollaboratorsSection = ({ pocs = {} }) => {
             {!search && !hasActiveFilters && <p className="text-xs text-slate-300 mt-1">Click "Add Collaborator" to get started</p>}
           </div>
         ) : (
-          filtered.map(c => <CollaboratorRow key={c.id} collab={c} pocs={pocs} onUpdate={handleUpdate} />)
+          filtered.map(c => <CollaboratorRow key={c.id} collab={c} pocs={pocs} onUpdate={handleUpdate} onDelete={handleDelete} />)
         )}
       </div>
 
