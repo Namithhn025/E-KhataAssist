@@ -522,8 +522,11 @@ const AdminDashboard = () => {
     const matchesPaymentStatus = !activeFilters.paymentStatus || (
       activeFilters.paymentStatus === 'Payment Done' ? c.paymentStatus === 'Done' : (c.paymentStatus !== 'Done')
     );
+    const matchesCollaboratorEntry = !activeFilters.collaboratorEntry || (
+      activeFilters.collaboratorEntry === 'Collaborator' ? !!c.isCollaboratorEntry : !c.isCollaboratorEntry
+    );
 
-    return matchesSearch && matchesPriority && matchesStage && matchesCorrectionStage && matchesService && matchesApartment && matchesSource && matchesAcqPOC && matchesServiceAcqPOC && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource && matchesEcStatus && matchesAuthority && matchesSentToClient && matchesPaymentStatus;
+    return matchesSearch && matchesPriority && matchesStage && matchesCorrectionStage && matchesService && matchesApartment && matchesSource && matchesAcqPOC && matchesServiceAcqPOC && matchesDocsSubmitted && matchesOpsSpecialist && matchesDocSource && matchesEcStatus && matchesAuthority && matchesSentToClient && matchesPaymentStatus && matchesCollaboratorEntry;
   }).sort((a, b) => {
     if (sortBy === 'Deadline (Ascending)' || sortBy === 'Deadline (Descending)') {
       const getDaysLeft = (c) => {
@@ -950,7 +953,12 @@ const AdminDashboard = () => {
                                 <FileText size={18} className="text-emerald-600" />
                               </div>
                               <div>
-                                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Invoice #{String(invoiceNum).padStart(4, '0')}</p>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Invoice #{String(invoiceNum).padStart(4, '0')}</p>
+                                  {customer.isCollaboratorEntry && (
+                                    <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-full text-[8px] font-black uppercase tracking-widest">Collaborator</span>
+                                  )}
+                                </div>
                                 <p className="text-xs font-bold text-slate-400">
                                   Approved: {customer.approvedDate ? new Date(customer.approvedDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
                                 </p>

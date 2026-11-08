@@ -155,7 +155,8 @@ const FilterBar = ({ activeFilters, visibleFilters, setVisibleFilters, onFilterC
     ecStatus: { label: 'EC Status', options: ['Default', 'Not Applied', 'Applied', 'Generated'] },
     authority: { label: 'Authority', options: ['Default', 'BDA', 'Panchayat'] },
     sentToClient: { label: 'Sent to Client', options: ['Yes', 'No'] },
-    paymentStatus: { label: 'Payment Status', options: ['Payment Done', 'Payment Pending'] }
+    paymentStatus: { label: 'Payment Status', options: ['Payment Done', 'Payment Pending'] },
+    collaboratorEntry: { label: 'Entry Type', options: ['Collaborator', 'Regular'] }
   };
 
   const commonKeys = ['priority', 'acqPOC', 'opsSpecialist', 'docSource', 'serviceAcqPOC', 'stage', 'service', 'correctionStage'];
