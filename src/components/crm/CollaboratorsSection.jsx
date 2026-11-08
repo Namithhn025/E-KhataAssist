@@ -148,6 +148,21 @@ const CollaboratorRow = ({ collab, pocs, onUpdate }) => {
     onUpdate(collab.id, 'status', newStatus);
   };
 
+  const syncInvoiceField = async (field, value) => {
+    if (!collab.invoiceCustomerId) return;
+    await updateDoc(doc(db, 'customers', collab.invoiceCustomerId), { [field]: value, updatedAt: new Date().toISOString() });
+  };
+
+  const handleUpdate = async (id, field, value) => {
+    await onUpdate(id, field, value);
+    // Keep invoice record in sync for key fields
+    const invoiceFieldMap = { services: 'serviceRequested', poc: 'serviceAcqPOC', epid: 'ePID', company: 'company', customerName: 'customerName' };
+    if (invoiceFieldMap[field] && collab.invoiceCustomerId) {
+      const invoiceVal = field === 'services' ? (value || []).join(', ') : value;
+      await updateDoc(doc(db, 'customers', collab.invoiceCustomerId), { [invoiceFieldMap[field]]: invoiceVal, updatedAt: new Date().toISOString() });
+    }
+  };
+
   const handleAmountSave = async () => {
     if (!amountVal.trim()) { setAmountError(true); return; }
     setAmountError(false);
@@ -162,13 +177,12 @@ const CollaboratorRow = ({ collab, pocs, onUpdate }) => {
       scope: collab.scope || '',
       ePID: collab.epid || '',
       amount: amountVal.trim(),
-      paymentStatus: 'Payment Received',
+      paymentStatus: 'Done',
       isCollaboratorEntry: true,
       collaboratorId: collab.id,
     };
-    // If invoice record already exists, update it; otherwise create once and store the id back
     if (collab.invoiceCustomerId) {
-      await updateDoc(doc(db, 'customers', collab.invoiceCustomerId), { amount: amountVal.trim(), updatedAt: new Date().toISOString() });
+      await updateDoc(doc(db, 'customers', collab.invoiceCustomerId), { amount: amountVal.trim(), paymentStatus: 'Done', updatedAt: new Date().toISOString() });
     } else {
       const srId = 'COL' + Math.random().toString(36).substring(2, 7).toUpperCase();
       const ref = await addDoc(collection(db, 'customers'), { ...invoiceData, srId });
@@ -203,15 +217,15 @@ const CollaboratorRow = ({ collab, pocs, onUpdate }) => {
           {/* LEFT */}
           <div className="space-y-4">
             <Field label="Company / Org">
-              <input defaultValue={collab.company} onBlur={e => onUpdate(collab.id, 'company', e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
+              <input defaultValue={collab.company} onBlur={e => handleUpdate(collab.id, 'company', e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
             </Field>
             <Field label="Customer Name">
-              <input defaultValue={collab.customerName} onBlur={e => onUpdate(collab.id, 'customerName', e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
+              <input defaultValue={collab.customerName} onBlur={e => handleUpdate(collab.id, 'customerName', e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
             </Field>
             <Field label="Scope">
               <div className="flex gap-1.5">
                 {SCOPES.map(s => (
-                  <button key={s} onClick={() => onUpdate(collab.id, 'scope', s)}
+                  <button key={s} onClick={() => handleUpdate(collab.id, 'scope', s)}
                     className={`flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest border transition-all ${(collab.scope || 'BBMP') === s ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-indigo-200 hover:text-indigo-600'}`}>
                     {s}
                   </button>
@@ -219,7 +233,7 @@ const CollaboratorRow = ({ collab, pocs, onUpdate }) => {
               </div>
             </Field>
             <Field label="Doc Received">
-              <button onClick={() => onUpdate(collab.id, 'docReceived', !collab.docReceived)}
+              <button onClick={() => handleUpdate(collab.id, 'docReceived', !collab.docReceived)}
                 className={`w-10 h-5 rounded-full relative transition-colors ${collab.docReceived ? 'bg-emerald-500' : 'bg-slate-200'}`}>
                 <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${collab.docReceived ? 'translate-x-5' : ''}`} />
               </button>
@@ -239,17 +253,17 @@ const CollaboratorRow = ({ collab, pocs, onUpdate }) => {
                 const cur = collab.services || [];
                 const isRemoving = cur.includes(e.target.value);
                 if (isRemoving && cur.length <= 1) return;
-                onUpdate(collab.id, 'services', isRemoving ? cur.filter(x => x !== e.target.value) : [...cur, e.target.value]);
+                handleUpdate(collab.id, 'services', isRemoving ? cur.filter(x => x !== e.target.value) : [...cur, e.target.value]);
               }} className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-[8px] font-black text-slate-500 outline-none cursor-pointer appearance-none uppercase">
                 <option value="">+ Add / Remove Service</option>
                 {SERVICES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </Field>
             <Field label="ePID">
-              <input defaultValue={collab.epid} onBlur={e => onUpdate(collab.id, 'epid', e.target.value)} placeholder="ePID..." className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
+              <input defaultValue={collab.epid} onBlur={e => handleUpdate(collab.id, 'epid', e.target.value)} placeholder="ePID..." className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
             </Field>
             <Field label="POC">
-              <select value={collab.poc || ''} onChange={e => onUpdate(collab.id, 'poc', e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none appearance-none">
+              <select value={collab.poc || ''} onChange={e => handleUpdate(collab.id, 'poc', e.target.value)} className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none appearance-none">
                 <option value="">Unassigned</option>
                 {(pocs.serviceAcquisition || []).map(n => <option key={n}>{n}</option>)}
               </select>
