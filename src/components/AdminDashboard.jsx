@@ -15,6 +15,7 @@ import NestedServicesTable from './crm/NestedServicesTable';
 import CampSection from './crm/CampSection';
 import MassUploadModal from './crm/MassUploadModal';
 import ExpensesSection from './crm/ExpensesSection';
+import CollaboratorsSection from './crm/CollaboratorsSection';
 import RemindersSection, { ReminderModal } from './crm/RemindersSection';
 import DailyMovementView from './crm/DailyMovementView';
 import { setDoc, arrayUnion, Timestamp } from 'firebase/firestore';
@@ -596,6 +597,7 @@ const AdminDashboard = () => {
               selectedSource === 'marketing-deadlines' ? 'Marketing Deadlines' :
               selectedSource === 'services' ? `Services / ${servicesSubMode.charAt(0).toUpperCase() + servicesSubMode.slice(1)}` :
               selectedSource === 'daily-movement' ? 'Daily Movement' :
+              selectedSource === 'collaborators' ? 'Collaborators' :
               'Sales'
             }
             viewMode={selectedSource}
@@ -606,7 +608,7 @@ const AdminDashboard = () => {
           />
   
           {/* Filter Bar */}
-          {selectedSource !== 'nexus' && selectedSource !== 'reminders' && selectedSource !== 'daily-movement' && (
+          {selectedSource !== 'nexus' && selectedSource !== 'reminders' && selectedSource !== 'daily-movement' && selectedSource !== 'collaborators' && (
             <FilterBar
               activeFilters={activeFilters}
               visibleFilters={visibleFilters}
@@ -1107,11 +1109,16 @@ const AdminDashboard = () => {
 
           {/* ── EXPENSES SECTION ─────────────────────────────────────── */}
           {selectedSource === 'expenses' && (
-             <ExpensesSection 
-               isAdmin={isAdmin} 
+             <ExpensesSection
+               isAdmin={isAdmin}
                sortBy={sortBy}
                searchQuery={searchQuery}
              />
+          )}
+
+          {/* ── COLLABORATORS SECTION ────────────────────────────────── */}
+          {selectedSource === 'collaborators' && (
+            <CollaboratorsSection pocs={pocs} />
           )}
 
           {/* ── REMINDERS SECTION ───────────────────────────────────────── */}

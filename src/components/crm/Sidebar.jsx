@@ -4,7 +4,7 @@ import {
   Settings, LogOut, ChevronDown,
   Clock, PlayCircle, XCircle, CheckCircle, RefreshCw,
   DollarSign, Bell, Calendar, Megaphone, FileCheck, Activity,
-  Building2, Landmark, RotateCcw
+  Building2, Landmark, RotateCcw, Users2
 } from 'lucide-react';
 
 const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode, setServicesSubMode, userRole }) => {
@@ -40,6 +40,7 @@ const Sidebar = ({ selectedSource, setSelectedSource, onLogout, servicesSubMode,
     ...(userRole === 'admin' ? [
         { id: 'expenses',          name: 'Expenses',           icon: DollarSign },
         { id: 'invoices',          name: 'Invoices',           icon: FileText   },
+        { id: 'collaborators',     name: 'Collaborators',      icon: Users2     },
         { id: 'daily-movement',    name: 'Daily Movement',     icon: Activity   },
         { id: 'marketing-deadlines', name: 'Marketing Deadlines', icon: Megaphone },
         { id: 'admin',             name: 'Admin',              icon: Settings   }
