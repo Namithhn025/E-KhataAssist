@@ -199,8 +199,8 @@ const CollaboratorRow = ({ collab, pocs, onUpdate, onDelete }) => {
           <Building2 size={16} className="text-indigo-500" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-black text-slate-900 text-sm truncate">{collab.company}</p>
-          <p className="text-[10px] font-bold text-slate-400 truncate">{collab.customerName}</p>
+          <p className="font-black text-slate-900 text-sm truncate">{collab.customerName}</p>
+          <p className="text-[10px] font-bold text-slate-400 truncate">{collab.company}</p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${statusColors[collab.status] || 'bg-slate-100 text-slate-500 border-slate-200'}`}>{collab.status || 'Doc Sent'}</span>
